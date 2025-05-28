@@ -400,8 +400,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       onTap: () {
         switch (index) {
           case 0:
-            // TODO: Navegar a Reports
-            // Navigator.pushReplacementNamed(context, '/reports');
+            // Navegar a Reports
+            Navigator.pushReplacementNamed(context, '/reports');
             break;
           case 1:
             // Ya estamos en Home/Dashboard
