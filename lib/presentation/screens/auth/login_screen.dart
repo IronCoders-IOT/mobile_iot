@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_iot/presentation/screens/dashboard/dashboard_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/services/secure_storage_service.dart';
 import '../../../domain/value_objects/credentials.dart';
 import '../../../infrastructure/data_sources/auth_api_service.dart';
 import '../../../infrastructure/repositories/auth_repository_impl.dart';
@@ -38,8 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final token = await signInUseCase.execute(credentials);
 
     if (token != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('jwt_token', token);
+      final secureStorage = SecureStorageService();
+      await secureStorage.saveToken(token);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
