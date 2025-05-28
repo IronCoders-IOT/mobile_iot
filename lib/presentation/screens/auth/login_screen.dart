@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_iot/presentation/screens/dashboard/dashboard_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../domain/value_objects/credentials.dart';
+import '../../../infrastructure/data_sources/auth_api_service.dart';
+import '../../../infrastructure/repositories/auth_repository_impl.dart';
+import '../../../application/use_cases/sign_in_use_case.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -22,20 +28,31 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    final credentials = Credentials(
+      username: _usernameController.text,
+      password: _passwordController.text,
+    );
 
-      // Simular llamada al backend
-      await Future.delayed(const Duration(seconds: 2));
+    final repository = AuthRepositoryImpl(AuthApiService());
+    final signInUseCase = SignInUseCase(repository);
+    final token = await signInUseCase.execute(credentials);
 
-      setState(() {
-        _isLoading = false;
-      });
+    if (token != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('jwt_token', token);
 
-      // Navegar al dashboard
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login successful!')),
+        );
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login failed. Please check your credentials.')),
+        );
+      }
     }
   }
 
@@ -80,9 +97,6 @@ class _LoginScreenState extends State<LoginScreen> {
               _buildLoginForm(),
 
               const SizedBox(height: 24),
-
-              // Sign up link
-              _buildSignUpLink(),
 
               const SizedBox(height: 32),
 
@@ -194,32 +208,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSignUpLink() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text(
-          "Don't have an account? ",
-          style: TextStyle(
-            color: AppColors.mediumGray,
-            fontSize: 14,
-          ),
-        ),
-        GestureDetector(
-          onTap: _handleSignUp,
-          child: const Text(
-            'Sign up here',
-            style: TextStyle(
-              color: AppColors.primaryBlue,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
     );
   }
 
