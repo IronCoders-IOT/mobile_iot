@@ -34,15 +34,8 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = false;
       });
 
-      // TODO: Aquí iría la navegación al dashboard
-      // Navigator.pushReplacementNamed(context, '/dashboard');
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login successful!'),
-          backgroundColor: AppColors.primaryBlue,
-        ),
-      );
+      // Navegar al dashboard
+      Navigator.pushReplacementNamed(context, '/dashboard');
     }
   }
 
@@ -70,32 +63,32 @@ class _LoginScreenState extends State<LoginScreen> {
               // Logo
               const Spacer(flex: 2),
               _buildLogo(),
-              
+
               const SizedBox(height: 60),
-              
+
               // Welcome text
               _buildWelcomeText(),
-              
+
               const SizedBox(height: 8),
-              
+
               // Subtitle
               _buildSubtitle(),
-              
+
               const SizedBox(height: 40),
-              
+
               // Form
               _buildLoginForm(),
-              
+
               const SizedBox(height: 24),
-              
+
               // Sign up link
               _buildSignUpLink(),
-              
+
               const SizedBox(height: 32),
-              
+
               // Login button
               _buildLoginButton(),
-              
+
               const Spacer(flex: 1),
             ],
           ),
@@ -170,9 +163,9 @@ class _LoginScreenState extends State<LoginScreen> {
               return null;
             },
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Password field
           CustomTextField(
             controller: _passwordController,
