@@ -387,8 +387,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(Icons.description, 0, true), // Reports - activo
-          _buildNavItem(Icons.home, 1, false), // Home
+          _buildNavItem(Icons.description, 0, false), // Reports
+          _buildNavItem(Icons.home, 1, true), // Home - activo
           _buildNavItem(Icons.person, 2, false), // Profile
         ],
       ),
@@ -398,16 +398,17 @@ class _DashboardScreenState extends State<DashboardScreen>
   Widget _buildNavItem(IconData icon, int index, bool isActive) {
     return GestureDetector(
       onTap: () {
-        // TODO: Implementar navegación
         switch (index) {
           case 0:
-            // Navegar a Reports
+            // TODO: Navegar a Reports
+            // Navigator.pushReplacementNamed(context, '/reports');
             break;
           case 1:
             // Ya estamos en Home/Dashboard
             break;
           case 2:
             // Navegar a Profile
+            Navigator.pushReplacementNamed(context, '/profile');
             break;
         }
       },
