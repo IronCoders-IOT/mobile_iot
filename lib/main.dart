@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/dashboard/dashboard_screen.dart';
 
 void main() {
   runApp(const AquaConectaApp());
@@ -165,7 +166,7 @@ class AquaConectaApp extends StatelessWidget {
       // Rutas nombradas (para navegación futura)
       routes: {
         '/login': (context) => const LoginScreen(),
-        // '/dashboard': (context) => const DashboardScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
         // '/profile': (context) => const ProfileScreen(),
         // '/reports': (context) => const ReportsScreen(),
         // '/edit-profile': (context) => const EditProfileScreen(),
