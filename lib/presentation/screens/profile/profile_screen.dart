@@ -1,15 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_iot/application/use_cases/profile_use_case.dart';
+import 'package:mobile_iot/core/services/secure_storage_service.dart';
+import 'package:mobile_iot/domain/entities/profile.dart';
+import 'package:mobile_iot/infrastructure/data_sources/profile_api_service.dart';
+import 'package:mobile_iot/infrastructure/repositories/profile_repository_impl.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
-  // Datos simulados del usuario
-  static const String username = "Rodrágolvr";
-  static const String firstName = "Rodrigo Alejandro";
-  static const String lastName = "Aguilar Castillo";
-  static const String email = "crodrigo7132@gmail.com";
-  static const String document = "71232385";
-  static const String phoneNumber = "914823480";
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  late ProfileUseCase _profileUseCase;
+  late SecureStorageService _secureStorage;
+  Profile? _profile;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeProfile();
+  }
+
+  void _initializeProfile() {
+    _secureStorage = SecureStorageService();
+    final repository = ProfileRepositoryImpl(ProfileApiService());
+    _profileUseCase = ProfileUseCase(repository);
+    _fetchProfile();
+  }
+
+  Future<void> _fetchProfile() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      final token = await _secureStorage.getToken();
+      if (token == null) {
+        throw Exception('No se encontró el token de autenticación');
+      }
+
+      final profile = await _profileUseCase.getProfile(token);
+      
+      if (profile == null) {
+        throw Exception('No se pudo cargar el perfil');
+      }
+      
+      setState(() {
+        _profile = profile;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+      
+      // Si el error es de autenticación, redirigir al login
+      if (e.toString().contains('Sesión expirada')) {
+        // Esperar un momento para mostrar el mensaje de error
+        await Future.delayed(const Duration(seconds: 2));
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,27 +78,38 @@ class ProfileScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Header con logo y botón edit
             _buildHeader(context),
-            
-            // Contenido del perfil
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    
-                    // Avatar y nombre de usuario
-                    _buildProfileHeader(),
-                    
-                    const SizedBox(height: 40),
-                    
-                    // Campos de información
-                    _buildProfileFields(),
-                  ],
-                ),
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _error != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _error!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _fetchProfile,
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        )
+                      : SingleChildScrollView(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 20),
+                              _buildProfileHeader(),
+                              const SizedBox(height: 40),
+                              _buildProfileFields(),
+                            ],
+                          ),
+                        ),
             ),
           ],
         ),
@@ -53,7 +124,6 @@ class ProfileScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Logo centrado
           Expanded(
             child: Center(
               child: RichText(
@@ -81,10 +151,14 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           
-          // Botón Edit
           GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, '/edit-profile');
+            onTap: () async {
+              final result = await Navigator.pushNamed(context, '/edit-profile');
+              if (result != null && result is Profile) {
+                setState(() {
+                  _profile = result;
+                });
+              }
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -110,7 +184,6 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildProfileHeader() {
     return Column(
       children: [
-        // Avatar
         Container(
           width: 100,
           height: 100,
@@ -127,9 +200,8 @@ class ProfileScreen extends StatelessWidget {
         
         const SizedBox(height: 16),
         
-        // Nombre de usuario
         Text(
-          username,
+          _profile?.firstName ?? 'Loading...',
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -141,39 +213,41 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildProfileFields() {
+    if (_profile == null) return const SizedBox.shrink();
+
     return Column(
       children: [
         _buildProfileField(
           label: 'First Name',
-          value: firstName,
+          value: _profile!.firstName,
         ),
         
         const SizedBox(height: 24),
         
         _buildProfileField(
           label: 'Last Name',
-          value: lastName,
+          value: _profile!.lastName,
         ),
         
         const SizedBox(height: 24),
         
         _buildProfileField(
           label: 'Email',
-          value: email,
+          value: _profile!.email,
         ),
         
         const SizedBox(height: 24),
         
         _buildProfileField(
           label: 'Document',
-          value: document,
+          value: _profile!.documentNumber,
         ),
         
         const SizedBox(height: 24),
         
         _buildProfileField(
           label: 'Phone Number',
-          value: phoneNumber,
+          value: _profile!.phone,
         ),
       ],
     );
@@ -234,9 +308,9 @@ class ProfileScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(context, Icons.description, 0, false), // Reports
-          _buildNavItem(context, Icons.home, 1, false), // Home
-          _buildNavItem(context, Icons.person, 2, true), // Profile - activo
+          _buildNavItem(context, Icons.description, 0, false),
+          _buildNavItem(context, Icons.home, 1, false),
+          _buildNavItem(context, Icons.person, 2, true),
         ],
       ),
     );
@@ -253,7 +327,6 @@ class ProfileScreen extends StatelessWidget {
             Navigator.pushReplacementNamed(context, '/dashboard');
             break;
           case 2:
-            // Ya estamos en Profile
             break;
         }
       },
@@ -269,7 +342,6 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-// Edit Profile Screen
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({Key? key}) : super(key: key);
 
@@ -278,26 +350,73 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _usernameController;
   late TextEditingController _emailController;
-  late TextEditingController _documentController;
+  late TextEditingController _directionController;
+  late TextEditingController _documentNumberController;
+  late TextEditingController _documentTypeController;
   late TextEditingController _phoneController;
-
+  late SecureStorageService _secureStorage;
+  late ProfileUseCase _profileUseCase;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    // Inicializar controladores con datos actuales
-    _firstNameController = TextEditingController(text: ProfileScreen.firstName);
-    _lastNameController = TextEditingController(text: ProfileScreen.lastName);
-    _usernameController = TextEditingController(text: ProfileScreen.username);
-    _emailController = TextEditingController(text: ProfileScreen.email);
-    _documentController = TextEditingController(text: ProfileScreen.document);
-    _phoneController = TextEditingController(text: ProfileScreen.phoneNumber);
+    _initializeControllers();
+    _initializeServices();
+  }
+
+  void _initializeControllers() {
+
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
+    _usernameController = TextEditingController();
+    _emailController = TextEditingController();
+    _directionController = TextEditingController();
+    _documentNumberController = TextEditingController();
+    _documentTypeController = TextEditingController();
+    _phoneController = TextEditingController();
+
+  }
+
+  void _initializeServices() {
+    _secureStorage = SecureStorageService();
+    final repository = ProfileRepositoryImpl(ProfileApiService());
+    _profileUseCase = ProfileUseCase(repository);
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    final token = await _secureStorage.getToken();
+    if (token == null) {
+      throw Exception('No authentication token found');
+    }
+    try {
+
+      final profile = await _profileUseCase.getProfile(token);
+      if (profile != null) {
+        setState(() {
+          _firstNameController.text = profile.firstName;
+          _lastNameController.text = profile.lastName;
+          _emailController.text = profile.email;
+          _documentNumberController.text = profile.documentNumber;
+          _documentTypeController.text = profile.documentType;
+          _phoneController.text = profile.phone;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading profile: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -306,34 +425,62 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _lastNameController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
-    _documentController.dispose();
+    _directionController.dispose();
+    _documentNumberController.dispose();
+    _documentTypeController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
 
-  void _handleSaveChanges() async {
+  Future<void> _handleSaveChanges() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+      try {
+        setState(() {
+          _isLoading = true;
+        });
 
-      // Simular guardado
-      await Future.delayed(const Duration(seconds: 2));
+        final token = await _secureStorage.getToken();
+        if (token == null) {
+          throw Exception('No authentication token found');
+        }
 
-      setState(() {
-        _isLoading = false;
-      });
+        final updatedProfile = Profile(
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
+          email: _emailController.text,
+          direction: _directionController.text,
+          documentNumber: _documentNumberController.text,
+          documentType: _documentTypeController.text,
+          phone: _phoneController.text,
+        );
 
-      // Mostrar mensaje de éxito
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully!'),
-          backgroundColor: AppColors.green,
-        ),
-      );
+        await _profileUseCase.updateProfile(token,updatedProfile);
 
-      // Regresar a la vista de perfil
-      Navigator.pop(context);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile updated successfully!'),
+              backgroundColor: AppColors.green,
+            ),
+          );
+          Navigator.pop(context, updatedProfile);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error updating profile: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -344,10 +491,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             _buildHeader(context),
             
-            // Formulario
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20.0),
@@ -355,17 +500,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   children: [
                     const SizedBox(height: 20),
                     
-                    // Avatar
                     _buildAvatarSection(),
                     
                     const SizedBox(height: 32),
                     
-                    // Formulario
                     _buildEditForm(),
                     
                     const SizedBox(height: 32),
                     
-                    // Botón guardar
                     _buildSaveButton(),
                     
                     const SizedBox(height: 20),
@@ -384,7 +526,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
-          // Botón back
           GestureDetector(
             onTap: () {
               Navigator.pop(context);
@@ -398,7 +539,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           
           const SizedBox(width: 16),
           
-          // Título
           const Text(
             'Edit Profile',
             style: TextStyle(
@@ -433,7 +573,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           right: 0,
           child: GestureDetector(
             onTap: () {
-              // TODO: Implementar cambio de foto
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Photo upload coming soon!'),
@@ -527,7 +666,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           
           _buildEditField(
             label: 'Document',
-            controller: _documentController,
+            controller: _documentNumberController,
             keyboardType: TextInputType.number,
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -658,7 +797,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 }
 
-// Colores de la app (reutilizando)
 class AppColors {
   static const Color primaryBlue = Color(0xFF3498DB);
   static const Color darkBlue = Color(0xFF2C3E50);
