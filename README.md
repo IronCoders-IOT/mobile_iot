@@ -106,15 +106,3 @@ Gestión de estado con `ChangeNotifier`:
 
 - **app_router.dart** – Controla las rutas y navegación.
 - **route_names.dart** – Define los nombres de ruta como constantes.
-
----
-
-## ✅ Notas
-
-- 🧱 Estructura limpia y escalable.
-- 🔄 Separación clara entre UI, lógica y datos.
-- 🛠️ Ideal para proyectos medianos/grandes.
-
----
-
-¿Quieres incluir también una guía para configurar el proyecto o correrlo en un dispositivo?
