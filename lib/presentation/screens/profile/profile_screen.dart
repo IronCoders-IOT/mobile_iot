@@ -70,7 +70,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
   }
+  void _handleLogout() async{
+    try {
+      await _secureStorage.deleteToken();
 
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Logged out successfully'),
+            backgroundColor: AppColors.green,
+          ),
+        );
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error logging out'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,7 +173,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-          
+          GestureDetector(
+            onTap: _handleLogout,
+            child: const Icon(
+              Icons.logout,
+              color: AppColors.darkBlue,
+              size: 24,
+            ),
+          ),
+
           GestureDetector(
             onTap: () async {
               final result = await Navigator.pushNamed(context, '/edit-profile');
