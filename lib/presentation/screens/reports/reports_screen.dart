@@ -61,6 +61,29 @@ class _ReportsScreenState extends State<ReportsScreen> {
     ),
   ];
 
+  // Controller for search text
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Filtered reports based on search query
+  List<SensorReport> get filteredReports {
+    if (_searchQuery.isEmpty) {
+      return reports;
+    }
+    return reports.where((report) {
+      final titleLower = report.title.toLowerCase();
+      final descriptionLower = report.description.toLowerCase();
+      final searchLower = _searchQuery.toLowerCase();
+      return titleLower.contains(searchLower) || descriptionLower.contains(searchLower);
+    }).toList();
+  }
+
   void _markAsRead(int reportId) {
     setState(() {
       final reportIndex = reports.indexWhere((report) => report.id == reportId);
@@ -90,6 +113,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
           children: [
             // Header
             _buildHeader(context),
+            
+            // Search Bar
+            _buildSearchBar(),
             
             // Lista de reportes
             Expanded(
@@ -136,12 +162,77 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
+  Widget _buildSearchBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value;
+          });
+        },
+        decoration: InputDecoration(
+          hintText: 'Search reports...',
+          prefixIcon: const Icon(Icons.search, color: AppColors.mediumGray),
+          filled: true,
+          fillColor: AppColors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: AppColors.primaryBlue.withOpacity(0.2),
+              width: 1,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(
+              color: AppColors.primaryBlue,
+              width: 1,
+            ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+      ),
+    );
+  }
+
   Widget _buildReportsList() {
+    final reportsToShow = filteredReports;
+    
+    if (reportsToShow.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off_rounded,
+              size: 64,
+              color: AppColors.mediumGray.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No reports found',
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.mediumGray,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      itemCount: reports.length,
+      itemCount: reportsToShow.length,
       itemBuilder: (context, index) {
-        final report = reports[index];
+        final report = reportsToShow[index];
         return _buildReportItem(report, index);
       },
     );
