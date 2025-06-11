@@ -40,7 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (token != null) {
       final secureStorage = SecureStorageService();
       await secureStorage.saveToken(token);
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Login successful!')),

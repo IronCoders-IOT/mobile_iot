@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import '../water_request/water_request_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -198,28 +199,60 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Column(
         children: [
-          _buildMetricItem(
-            title: waterStatus,
-            subtitle: 'Status',
-            color: AppColors.green,
-            icon: Icons.check_circle,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildMetricItem(
+                title: waterStatus,
+                subtitle: 'Status',
+                color: AppColors.green,
+                icon: Icons.check_circle,
+              ),
+              _buildVerticalDivider(),
+              _buildMetricItem(
+                title: waterQuantity,
+                subtitle: 'Quantity',
+                color: AppColors.primaryBlue,
+                icon: Icons.water_drop,
+              ),
+              _buildVerticalDivider(),
+              _buildMetricItem(
+                title: phLevel.toString(),
+                subtitle: 'pH',
+                color: AppColors.darkBlue,
+                icon: Icons.science,
+              ),
+            ],
           ),
-          _buildVerticalDivider(),
-          _buildMetricItem(
-            title: waterQuantity,
-            subtitle: 'Quantity',
-            color: AppColors.primaryBlue,
-            icon: Icons.water_drop,
-          ),
-          _buildVerticalDivider(),
-          _buildMetricItem(
-            title: phLevel.toString(),
-            subtitle: 'pH',
-            color: AppColors.darkBlue,
-            icon: Icons.science,
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final liters = await WaterRequestScreen.show(context);
+                if (liters != null) {
+                  // TODO: Handle the water request
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Requested $liters liters of water'),
+                      backgroundColor: AppColors.green,
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Request Water'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -272,28 +305,15 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'History',
+            Text(
+              'My Water Tanks',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.darkBlue,
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                // TODO: Navegar a vista completa del historial
-              },
-              child: const Text(
-                'see more',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w500,
-                ),
               ),
             ),
           ],
@@ -305,68 +325,73 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildHistoryItem(WaterReading reading) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushReplacementNamed(context, '/history');
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 1),
             ),
-            child: const Icon(
-              Icons.water_drop,
-              color: AppColors.primaryBlue,
-              size: 20,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(
+                Icons.water_drop,
+                color: AppColors.primaryBlue,
+                size: 20,
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  reading.type,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.darkBlue,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    reading.type,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.darkBlue,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  reading.time,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.mediumGray,
+                  const SizedBox(height: 2),
+                  Text(
+                    reading.time,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.mediumGray,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Text(
-            reading.quantity,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryBlue,
+            Text(
+              reading.quantity,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryBlue,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
