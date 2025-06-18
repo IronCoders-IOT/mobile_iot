@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_iot/core/services/secure_storage_service.dart';
+import 'package:mobile_iot/infrastructure/data_sources/water_request_api_service.dart';
+import 'package:mobile_iot/infrastructure/repositories/water_request_repository_impl.dart';
 
-class WaterRequestScreen extends StatelessWidget {
+class WaterRequestScreen extends StatefulWidget {
   const WaterRequestScreen({super.key});
 
   static Future<int?> show(BuildContext context) {
@@ -11,9 +14,59 @@ class WaterRequestScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final TextEditingController litersController = TextEditingController();
+  State<WaterRequestScreen> createState() => _WaterRequestScreenState();
+}
 
+class _WaterRequestScreenState extends State<WaterRequestScreen> {
+  final TextEditingController litersController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _sendRequest(BuildContext context) async {
+    final liters = int.tryParse(litersController.text);
+    if (liters == null || liters <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid amount of water'),
+          backgroundColor: Color(0xFFE74C3C),
+        ),
+      );
+      return;
+    }
+    setState(() => _isLoading = true);
+    try {
+      final storage = SecureStorageService();
+      final token = await storage.getToken();
+      if (token == null) throw Exception('No authentication token found');
+      final repo = WaterRequestRepositoryImpl(WaterRequestApiService());
+      await repo.createWaterRequest(
+        token,
+        liters.toString(),
+        'IN_PROGRESS',
+        DateTime.now().toIso8601String(),
+      );
+      if (mounted) {
+        Navigator.pop(context, liters);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Water request sent!'),
+            backgroundColor: Color(0xFF27AE60),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to send request: \\${e.toString()}'),
+          backgroundColor: const Color(0xFFE74C3C),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -83,7 +136,7 @@ class WaterRequestScreen extends StatelessWidget {
               children: [
                 // Cancel button
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: _isLoading ? null : () => Navigator.pop(context),
                   child: const Text(
                     'Cancel',
                     style: TextStyle(
@@ -94,19 +147,7 @@ class WaterRequestScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 // Request button
                 ElevatedButton(
-                  onPressed: () {
-                    final liters = int.tryParse(litersController.text);
-                    if (liters != null && liters > 0) {
-                      Navigator.pop(context, liters);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please enter a valid amount of water'),
-                          backgroundColor: Color(0xFFE74C3C),
-                        ),
-                      );
-                    }
-                  },
+                  onPressed: _isLoading ? null : () => _sendRequest(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3498DB),
                     foregroundColor: Colors.white,
@@ -118,7 +159,16 @@ class WaterRequestScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text('Request'),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('Request'),
                 ),
               ],
             ),
