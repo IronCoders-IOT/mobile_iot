@@ -1,5 +1,4 @@
 class Profile{
-
   final String firstName;
   final String lastName;
   final String email;
@@ -7,6 +6,7 @@ class Profile{
   final String documentNumber;
   final String documentType;
   final String phone;
+  final int userId;
 
   const Profile({
     required this.firstName,
@@ -16,7 +16,9 @@ class Profile{
     required this.documentNumber,
     required this.documentType,
     required this.phone,
+    required this.userId,
   });
+
 
   factory Profile.fromJson(Map<String, dynamic> json) {
     return Profile(
@@ -27,6 +29,7 @@ class Profile{
       documentNumber: json['documentNumber'] as String,
       documentType: json['documentType'] as String,
       phone: json['phone'] as String,
+      userId: json['userId'] as int,
     );
   }
 

@@ -254,6 +254,24 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ),
           ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, '/request-history');
+              },
+              icon: const Icon(Icons.history, color: AppColors.primaryBlue),
+              label: const Text('View Request History', style: TextStyle(color: AppColors.primaryBlue)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.primaryBlue),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

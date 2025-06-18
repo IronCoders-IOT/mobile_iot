@@ -17,4 +17,11 @@ class WaterRequest{
       'deliveredAt': deliveredAt,
     };
   }
+  factory WaterRequest.fromJson(Map<String, dynamic> json) {
+    return WaterRequest(
+      requestedLiters: json['requestedLiters']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      deliveredAt: json['emissionDate']?.toString() ?? '',
+    );
+  }
 }

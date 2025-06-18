@@ -483,6 +483,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           documentNumber: _documentNumberController.text,
           documentType: _documentTypeController.text,
           phone: _phoneController.text,
+          userId: 0, // Assuming userId is not editable and remains unchanged
         );
 
         await _profileUseCase.updateProfile(token,updatedProfile);
