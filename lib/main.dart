@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_iot/presentation/screens/history_screen/history_screen.dart';
+import 'package:mobile_iot/presentation/screens/request-history/request_history_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
 import 'presentation/screens/profile/profile_screen.dart';
@@ -174,6 +175,7 @@ class AquaConectaApp extends StatelessWidget {
         '/edit-profile': (context) => const EditProfileScreen(),
         '/reports': (context) => const ReportsScreen(),
         '/history': (context) => const HistoryScreen(),
+        '/request-history': (context) => const RequestHistoryScreen(),
       },
       
       // Ruta por defecto cuando no se encuentra una ruta
