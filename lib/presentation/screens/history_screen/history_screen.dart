@@ -1,4 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_iot/core/services/secure_storage_service.dart';
+import 'package:mobile_iot/infrastructure/data_sources/resident_api_service.dart';
+import 'package:mobile_iot/infrastructure/data_sources/sensor_api_service.dart';
+import 'package:mobile_iot/infrastructure/data_sources/event_api_service.dart';
+import 'package:mobile_iot/infrastructure/repositories/sensor_repository_impl.dart';
+import 'package:mobile_iot/infrastructure/repositories/event_repository_impl.dart';
+import 'package:mobile_iot/application/use_cases/sensor_use_case.dart';
+import 'package:mobile_iot/application/use_cases/event_use_case.dart';
+import 'package:mobile_iot/domain/entities/event.dart';
+import 'package:mobile_iot/domain/entities/sensor.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -8,34 +18,76 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<HistoryScreen> {
-  // Lista de reportes simulados
-  final List<SensorHistory> reports = [
-    SensorHistory(
-      id: 1,
-      event: "Quality",
-      water_quality: "ph: 7.2",
-      status: ReportStatus.normal,
-      water_level: "High"
-    ),
-    SensorHistory(
-      id: 2,
-      event: "Pressure",
-      water_quality: "ph: 6.8",
-      status: ReportStatus.alert,
-      water_level: "Medium"
-    ),
-    SensorHistory(
-      id: 3,
-      event: "Water Level",
-      water_quality: "ph: 5.5",
-      status: ReportStatus.critical,
-      water_level: "Low"
-    ),
-  ];
+  // API-driven data
+  List<SensorHistory> reports = [];
+  bool _isLoading = true;
+  String? _error;
 
   // Controller for search text
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchHistory();
+  }
+
+  Future<void> _fetchHistory() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final storage = SecureStorageService();
+      final token = await storage.getToken();
+      if (token == null) throw Exception('No authentication token found');
+      // Get resident
+      final residentJson = await ResidentApiService().getResident(token);
+      if (residentJson == null || residentJson['id'] == null) throw Exception('Resident not found');
+      final residentId = residentJson['id'] as int;
+      // Get sensors for resident
+      final sensorUseCase = SensorUseCase(SensorRepositoryImpl(SensorApiService()));
+      final sensors = await sensorUseCase.getSensor(token, residentId);
+      if (sensors.isEmpty) throw Exception('No sensors found for resident');
+      final sensorId = sensors.first.id;
+      // Get events for sensor
+      final eventUseCase = EventUseCase(EventRepositoryImpl(EventApiService()));
+      final events = await eventUseCase.getAllEventsBySensorId(token, sensorId);
+      // Map events to SensorHistory
+      reports = events.asMap().entries.map((entry) {
+        final e = entry.value;
+        return SensorHistory(
+          id: entry.key + 1, 
+          event: e.eventType,
+          water_quality: e.qualityValue,
+          status: _statusFromLevel(e.levelValue),
+          water_level: e.levelValue,
+        );
+      }).toList();
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  ReportStatus _statusFromLevel(String level) {
+    switch (level.toLowerCase()) {
+      case 'high':
+        return ReportStatus.normal;
+      case 'medium':
+        return ReportStatus.alert;
+      case 'low':
+        return ReportStatus.critical;
+      default:
+        return ReportStatus.normal;
+    }
+  }
 
   @override
   void dispose() {
@@ -91,7 +143,26 @@ class _ReportsScreenState extends State<HistoryScreen> {
             
             // Lista de reportes
             Expanded(
-              child: _buildReportsList(),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _error != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _error!,
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _fetchHistory,
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        )
+                      : _buildReportsList(),
             ),
           ],
         ),
