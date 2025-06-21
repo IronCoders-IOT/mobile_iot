@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../../domain/entities/event.dart';
 
 class EventApiService {
-  static const String _baseUrl = 'http://192.168.18.4:8080/api/v1/events';
+  static const String _baseUrl = 'https://aquaconecta-gch4brewcpb5ewhc.centralus-01.azurewebsites.net/api/v1/events';
 
   Future<List<Event>> getAllEventsBySensorId(String token, int id) async {
     final response = await http.get(

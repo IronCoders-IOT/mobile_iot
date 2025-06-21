@@ -61,7 +61,7 @@ class _ReportsScreenState extends State<HistoryScreen> {
           id: entry.key + 1, 
           event: e.eventType,
           water_quality: e.qualityValue,
-          status: _statusFromLevel(e.levelValue),
+          status: _statusFromQuality(e.qualityValue),
           water_level: e.levelValue,
         );
       }).toList();
@@ -76,13 +76,13 @@ class _ReportsScreenState extends State<HistoryScreen> {
     }
   }
 
-  ReportStatus _statusFromLevel(String level) {
-    switch (level.toLowerCase()) {
-      case 'high':
-        return ReportStatus.normal;
-      case 'medium':
+  // Determina el estado del reporte según la calidad del agua
+  ReportStatus _statusFromQuality(String quality) {
+    switch (quality.toLowerCase()) {
+      case 'mala':
+      case 'no potable':
         return ReportStatus.alert;
-      case 'low':
+      case 'agua contaminada':
         return ReportStatus.critical;
       default:
         return ReportStatus.normal;
@@ -654,9 +654,9 @@ extension ReportStatusExtension on ReportStatus {
   Color get color {
     switch (this) {
       case ReportStatus.normal:
-        return const Color(0xFFE8F5E9); // Light blue
+        return const Color(0xFFE8F5E9); // Light green
       case ReportStatus.alert:
-        return const Color(0xFFFFF8E1); // Light yellow
+        return const Color(0xFFFFE0B2); // Light orange
       case ReportStatus.critical:
         return const Color(0xFFFFEBEE); // Light red
     }
@@ -665,9 +665,9 @@ extension ReportStatusExtension on ReportStatus {
   Color get textColor {
     switch (this) {
       case ReportStatus.normal:
-        return const Color(0xFF4CAF50); // Blue
+        return const Color(0xFF4CAF50); // Green
       case ReportStatus.alert:
-        return const Color(0xFFFFC107); // Amber (Yellow)
+        return const Color(0xFFFF9800); // Orange
       case ReportStatus.critical:
         return const Color(0xFFD32F2F); // Red
     }
