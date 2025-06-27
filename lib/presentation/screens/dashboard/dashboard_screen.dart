@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../water_request/water_request_screen.dart';
+import 'package:mobile_iot/presentation/widgets/app_bottom_navigation_bar.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -91,7 +92,22 @@ class _DashboardScreenState extends State<DashboardScreen>
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      bottomNavigationBar: AppBottomNavigationBar(
+        currentIndex: 1,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/reports');
+              break;
+            case 1:
+              // Already on dashboard
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+      ),
     );
   }
 
@@ -409,58 +425,6 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      height: 70,
-      decoration: BoxDecoration(
-        color: AppColors.primaryBlue,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(Icons.description, 0, false), // Reports
-          _buildNavItem(Icons.home, 1, true), // Home - activo
-          _buildNavItem(Icons.person, 2, false), // Profile
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, int index, bool isActive) {
-    return GestureDetector(
-      onTap: () {
-        switch (index) {
-          case 0:
-            // Navegar a Reports
-            Navigator.pushReplacementNamed(context, '/reports');
-            break;
-          case 1:
-            // Ya estamos en Home/Dashboard
-            break;
-          case 2:
-            // Navegar a Profile
-            Navigator.pushReplacementNamed(context, '/profile');
-            break;
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: isActive ? AppColors.white : AppColors.white.withOpacity(0.6),
-          size: 28,
         ),
       ),
     );

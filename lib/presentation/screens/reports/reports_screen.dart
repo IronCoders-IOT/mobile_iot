@@ -5,6 +5,7 @@ import 'package:mobile_iot/infrastructure/data_sources/sensor_api_service.dart';
 import 'package:mobile_iot/infrastructure/repositories/sensor_repository_impl.dart';
 import 'package:mobile_iot/application/use_cases/sensor_use_case.dart';
 import 'package:mobile_iot/domain/entities/sensor.dart';
+import 'package:mobile_iot/presentation/widgets/app_bottom_navigation_bar.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({Key? key}) : super(key: key);
@@ -114,7 +115,22 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
+      bottomNavigationBar: AppBottomNavigationBar(
+        currentIndex: 0,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              // Already on reports
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/dashboard');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+      ),
     );
   }
 
@@ -420,56 +436,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return Container(
-      height: 70,
-      decoration: BoxDecoration(
-        color: AppColors.primaryBlue,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(context, Icons.description, 0, true), // Reports - activo
-          _buildNavItem(context, Icons.home, 1, false), // Home
-          _buildNavItem(context, Icons.person, 2, false), // Profile
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(BuildContext context, IconData icon, int index, bool isActive) {
-    return GestureDetector(
-      onTap: () {
-        switch (index) {
-          case 0:
-            // Ya estamos en Reports
-            break;
-          case 1:
-            Navigator.pushReplacementNamed(context, '/dashboard');
-            break;
-          case 2:
-            Navigator.pushReplacementNamed(context, '/profile');
-            break;
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: isActive ? AppColors.white : AppColors.white.withOpacity(0.6),
-          size: 28,
-        ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import 'package:mobile_iot/infrastructure/data_sources/water_request_api_service
 import 'package:mobile_iot/infrastructure/repositories/water_request_repository_impl.dart';
 import 'package:mobile_iot/domain/entities/water_request.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_iot/presentation/widgets/app_bottom_navigation_bar.dart';
 
 class RequestHistoryScreen extends StatefulWidget {
   const RequestHistoryScreen({super.key});
@@ -113,7 +114,22 @@ class _RequestHistoryState extends State<RequestHistoryScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
+      bottomNavigationBar: AppBottomNavigationBar(
+        currentIndex: 0,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/reports');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/dashboard');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+      ),
     );
   }
 
@@ -209,56 +225,6 @@ class _RequestHistoryState extends State<RequestHistoryScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return Container(
-      height: 70,
-      decoration: BoxDecoration(
-        color: const Color(0xFF3498DB),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(context, Icons.description, 0, false),
-          _buildNavItem(context, Icons.home, 1, false),
-          _buildNavItem(context, Icons.person, 2, false),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(BuildContext context, IconData icon, int index, bool isActive) {
-    return GestureDetector(
-      onTap: () {
-        switch (index) {
-          case 0:
-            Navigator.pushReplacementNamed(context, '/reports');
-            break;
-          case 1:
-            Navigator.pushReplacementNamed(context, '/dashboard');
-            break;
-          case 2:
-            Navigator.pushReplacementNamed(context, '/profile');
-            break;
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: isActive ? Colors.white : Colors.white.withOpacity(0.6),
-          size: 28,
-        ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
 import 'presentation/screens/profile/profile_screen.dart';
 import 'presentation/screens/reports/reports_screen.dart';
+import 'presentation/screens/auth/splash_screen.dart';
 
 void main() {
   runApp(const AquaConectaApp());
@@ -165,7 +166,7 @@ class AquaConectaApp extends StatelessWidget {
       ),
       
       // Pantalla inicial
-      home: const LoginScreen(),
+      home: const SplashScreen(),
       
       // Rutas nombradas (para navegación futura)
       routes: {
