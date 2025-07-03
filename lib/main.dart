@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mobile_iot/presentation/screens/tank_history_screen/tank_history_screen.dart';
-import 'package:mobile_iot/presentation/screens/request-history/request_history_screen.dart';
-import 'presentation/screens/auth/login_screen.dart';
-import 'presentation/screens/dashboard/dashboard_screen.dart';
-import 'presentation/screens/profile/profile_screen.dart';
-import 'presentation/screens/reports/reports_screen.dart';
-import 'presentation/screens/auth/splash_screen.dart';
-import 'presentation/screens/create_report_screen/create_report_screen.dart';
+import 'package:mobile_iot/analytics/presentation/tank_history/tank_history_screen.dart';
+import 'package:mobile_iot/analytics/presentation/request_history/request_history_screen.dart';
+import 'package:mobile_iot/iam/presentation/auth/login_screen.dart';
+import 'package:mobile_iot/dashboard/presentation/dashboard/dashboard_screen.dart';
+import 'package:mobile_iot/profiles/presentation/profile/profile_screen.dart';
+import 'package:mobile_iot/analytics/presentation/reports/reports_screen.dart';
+import 'package:mobile_iot/iam/presentation/auth/splash_screen.dart';
+import 'package:mobile_iot/analytics/presentation/create_report/create_report_screen.dart';
 
 
 void main() {
