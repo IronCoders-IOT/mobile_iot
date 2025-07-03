@@ -287,13 +287,16 @@ class _ReportsScreenState extends State<HistoryScreen> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      itemCount: reportsToShow.length,
-      itemBuilder: (context, index) {
-        final report = reportsToShow[index];
-        return _buildReportItem(report, index);
-      },
+    return RefreshIndicator(
+      onRefresh: _fetchHistory,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        itemCount: reportsToShow.length,
+        itemBuilder: (context, index) {
+          final report = reportsToShow[index];
+          return _buildReportItem(report, index);
+        },
+      ),
     );
   }
 

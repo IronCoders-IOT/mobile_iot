@@ -68,6 +68,10 @@ class _RequestHistoryState extends State<RequestHistoryScreen> {
     }
   }
 
+  String formatStatus(String status) {
+    return status.replaceAll('_', ' ').toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -206,7 +210,7 @@ class _RequestHistoryState extends State<RequestHistoryScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Status: ${req.status}',
+                  'Status: ${formatStatus(req.status)}',
                   style: TextStyle(
                     fontSize: 14,
                     color: statusColor,

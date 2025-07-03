@@ -4,6 +4,7 @@ import '../../domain/entities/water_request.dart';
 
 class WaterRequestApiService {
   static const String _baseUrl = 'https://aquaconecta-gch4brewcpb5ewhc.centralus-01.azurewebsites.net/api/v1/water-request';
+  //static const String _baseUrl = 'http://192.168.18.4:8080/api/v1/water-request';
 
   Future<String?> createWaterRequest(String token,
       String requestedLiters, String status, String deliveredAt) async{
