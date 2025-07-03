@@ -1,7 +1,9 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 class ProfileApiService {
-  static const String _baseUrl = 'http://192.168.18.4:8080/api/v1/profiles';
+  static const String _baseUrl = 'https://aquaconecta-gch4brewcpb5ewhc.centralus-01.azurewebsites.net/api/v1/profiles';
+  //static const String _baseUrl = 'http://192.168.18.4:8080/api/v1/profiles';
+
   Future<String?> updateProfile(
       String token,
       String firstName,

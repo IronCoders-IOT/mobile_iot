@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../water_request/water_request_screen.dart';
+import 'package:mobile_iot/presentation/widgets/app_bottom_navigation_bar.dart';
+import 'package:mobile_iot/presentation/screens/create_report_screen/create_report_screen.dart';
+import 'package:mobile_iot/core/services/secure_storage_service.dart';
+import 'package:mobile_iot/infrastructure/data_sources/resident_api_service.dart';
+import 'package:mobile_iot/infrastructure/data_sources/sensor_api_service.dart';
+import 'package:mobile_iot/infrastructure/repositories/sensor_repository_impl.dart';
+import 'package:mobile_iot/application/use_cases/sensor_use_case.dart';
+import 'package:mobile_iot/domain/entities/sensor.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -21,9 +29,15 @@ class _DashboardScreenState extends State<DashboardScreen>
   final double phLevel = 7.0;
   
   final List<WaterReading> waterHistory = [
-    WaterReading(time: "15:00", quantity: "700L", type: "Water"),
-    WaterReading(time: "14:00", quantity: "802L", type: "Water"),
+    WaterReading(time: "15:00", quantity: "700L", type: "Water")
   ];
+
+  // Sensor list state
+  List<Sensor> sensors = [];
+  bool _isLoadingSensors = true;
+  String? _sensorError;
+  final TextEditingController _sensorSearchController = TextEditingController();
+  String _sensorSearchQuery = '';
 
   @override
   void initState() {
@@ -42,11 +56,60 @@ class _DashboardScreenState extends State<DashboardScreen>
     
     // Iniciar animación
     _animationController.forward();
+   // _fetchSensors();
+  }
+/*
+  Future<void> _fetchSensors() async {
+    setState(() {
+      _isLoadingSensors = true;
+      _sensorError = null;
+    });
+    try {
+      final storage = SecureStorageService();
+      final token = await storage.getToken();
+      if (token == null) throw Exception('No authentication token found');
+      final residentJson = await ResidentApiService().getResident(token);
+      if (residentJson == null || residentJson['id'] == null) throw Exception('Resident not found');
+      final residentId = residentJson['id'] as int;
+      final sensorUseCase = SensorUseCase(SensorRepositoryImpl(SensorApiService()));
+      final fetchedSensors = await sensorUseCase.getSensor(token, residentId);
+      setState(() {
+        sensors = fetchedSensors;
+        _isLoadingSensors = false;
+      });
+    } catch (e) {
+      setState(() {
+        _sensorError = e.toString();
+        _isLoadingSensors = false;
+      });
+    }
+  }
+
+  List<Sensor> get filteredSensors {
+    if (_sensorSearchQuery.isEmpty) {
+      return sensors;
+    }
+    return sensors.where((sensor) {
+      final typeLower = sensor.type.toLowerCase();
+      final statusLower = sensor.status.toLowerCase();
+      final searchLower = _sensorSearchQuery.toLowerCase();
+      return typeLower.contains(searchLower) || statusLower.contains(searchLower);
+    }).toList();
+  }
+*/
+  void _showSensorDetails(Sensor sensor) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _buildSensorDetailsModal(sensor),
+    );
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _sensorSearchController.dispose();
     super.dispose();
   }
 
@@ -82,6 +145,52 @@ class _DashboardScreenState extends State<DashboardScreen>
                     
                     const SizedBox(height: 32),
                     
+                    // --- Sensor Section ---
+                    /*
+                    _isLoadingSensors
+                        ? const Center(child: CircularProgressIndicator())
+                        : _sensorError != null
+                            ? Center(
+                                child: Column(
+                                  children: [
+                                    Text(_sensorError!, style: const TextStyle(color: Colors.red)),
+                                    const SizedBox(height: 8),
+                                    ElevatedButton(
+                                      onPressed: _fetchSensors,
+                                      child: const Text('Retry'),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : sensors.isEmpty
+                                ? Column(
+                                    children: [
+                                      const Text('No sensors found.'),
+                                      const SizedBox(height: 8),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pushReplacementNamed(context, '/reports');
+                                        },
+                                        child: const Text('View All Sensors'),
+                                      ),
+                                    ],
+                                  )
+                                : Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildSensorCard(sensors.first),
+                                      const SizedBox(height: 8),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.pushReplacementNamed(context, '/reports');
+                                        },
+                                        child: const Text('View All Sensors'),
+                                      ),
+                                    ],
+                                  ),
+                    
+                    const SizedBox(height: 32),
+                    */
                     // Sección de historial
                     _buildHistorySection(),
                   ],
@@ -91,7 +200,33 @@ class _DashboardScreenState extends State<DashboardScreen>
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+      bottomNavigationBar: AppBottomNavigationBar(
+        currentIndex: 1,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/reports');
+              break;
+            case 1:
+              // Already on dashboard
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateReportScreen()),
+          );
+        },
+        backgroundColor: AppColors.primaryBlue,
+        child: const Icon(Icons.add, color: Colors.white),
+        tooltip: 'Create Report',
+      ),
     );
   }
 
@@ -414,54 +549,169 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      height: 70,
-      decoration: BoxDecoration(
-        color: AppColors.primaryBlue,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+  Widget _buildSensorCard(Sensor sensor) {
+    return Material(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(12),
+      elevation: 0,
+      child: InkWell(
+        onTap: () => _showSensorDetails(sensor),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.primaryBlue.withOpacity(0.2),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(Icons.description, 0, false), // Reports
-          _buildNavItem(Icons.home, 1, true), // Home - activo
-          _buildNavItem(Icons.person, 2, false), // Profile
-        ],
+          child: Row(
+            children: [
+              Icon(Icons.sensors, color: AppColors.primaryBlue, size: 32),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      sensor.type,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Description: ${sensor.status}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.mediumGray,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: AppColors.mediumGray.withOpacity(0.5), size: 20),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, int index, bool isActive) {
-    return GestureDetector(
-      onTap: () {
-        switch (index) {
-          case 0:
-            // Navegar a Reports
-            Navigator.pushReplacementNamed(context, '/reports');
-            break;
-          case 1:
-            // Ya estamos en Home/Dashboard
-            break;
-          case 2:
-            // Navegar a Profile
-            Navigator.pushReplacementNamed(context, '/profile');
-            break;
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: isActive ? AppColors.white : AppColors.white.withOpacity(0.6),
-          size: 28,
+  Widget _buildSensorDetailsModal(Sensor sensor) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.5,
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.mediumGray.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Icon(
+                    Icons.sensors,
+                    color: Colors.orange[600],
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        sensor.type,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.darkBlue,
+                        ),
+                      ),
+                      Text(
+                        'Sensor ID: ${sensor.id}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.mediumGray,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(
+                    Icons.close,
+                    color: AppColors.mediumGray,
+                    size: 24,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Sensor Details',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.darkBlue,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Type: ${sensor.type}\nDescription: ${sensor.status}\nResident ID: ${sensor.residentId}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.mediumGray,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

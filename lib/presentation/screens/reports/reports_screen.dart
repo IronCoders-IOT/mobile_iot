@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_iot/core/services/secure_storage_service.dart';
 import 'package:mobile_iot/infrastructure/data_sources/resident_api_service.dart';
-import 'package:mobile_iot/infrastructure/data_sources/sensor_api_service.dart';
-import 'package:mobile_iot/infrastructure/repositories/sensor_repository_impl.dart';
-import 'package:mobile_iot/application/use_cases/sensor_use_case.dart';
-import 'package:mobile_iot/domain/entities/sensor.dart';
+import 'package:mobile_iot/infrastructure/data_sources/report_api_service.dart';
+import 'package:mobile_iot/infrastructure/repositories/report_repository_impl.dart';
+import 'package:mobile_iot/application/use_cases/report_use_case.dart';
+import 'package:mobile_iot/domain/entities/report.dart';
+import 'package:mobile_iot/presentation/widgets/app_bottom_navigation_bar.dart';
+import 'package:mobile_iot/presentation/screens/create_report_screen/create_report_screen.dart';
+import 'package:intl/intl.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({Key? key}) : super(key: key);
@@ -14,7 +17,7 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
-  List<Sensor> sensors = [];
+  List<Report> reports = [];
   bool _isLoading = true;
   String? _error;
 
@@ -24,10 +27,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchSensors();
+    _fetchReports();
   }
 
-  Future<void> _fetchSensors() async {
+  Future<void> _fetchReports() async {
     setState(() {
       _isLoading = true;
       _error = null;
@@ -38,11 +41,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
       if (token == null) throw Exception('No authentication token found');
       final residentJson = await ResidentApiService().getResident(token);
       if (residentJson == null || residentJson['id'] == null) throw Exception('Resident not found');
-      final residentId = residentJson['id'] as int;
-      final sensorUseCase = SensorUseCase(SensorRepositoryImpl(SensorApiService()));
-      final fetchedSensors = await sensorUseCase.getSensor(token, residentId);
+      final residentId = residentJson['id'];
+      final reportUseCase = ReportUseCase(ReportRepositoryImpl(ReportApiService()));
+      final fetchedReports = await reportUseCase.getReportByResidentId(token, residentId);
       setState(() {
-        sensors = fetchedSensors;
+        reports = fetchedReports;
         _isLoading = false;
       });
     } catch (e) {
@@ -59,24 +62,27 @@ class _ReportsScreenState extends State<ReportsScreen> {
     super.dispose();
   }
 
-  List<Sensor> get filteredSensors {
+  List<Report> get filteredReports {
     if (_searchQuery.isEmpty) {
-      return sensors;
+      return reports;
     }
-    return sensors.where((sensor) {
-      final typeLower = sensor.type.toLowerCase();
-      final statusLower = sensor.status.toLowerCase();
+    return reports.where((report) {
+      final titleLower = report.title.toLowerCase();
+      final descriptionLower = report.description.toLowerCase();
+      final statusLower = report.status.toLowerCase();
       final searchLower = _searchQuery.toLowerCase();
-      return typeLower.contains(searchLower) || statusLower.contains(searchLower);
+      return titleLower.contains(searchLower) ||
+          descriptionLower.contains(searchLower) ||
+          statusLower.contains(searchLower);
     }).toList();
   }
 
-  void _showSensorDetails(Sensor sensor) {
+  void _showReportDetails(Report report) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _buildSensorDetailsModal(sensor),
+      builder: (context) => _buildReportDetailsModal(report),
     );
   }
 
@@ -103,18 +109,44 @@ class _ReportsScreenState extends State<ReportsScreen> {
                               ),
                               const SizedBox(height: 16),
                               ElevatedButton(
-                                onPressed: _fetchSensors,
+                                onPressed: _fetchReports,
                                 child: const Text('Retry'),
                               ),
                             ],
                           ),
                         )
-                      : _buildSensorsList(),
+                      : _buildReportsList(),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
+      bottomNavigationBar: AppBottomNavigationBar(
+        currentIndex: 0,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              // Already on reports
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/dashboard');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateReportScreen()),
+          );
+        },
+        backgroundColor: AppColors.primaryBlue,
+        child: const Icon(Icons.add, color: Colors.white),
+        tooltip: 'Create Report',
+      ),
     );
   }
 
@@ -163,7 +195,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           });
         },
         decoration: InputDecoration(
-          hintText: 'Search sensors...',
+          hintText: 'Search reports...',
           prefixIcon: const Icon(Icons.search, color: AppColors.mediumGray),
           filled: true,
           fillColor: AppColors.white,
@@ -191,9 +223,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildSensorsList() {
-    final sensorsToShow = filteredSensors;
-    if (sensorsToShow.isEmpty) {
+  Widget _buildReportsList() {
+    final reportsToShow = filteredReports;
+    if (reportsToShow.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -205,7 +237,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No sensors found',
+              'No reports found',
               style: TextStyle(
                 fontSize: 16,
                 color: AppColors.mediumGray,
@@ -218,15 +250,55 @@ class _ReportsScreenState extends State<ReportsScreen> {
     }
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      itemCount: sensorsToShow.length,
+      itemCount: reportsToShow.length,
       itemBuilder: (context, index) {
-        final sensor = sensorsToShow[index];
-        return _buildSensorItem(sensor, index);
+        final report = reportsToShow[index];
+        return _buildReportItem(report, index);
       },
     );
   }
 
-  Widget _buildSensorItem(Sensor sensor, int index) {
+  String formatStatus(String status) {
+    // Convert IN_PROGRESS to IN PROGRESS, keep others as is, uppercase
+    return status.replaceAll('_', ' ').toUpperCase();
+  }
+
+  Color statusColor(String status) {
+    switch (status.toUpperCase()) {
+      case 'RECEIVED':
+        return const Color(0xFFD6ECFF); // light blue background
+      case 'IN_PROGRESS':
+        return const Color(0xFFFFF6D6); // light yellow background
+      case 'CLOSED':
+        return const Color(0xFFD6FFE6); // light green background
+      default:
+        return AppColors.mediumGray.withOpacity(0.1);
+    }
+  }
+
+  Color statusTextColor(String status) {
+    switch (status.toUpperCase()) {
+      case 'RECEIVED':
+        return const Color(0xFF3498DB); // blue
+      case 'IN_PROGRESS':
+        return const Color(0xFFF4C542); // yellow
+      case 'CLOSED':
+        return const Color(0xFF28A745); // green
+      default:
+        return AppColors.mediumGray;
+    }
+  }
+
+  String formatEmissionDate(String isoString) {
+    try {
+      final date = DateTime.parse(isoString);
+      return DateFormat('MMMM d, yyyy, h:mm a').format(date);
+    } catch (e) {
+      return isoString;
+    }
+  }
+
+  Widget _buildReportItem(Report report, int index) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
@@ -234,7 +306,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         borderRadius: BorderRadius.circular(12),
         elevation: 0,
         child: InkWell(
-          onTap: () => _showSensorDetails(sensor),
+          onTap: () => _showReportDetails(report),
           borderRadius: BorderRadius.circular(12),
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -258,12 +330,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: AppColors.primaryBlue.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Icon(
-                    Icons.sensors,
-                    color: Colors.orange[600],
+                  child: const Icon(
+                    Icons.description,
+                    color: AppColors.primaryBlue,
                     size: 22,
                   ),
                 ),
@@ -275,18 +347,34 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       Row(
                         children: [
                           Text(
-                            sensor.type,
+                            report.title,
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: AppColors.primaryBlue,
                             ),
                           ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: statusColor(report.status),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              formatStatus(report.status),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: statusTextColor(report.status),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Description: ${sensor.status}',
+                        report.description,
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.mediumGray,
@@ -297,7 +385,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Sensor ID: ${sensor.id}',
+                        'Emission: ${formatEmissionDate(report.emissionDate)}',
                         style: TextStyle(
                           fontSize: 12,
                           color: AppColors.mediumGray.withOpacity(0.8),
@@ -319,7 +407,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Widget _buildSensorDetailsModal(Sensor sensor) {
+  Widget _buildReportDetailsModal(Report report) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.5,
       decoration: const BoxDecoration(
@@ -348,12 +436,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: AppColors.primaryBlue.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Icon(
-                    Icons.sensors,
-                    color: Colors.orange[600],
+                  child: const Icon(
+                    Icons.description,
+                    color: AppColors.primaryBlue,
                     size: 22,
                   ),
                 ),
@@ -363,7 +451,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        sensor.type,
+                        report.title,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -371,7 +459,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         ),
                       ),
                       Text(
-                        'Sensor ID: ${sensor.id}',
+                        'Report ID: ${report.id}',
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.mediumGray,
@@ -399,7 +487,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Sensor Details',
+                    'Report Details',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -408,7 +496,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Type: ${sensor.type}\nDescription: ${sensor.status}\nResident ID: ${sensor.residentId}',
+                    'Title: ${report.title}\nDescription: ${report.description}\nStatus: ${formatStatus(report.status)}\nEmission Date: ${report.emissionDate}',
                     style: TextStyle(
                       fontSize: 14,
                       color: AppColors.mediumGray,
@@ -420,56 +508,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return Container(
-      height: 70,
-      decoration: BoxDecoration(
-        color: AppColors.primaryBlue,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(context, Icons.description, 0, true), // Reports - activo
-          _buildNavItem(context, Icons.home, 1, false), // Home
-          _buildNavItem(context, Icons.person, 2, false), // Profile
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(BuildContext context, IconData icon, int index, bool isActive) {
-    return GestureDetector(
-      onTap: () {
-        switch (index) {
-          case 0:
-            // Ya estamos en Reports
-            break;
-          case 1:
-            Navigator.pushReplacementNamed(context, '/dashboard');
-            break;
-          case 2:
-            Navigator.pushReplacementNamed(context, '/profile');
-            break;
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: isActive ? AppColors.white : AppColors.white.withOpacity(0.6),
-          size: 28,
-        ),
       ),
     );
   }

@@ -9,6 +9,7 @@ import 'package:mobile_iot/application/use_cases/sensor_use_case.dart';
 import 'package:mobile_iot/application/use_cases/event_use_case.dart';
 import 'package:mobile_iot/domain/entities/event.dart';
 import 'package:mobile_iot/domain/entities/sensor.dart';
+import 'package:mobile_iot/presentation/widgets/app_bottom_navigation_bar.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -61,7 +62,7 @@ class _ReportsScreenState extends State<HistoryScreen> {
           id: entry.key + 1, 
           event: e.eventType,
           water_quality: e.qualityValue,
-          status: _statusFromLevel(e.levelValue),
+          status: _statusFromQuality(e.qualityValue),
           water_level: e.levelValue,
         );
       }).toList();
@@ -76,13 +77,13 @@ class _ReportsScreenState extends State<HistoryScreen> {
     }
   }
 
-  ReportStatus _statusFromLevel(String level) {
-    switch (level.toLowerCase()) {
-      case 'high':
-        return ReportStatus.normal;
-      case 'medium':
+  // Determina el estado del reporte según la calidad del agua
+  ReportStatus _statusFromQuality(String quality) {
+    switch (quality.toLowerCase()) {
+      case 'mala':
+      case 'no potable':
         return ReportStatus.alert;
-      case 'low':
+      case 'agua contaminada':
         return ReportStatus.critical;
       default:
         return ReportStatus.normal;
@@ -167,7 +168,22 @@ class _ReportsScreenState extends State<HistoryScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(context),
+      bottomNavigationBar: AppBottomNavigationBar(
+        currentIndex: 0, // or another index if this is not reports
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              // Already on reports/history
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/dashboard');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+      ),
     );
   }
 
@@ -271,13 +287,16 @@ class _ReportsScreenState extends State<HistoryScreen> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      itemCount: reportsToShow.length,
-      itemBuilder: (context, index) {
-        final report = reportsToShow[index];
-        return _buildReportItem(report, index);
-      },
+    return RefreshIndicator(
+      onRefresh: _fetchHistory,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        itemCount: reportsToShow.length,
+        itemBuilder: (context, index) {
+          final report = reportsToShow[index];
+          return _buildReportItem(report, index);
+        },
+      ),
     );
   }
 
@@ -566,56 +585,6 @@ class _ReportsScreenState extends State<HistoryScreen> {
       ),
     );
   }
-
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    return Container(
-      height: 70,
-      decoration: BoxDecoration(
-        color: AppColors.primaryBlue,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(context, Icons.description, 0, true), // Reports - activo
-          _buildNavItem(context, Icons.home, 1, false), // Home
-          _buildNavItem(context, Icons.person, 2, false), // Profile
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(BuildContext context, IconData icon, int index, bool isActive) {
-    return GestureDetector(
-      onTap: () {
-        switch (index) {
-          case 0:
-            // Ya estamos en Reports
-            break;
-          case 1:
-            Navigator.pushReplacementNamed(context, '/dashboard');
-            break;
-          case 2:
-            Navigator.pushReplacementNamed(context, '/profile');
-            break;
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        child: Icon(
-          icon,
-          color: isActive ? AppColors.white : AppColors.white.withOpacity(0.6),
-          size: 28,
-        ),
-      ),
-    );
-  }
 }
 
 // Modelo para los reportes de sensores
@@ -654,9 +623,9 @@ extension ReportStatusExtension on ReportStatus {
   Color get color {
     switch (this) {
       case ReportStatus.normal:
-        return const Color(0xFFE8F5E9); // Light blue
+        return const Color(0xFFE8F5E9); // Light green
       case ReportStatus.alert:
-        return const Color(0xFFFFF8E1); // Light yellow
+        return const Color(0xFFFFE0B2); // Light orange
       case ReportStatus.critical:
         return const Color(0xFFFFEBEE); // Light red
     }
@@ -665,9 +634,9 @@ extension ReportStatusExtension on ReportStatus {
   Color get textColor {
     switch (this) {
       case ReportStatus.normal:
-        return const Color(0xFF4CAF50); // Blue
+        return const Color(0xFF4CAF50); // Green
       case ReportStatus.alert:
-        return const Color(0xFFFFC107); // Amber (Yellow)
+        return const Color(0xFFFF9800); // Orange
       case ReportStatus.critical:
         return const Color(0xFFD32F2F); // Red
     }

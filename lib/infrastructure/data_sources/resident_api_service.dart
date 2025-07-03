@@ -1,7 +1,9 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 class ResidentApiService {
-  static const String _baseUrl = 'http://192.168.18.4:8080/api/v1/residents';
+  static const String _baseUrl = 'https://aquaconecta-gch4brewcpb5ewhc.centralus-01.azurewebsites.net/api/v1/residents';
+  //static const String _baseUrl = 'http://192.168.18.4:8080/api/v1/residents';
+
   Future<Map<String, dynamic>?> getResident(String token) async {
     try {
       final response = await http.get(

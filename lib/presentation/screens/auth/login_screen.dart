@@ -72,38 +72,47 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Logo
-              const Spacer(flex: 2),
-              _buildLogo(),
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
+              ),
+              child: IntrinsicHeight(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Logo
+                    const Spacer(flex: 2),
+                    _buildLogo(),
 
-              const SizedBox(height: 60),
+                    const SizedBox(height: 60),
 
-              // Welcome text
-              _buildWelcomeText(),
+                    // Welcome text
+                    _buildWelcomeText(),
 
-              const SizedBox(height: 8),
+                    const SizedBox(height: 8),
 
-              // Subtitle
-              _buildSubtitle(),
+                    // Subtitle
+                    _buildSubtitle(),
 
-              const SizedBox(height: 40),
+                    const SizedBox(height: 40),
 
-              // Form
-              _buildLoginForm(),
+                    // Form
+                    _buildLoginForm(),
 
-              const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-              const SizedBox(height: 32),
+                    const SizedBox(height: 32),
 
-              // Login button
-              _buildLoginButton(),
+                    // Login button
+                    _buildLoginButton(),
 
-              const Spacer(flex: 1),
-            ],
+                    const Spacer(flex: 1),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
