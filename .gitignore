@@ -16,10 +16,8 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code related
+.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -30,6 +28,10 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+*.config.dart
 
 # Symbolication related
 app.*.symbols
@@ -41,3 +43,112 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# iOS/XCode related
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/.generated/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Flutter/ephemeral
+
+# Coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+.qodo/
+
+# Additional Flutter/Dart specific
+*.lock
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+*.config.dart
+*.gr.dart
+*.chopper.dart
+*.inject.summary
+*.inject.dart
+*.gql.dart
+*.graphql.dart
+*.arb
+*.json
+*.yaml
+*.yml
+*.env
+*.env.*
+!pubspec.yaml
+!pubspec.lock
+!analysis_options.yaml
+!*.g.dart
+!*.freezed.dart
+!*.mocks.dart
+!*.config.dart
+!*.gr.dart
+!*.chopper.dart
+!*.inject.summary
+!*.inject.dart
+!*.gql.dart
+!*.graphql.dart
+!*.arb
+!*.json
+!*.yaml
+!*.yml
+!*.env
+!*.env.*
+
+# Generated files
+**/generated_plugin_registrant.dart
+**/generated_plugin_registrant.h
+**/generated_plugin_registrant.m
+**/generated_plugin_registrant.swift
+
+# Local configuration
+local.properties
+key.properties
+google-services.json
+GoogleService-Info.plist
+
+# FVM (Flutter Version Management)
+.fvm/
+
+# Fastlane
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
+# Android
+**/android/**/gradle-wrapper.jar
+**/android/.gradle
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/**/GeneratedPluginRegistrant.h
+**/android/**/GeneratedPluginRegistrant.m
+**/android/**/GeneratedPluginRegistrant.swift

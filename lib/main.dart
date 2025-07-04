@@ -1,125 +1,223 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:mobile_iot/analytics/presentation/tank_history/tank_history_screen.dart';
+import 'package:mobile_iot/analytics/presentation/request_history/request_history_screen.dart';
+import 'package:mobile_iot/iam/presentation/auth/login_screen.dart';
+import 'package:mobile_iot/dashboard/presentation/dashboard/dashboard_screen.dart';
+import 'package:mobile_iot/profiles/presentation/profile/profile_screen.dart';
+import 'package:mobile_iot/analytics/presentation/reports/reports_screen.dart';
+import 'package:mobile_iot/iam/presentation/auth/splash_screen.dart';
+import 'package:mobile_iot/analytics/presentation/create_report/create_report_screen.dart';
+
 
 void main() {
-  runApp(const MyApp());
+  runApp(const AquaConectaApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AquaConectaApp extends StatelessWidget {
+  const AquaConectaApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo 1',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    // Configurar la barra de estado
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
-  }
-}
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+    return MaterialApp(
+      title: 'AquaConecta',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        // Tema principal
+        primarySwatch: MaterialColor(
+          0xFF3498DB,
+          <int, Color>{
+            50: const Color(0xFFE3F2FD),
+            100: const Color(0xFFBBDEFB),
+            200: const Color(0xFF90CAF9),
+            300: const Color(0xFF64B5F6),
+            400: const Color(0xFF42A5F5),
+            500: const Color(0xFF3498DB), // Color principal
+            600: const Color(0xFF1E88E5),
+            700: const Color(0xFF1976D2),
+            800: const Color(0xFF1565C0),
+            900: const Color(0xFF0D47A1),
+          },
+        ),
+        
+        // Configuración de colores
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF3498DB),
+          secondary: Color(0xFF2C3E50),
+          background: Color(0xFFF8F9FA),
+          surface: Color(0xFFFFFFFF),
+          onPrimary: Color(0xFFFFFFFF),
+          onSecondary: Color(0xFFFFFFFF),
+          onBackground: Color(0xFF2C3E50),
+          onSurface: Color(0xFF2C3E50),
+        ),
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+        // Configuración de fuentes
+        fontFamily: 'System',
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
+          displayMedium: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50),
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 16,
+            color: Color(0xFF2C3E50),
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 14,
+            color: Color(0xFF6C757D),
+          ),
+        ),
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+        // Configuración de AppBar
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF3498DB),
+          foregroundColor: Color(0xFFFFFFFF),
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFFFFFFFF),
+          ),
+        ),
 
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+        // Configuración de botones elevados
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF3498DB),
+            foregroundColor: const Color(0xFFFFFFFF),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
             ),
-          ],
+          ),
+        ),
+
+        // Configuración de campos de texto
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFFFFFFFF),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(
+              color: Color(0xFF3498DB),
+              width: 1.5,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(
+              color: Color(0xFF3498DB),
+              width: 1.5,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(
+              color: Color(0xFF3498DB),
+              width: 2.0,
+            ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          hintStyle: const TextStyle(
+            color: Color(0xFF6C757D),
+            fontSize: 16,
+          ),
+        ),
+
+        // Configuración del Scaffold
+        scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+
+        // Configuración de SnackBar
+        snackBarTheme: const SnackBarThemeData(
+          backgroundColor: Color(0xFF3498DB),
+          contentTextStyle: TextStyle(
+            color: Color(0xFFFFFFFF),
+            fontSize: 14,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(8),
+              topRight: Radius.circular(8),
+            ),
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      
+      // Pantalla inicial
+      home: const SplashScreen(),
+      
+      // Rutas nombradas (para navegación futura)
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
+        '/profile': (context) => const ProfileScreen(),
+        '/edit-profile': (context) => const EditProfileScreen(),
+        '/reports': (context) => const ReportsScreen(),
+        '/history': (context) => const HistoryScreen(),
+        '/request-history': (context) => const RequestHistoryScreen(),
+        '/create-report': (context) => const CreateReportScreen(),
+      },
+      
+      // Ruta por defecto cuando no se encuentra una ruta
+      onUnknownRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        );
+      },
     );
+  }
+}
+
+// Clase para mantener las rutas organizadas
+class AppRoutes {
+  static const String login = '/login';
+  static const String dashboard = '/dashboard';
+  static const String profile = '/profile';
+  static const String editProfile = '/edit-profile';
+  static const String reports = '/reports';
+  
+  // Método helper para navegación
+  static void navigateToLogin(BuildContext context) {
+    Navigator.pushReplacementNamed(context, login);
+  }
+  
+  static void navigateToDashboard(BuildContext context) {
+    Navigator.pushReplacementNamed(context, dashboard);
+  }
+  
+  static void navigateToProfile(BuildContext context) {
+    Navigator.pushNamed(context, profile);
+  }
+  
+  static void navigateToReports(BuildContext context) {
+    Navigator.pushNamed(context, reports);
+  }
+  
+  static void navigateToEditProfile(BuildContext context) {
+    Navigator.pushNamed(context, editProfile);
   }
 }
