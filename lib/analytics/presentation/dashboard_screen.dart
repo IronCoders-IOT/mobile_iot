@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'package:mobile_iot/analytics//presentation/water_request/water_request_screen.dart';
+import 'package:mobile_iot/analytics/presentation/water_supply_request_creation_screen.dart';
 import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
-import 'package:mobile_iot/analytics/presentation/create_report/create_report_screen.dart';
+import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
 import 'package:mobile_iot/analytics/domain/entities/sensor.dart';
 
 class DashboardScreen extends StatefulWidget {

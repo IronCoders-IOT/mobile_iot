@@ -6,7 +6,7 @@ import 'package:mobile_iot/analytics/infrastructure/repositories/report_reposito
 import 'package:mobile_iot/analytics/application/report_use_case.dart';
 import 'package:mobile_iot/analytics/domain/entities/report.dart';
 import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
-import 'package:mobile_iot/analytics/presentation/create_report/create_report_screen.dart';
+import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
 import 'package:intl/intl.dart';
 
 class ReportsScreen extends StatefulWidget {
