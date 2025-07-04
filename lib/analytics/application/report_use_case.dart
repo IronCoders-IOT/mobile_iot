@@ -1,4 +1,4 @@
-import 'package:mobile_iot/analytics/domain/interfaces/report_repository.dart';
+import 'package:mobile_iot/analytics/domain/repositories/report_repository.dart';
 import 'package:mobile_iot/analytics/domain/entities/report.dart';
 
 class ReportUseCase{

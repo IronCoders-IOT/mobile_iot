@@ -11,7 +11,11 @@ fi
 cp ".env.$ENV" ".env"
 
 # Update the env.dart file to use the correct .env file
-sed -i "s/path: '\.env[^']*'/path: '.env.$ENV'/" lib/core/config/env.dart
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  sed -i '' "s/path: '\.env[^']*'/path: '.env.$ENV'/" lib/core/config/env.dart
+else
+  sed -i "s/path: '\.env[^']*'/path: '.env.$ENV'/" lib/core/config/env.dart
+fi
 
 echo "Environment set to $ENV"
-echo "Updated env.dart to use .env.$ENV" 
+echo "Updated env.dart to use .env.$ENV"

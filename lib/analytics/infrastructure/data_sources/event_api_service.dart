@@ -1,10 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:mobile_iot/analytics/domain/entities/event.dart';
+import 'package:mobile_iot/core/config/env.dart';
 
 class EventApiService {
-  static const String _baseUrl = 'https://aquaconecta-gch4brewcpb5ewhc.centralus-01.azurewebsites.net/api/v1/events';
-  //static const String _baseUrl = 'http://192.168.18.4:8080/api/v1/events';
+  static final String _baseUrl = '${Env.apiUrl}${Env.eventsEndpoint}';
 
   Future<List<Event>> getAllEventsBySensorId(String token, int id) async {
     final response = await http.get(

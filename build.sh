@@ -4,14 +4,18 @@ ENV=$1
 
 if [ -z "$ENV" ]; then
   echo "No environment specified. Usage: ./build.sh <environment>"
-  echo "Available environments: dev, prod"
+  echo "Available environments:"
+  # shellcheck disable=SC2012
+  ls .env.* | sed 's/\.env\.//'
   exit 1
 fi
 
 # Check if the environment file exists
 if [ ! -f ".env.$ENV" ]; then
   echo "Environment file .env.$ENV not found!"
-  echo "Available environments: dev, prod"
+  echo "Available environments:"
+  # shellcheck disable=SC2012
+  ls .env.* | sed 's/\.env\.//'
   exit 1
 fi
 
@@ -31,9 +35,6 @@ files_are_different() {
   return 1
 }
 
-# Copy the environment-specific file to .env
-cp "$ENV_SPECIFIC_FILE" "$ENV_FILE"
-
 # Run the pre-build script if it exists
 if [ -f "./pre_build.sh" ]; then
   ./pre_build.sh $ENV
@@ -43,6 +44,8 @@ fi
 
 # Check if .env and .env.$ENV are different
 if files_are_different; then
+  # Copy the environment-specific file to .env
+  cp "$ENV_SPECIFIC_FILE" "$ENV_FILE"
   echo "Environment files are different or one of them is missing. Running build_runner clean..."
   dart run build_runner clean
 else

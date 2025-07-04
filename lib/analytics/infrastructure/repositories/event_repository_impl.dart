@@ -1,6 +1,6 @@
 import 'package:mobile_iot/analytics/infrastructure/data_sources/event_api_service.dart';
 import 'package:mobile_iot/analytics/domain/entities/event.dart';
-import 'package:mobile_iot/analytics/domain/interfaces/event_repository.dart';
+import 'package:mobile_iot/analytics/domain/repositories/event_repository.dart';
 
 
 class EventRepositoryImpl implements EventRepository {

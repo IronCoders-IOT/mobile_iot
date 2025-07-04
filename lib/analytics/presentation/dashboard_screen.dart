@@ -53,45 +53,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     _animationController.forward();
    // _fetchSensors();
   }
-/*
-  Future<void> _fetchSensors() async {
-    setState(() {
-      _isLoadingSensors = true;
-      _sensorError = null;
-    });
-    try {
-      final storage = SecureStorageService();
-      final token = await storage.getToken();
-      if (token == null) throw Exception('No authentication token found');
-      final residentJson = await ResidentApiService().getResident(token);
-      if (residentJson == null || residentJson['id'] == null) throw Exception('Resident not found');
-      final residentId = residentJson['id'] as int;
-      final sensorUseCase = SensorUseCase(SensorRepositoryImpl(SensorApiService()));
-      final fetchedSensors = await sensorUseCase.getSensor(token, residentId);
-      setState(() {
-        sensors = fetchedSensors;
-        _isLoadingSensors = false;
-      });
-    } catch (e) {
-      setState(() {
-        _sensorError = e.toString();
-        _isLoadingSensors = false;
-      });
-    }
-  }
-
-  List<Sensor> get filteredSensors {
-    if (_sensorSearchQuery.isEmpty) {
-      return sensors;
-    }
-    return sensors.where((sensor) {
-      final typeLower = sensor.type.toLowerCase();
-      final statusLower = sensor.status.toLowerCase();
-      final searchLower = _sensorSearchQuery.toLowerCase();
-      return typeLower.contains(searchLower) || statusLower.contains(searchLower);
-    }).toList();
-  }
-*/
   void _showSensorDetails(Sensor sensor) {
     showModalBottomSheet(
       context: context,
@@ -139,53 +100,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                     _buildMetricsCard(),
                     
                     const SizedBox(height: 32),
-                    
-                    // --- Sensor Section ---
-                    /*
-                    _isLoadingSensors
-                        ? const Center(child: CircularProgressIndicator())
-                        : _sensorError != null
-                            ? Center(
-                                child: Column(
-                                  children: [
-                                    Text(_sensorError!, style: const TextStyle(color: Colors.red)),
-                                    const SizedBox(height: 8),
-                                    ElevatedButton(
-                                      onPressed: _fetchSensors,
-                                      child: const Text('Retry'),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : sensors.isEmpty
-                                ? Column(
-                                    children: [
-                                      const Text('No sensors found.'),
-                                      const SizedBox(height: 8),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.pushReplacementNamed(context, '/reports');
-                                        },
-                                        child: const Text('View All Sensors'),
-                                      ),
-                                    ],
-                                  )
-                                : Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _buildSensorCard(sensors.first),
-                                      const SizedBox(height: 8),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.pushReplacementNamed(context, '/reports');
-                                        },
-                                        child: const Text('View All Sensors'),
-                                      ),
-                                    ],
-                                  ),
-                    
-                    const SizedBox(height: 32),
-                    */
                     // Sección de historial
                     _buildHistorySection(),
                   ],

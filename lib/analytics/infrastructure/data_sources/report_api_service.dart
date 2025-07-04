@@ -1,10 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:mobile_iot/analytics/domain/entities/report.dart';
+import 'package:mobile_iot/core/config/env.dart';
 
 class ReportApiService {
-  static const String _baseUrl = 'https://aquaconecta-gch4brewcpb5ewhc.centralus-01.azurewebsites.net/api/v1/requests';
-  //static const String _baseUrl = 'http://192.168.18.4:8080/api/v1/requests';
+  static final String _baseUrl = '${Env.apiUrl}${Env.requestsEndpoint}';
 
   Future<String?>createReport(
       String token, String title, String description, String status) async {

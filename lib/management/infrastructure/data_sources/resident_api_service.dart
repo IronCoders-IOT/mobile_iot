@@ -1,8 +1,9 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:mobile_iot/core/config/env.dart';
+
 class ResidentApiService {
-  static const String _baseUrl = 'https://aquaconecta-gch4brewcpb5ewhc.centralus-01.azurewebsites.net/api/v1/residents';
-  //static const String _baseUrl = 'http://192.168.18.4:8080/api/v1/residents';
+  static final String _baseUrl = '${Env.apiUrl}${Env.residentsEndpoint}';
 
   Future<Map<String, dynamic>?> getResident(String token) async {
     try {

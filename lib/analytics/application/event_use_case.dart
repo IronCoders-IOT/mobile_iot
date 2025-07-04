@@ -1,4 +1,4 @@
-import 'package:mobile_iot/analytics/domain/interfaces/event_repository.dart';
+import 'package:mobile_iot/analytics/domain/repositories/event_repository.dart';
 import 'package:mobile_iot/analytics/domain/entities/event.dart';
 
 class EventUseCase{
