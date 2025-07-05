@@ -5,9 +5,11 @@ import 'package:mobile_iot/analytics/infrastructure/service/report_api_service.d
 import 'package:mobile_iot/analytics/infrastructure/repositories/report_repository_impl.dart';
 import 'package:mobile_iot/analytics/application/report_use_case.dart';
 import 'package:mobile_iot/analytics/domain/entities/report.dart';
+import 'package:mobile_iot/analytics/domain/logic/date_formatter.dart';
+import 'package:mobile_iot/analytics/domain/logic/status_formatter.dart';
+import 'package:mobile_iot/analytics/domain/logic/report_status_colors.dart';
 import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
 import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
-import 'package:intl/intl.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_header.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_search_bar.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_empty_state.dart';
@@ -16,6 +18,7 @@ import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart
 import 'package:mobile_iot/analytics/presentation/widgets/app_list_card.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_status_badge.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_modal_bottom_sheet.dart';
+import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 
 import '../../shared/widgets/app_colors.dart';
 
@@ -58,6 +61,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
         reports = fetchedReports;
         _isLoading = false;
       });
+    } on SessionExpiredException catch (e) {
+      await SecureStorageService().deleteToken();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+        );
+        Navigator.pushReplacementNamed(context, '/login');
+      }
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -194,46 +205,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  String formatStatus(String status) {
-    // Convert IN_PROGRESS to IN PROGRESS, keep others as is, uppercase
-    return status.replaceAll('_', ' ').toUpperCase();
-  }
-
-  Color statusColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'RECEIVED':
-        return const Color(0xFFD6ECFF); // light blue background
-      case 'IN_PROGRESS':
-        return const Color(0xFFFFF6D6); // light yellow background
-      case 'CLOSED':
-        return const Color(0xFFD6FFE6); // light green background
-      default:
-        return AppColors.mediumGray.withOpacity(0.1);
-    }
-  }
-
-  Color statusTextColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'RECEIVED':
-        return const Color(0xFF3498DB); // blue
-      case 'IN_PROGRESS':
-        return const Color(0xFFF4C542); // yellow
-      case 'CLOSED':
-        return const Color(0xFF28A745); // green
-      default:
-        return AppColors.mediumGray;
-    }
-  }
-
-  String formatEmissionDate(String isoString) {
-    try {
-      final date = DateTime.parse(isoString);
-      return DateFormat('MMMM d, yyyy, h:mm a').format(date);
-    } catch (e) {
-      return isoString;
-    }
-  }
-
   Widget _buildReportItem(Report report, int index) {
     return AppListCard(
       onTap: () => _showReportDetails(report),
@@ -255,9 +226,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
               ),
               AppStatusBadge(
-                text: formatStatus(report.status),
-                backgroundColor: statusColor(report.status),
-                textColor: statusTextColor(report.status),
+                text: StatusFormatter.formatReportStatus(report.status),
+                backgroundColor: ReportStatusColors.statusColor(report.status),
+                textColor: ReportStatusColors.statusTextColor(report.status),
               ),
             ],
           ),
@@ -275,7 +246,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           const SizedBox(height: 8),
           // Date
           Text(
-            'Created: ${formatEmissionDate(report.emissionDate)}',
+            'Created: ${DateFormatter.formatEmissionDate(report.emissionDate)}',
             style: const TextStyle(
               fontSize: 12,
               color: AppColors.mediumGray,
@@ -295,16 +266,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
           // Header with status
           Row(
             children: [
-              Container(
+                              Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: statusColor(report.status),
+                  color: ReportStatusColors.statusColor(report.status),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Icon(
                   Icons.description,
-                  color: statusTextColor(report.status),
+                  color: ReportStatusColors.statusTextColor(report.status),
                   size: 22,
                 ),
               ),
@@ -322,9 +293,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       ),
                     ),
                     AppStatusBadge(
-                      text: formatStatus(report.status),
-                      backgroundColor: statusColor(report.status),
-                      textColor: statusTextColor(report.status),
+                      text: StatusFormatter.formatReportStatus(report.status),
+                      backgroundColor: ReportStatusColors.statusColor(report.status),
+                      textColor: ReportStatusColors.statusTextColor(report.status),
                     ),
                   ],
                 ),
@@ -345,8 +316,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ),
           const SizedBox(height: 12),
           _buildDetailItem('Description', report.description),
-          _buildDetailItem('Status', formatStatus(report.status)),
-          _buildDetailItem('Created', formatEmissionDate(report.emissionDate)),
+          _buildDetailItem('Status', StatusFormatter.formatReportStatus(report.status)),
+          _buildDetailItem('Created', DateFormatter.formatEmissionDate(report.emissionDate)),
           const SizedBox(height: 24),
           
           // Actions section

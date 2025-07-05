@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:mobile_iot/analytics/domain/entities/report.dart';
 import 'package:mobile_iot/core/config/env.dart';
+import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 
 class ReportApiService {
   static final String _baseUrl = '${Env.apiUrl}${Env.requestsEndpoint}';
@@ -25,6 +26,9 @@ class ReportApiService {
       final json = jsonDecode(response.body);
       return json['token'];
     } else {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        throw SessionExpiredException();
+      }
       throw Exception('Failed to create report: ${response.statusCode} - ${response.reasonPhrase}');
     }
   }
@@ -41,6 +45,9 @@ class ReportApiService {
       final List<dynamic> jsonList = jsonDecode(response.body);
       return jsonList.map((json) => Report.fromJson(json)).toList();
     } else {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        throw SessionExpiredException();
+      }
       throw Exception('Failed to load reports');
     }
   }

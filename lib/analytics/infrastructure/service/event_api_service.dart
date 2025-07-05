@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:mobile_iot/analytics/domain/entities/event.dart';
 import 'package:mobile_iot/core/config/env.dart';
+import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 
 class EventApiService {
   static final String _baseUrl = '${Env.apiUrl}${Env.eventsEndpoint}';
@@ -18,6 +19,9 @@ class EventApiService {
       final List<dynamic> jsonList = jsonDecode(response.body);
       return jsonList.map((json) => Event.fromJson(json)).toList();
     } else {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        throw SessionExpiredException();
+      }
       throw Exception('Failed to load events: ${response.statusCode} - ${response.reasonPhrase}');
     }
   }

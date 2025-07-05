@@ -252,7 +252,6 @@ class _DashboardScreenState extends State<DashboardScreen>
               onPressed: () async {
                 final liters = await WaterSupplyRequestCreationScreen.show(context);
                 if (liters != null) {
-                  // TODO: Handle the water request
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Requested $liters liters of water'),
@@ -373,49 +372,55 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildHistoryItem(WaterReading reading) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue,
-              borderRadius: BorderRadius.circular(4),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        Navigator.pushReplacementNamed(context, '/history');
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue,
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  reading.type,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.darkBlue,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    reading.type,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.darkBlue,
+                    ),
                   ),
-                ),
-                Text(
-                  reading.quantity,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.mediumGray,
+                  Text(
+                    reading.quantity,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.mediumGray,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Text(
-            reading.time,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.mediumGray,
+            Text(
+              reading.time,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.mediumGray,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

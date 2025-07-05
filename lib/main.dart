@@ -192,33 +192,3 @@ class AquaConectaApp extends StatelessWidget {
     );
   }
 }
-
-// Clase para mantener las rutas organizadas
-class AppRoutes {
-  static const String login = '/login';
-  static const String dashboard = '/dashboard';
-  static const String profile = '/profile';
-  static const String editProfile = '/edit-profile';
-  static const String reports = '/reports';
-  
-  // Método helper para navegación
-  static void navigateToLogin(BuildContext context) {
-    Navigator.pushReplacementNamed(context, login);
-  }
-  
-  static void navigateToDashboard(BuildContext context) {
-    Navigator.pushReplacementNamed(context, dashboard);
-  }
-  
-  static void navigateToProfile(BuildContext context) {
-    Navigator.pushNamed(context, profile);
-  }
-  
-  static void navigateToReports(BuildContext context) {
-    Navigator.pushNamed(context, reports);
-  }
-  
-  static void navigateToEditProfile(BuildContext context) {
-    Navigator.pushNamed(context, editProfile);
-  }
-}

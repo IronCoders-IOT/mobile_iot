@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:mobile_iot/analytics/domain/entities/water_request.dart';
 import 'package:mobile_iot/core/config/env.dart';
+import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 
 class WaterRequestApiService {
   static final String _baseUrl = '${Env.apiUrl}${Env.waterRequestsEndpoint}';
@@ -24,6 +25,9 @@ class WaterRequestApiService {
       final json = jsonDecode(response.body);
       return json['token'];
     }
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      throw SessionExpiredException();
+    }
     return null;
   }
 
@@ -39,6 +43,9 @@ class WaterRequestApiService {
       final List<dynamic> jsonList = jsonDecode(response.body);
       return jsonList.map((json) => WaterRequest.fromJson(json)).toList();
     } else {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        throw SessionExpiredException();
+      }
       throw Exception('Failed to load analytics requests');
     }
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 import 'package:mobile_iot/analytics/infrastructure/service/water_request_api_service.dart';
 import 'package:mobile_iot/analytics/infrastructure/repositories/water_request_repository_impl.dart';
+import 'package:mobile_iot/analytics/domain/logic/water_request_validator.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart';
 
 import '../../shared/widgets/app_colors.dart';
@@ -25,16 +26,18 @@ class _WaterSupplyRequestCreationScreenState extends State<WaterSupplyRequestCre
   bool _isLoading = false;
 
   Future<void> _sendRequest(BuildContext context) async {
-    final liters = int.tryParse(litersController.text);
-    if (liters == null || liters <= 0) {
+    final validationError = WaterRequestValidator.validateLiters(litersController.text);
+    if (validationError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid amount of water'),
+        SnackBar(
+          content: Text(validationError),
           backgroundColor: Colors.red,
         ),
       );
       return;
     }
+    
+    final liters = int.parse(litersController.text);
     setState(() => _isLoading = true);
     try {
       final storage = SecureStorageService();

@@ -6,7 +6,9 @@ import 'package:mobile_iot/profiles/infrastructure/repositories/resident_reposit
 import 'package:mobile_iot/analytics/infrastructure/service/water_request_api_service.dart';
 import 'package:mobile_iot/analytics/infrastructure/repositories/water_request_repository_impl.dart';
 import 'package:mobile_iot/analytics/domain/entities/water_request.dart';
-import 'package:intl/intl.dart';
+import 'package:mobile_iot/analytics/domain/logic/date_formatter.dart';
+import 'package:mobile_iot/analytics/domain/logic/status_formatter.dart';
+import 'package:mobile_iot/analytics/domain/logic/water_request_status_colors.dart';
 import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_header.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_empty_state.dart';
@@ -15,6 +17,7 @@ import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart
 import 'package:mobile_iot/analytics/presentation/widgets/app_list_card.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_status_badge.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_modal_bottom_sheet.dart';
+import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 
 import '../../shared/widgets/app_colors.dart';
 
@@ -60,50 +63,19 @@ class _WaterSupplyRequestScreenState extends State<WaterSupplyRequestScreen> {
         _requests = requests;
         _isLoading = false;
       });
+    } on SessionExpiredException catch (e) {
+      await _secureStorage.deleteToken();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+        );
+        Navigator.pushReplacementNamed(context, '/login');
+      }
     } catch (e) {
       setState(() {
         _error = e.toString();
         _isLoading = false;
       });
-    }
-  }
-
-  String formatDate(String isoString) {
-    try {
-      final date = DateTime.parse(isoString);
-      return DateFormat('MMMM d, yyyy, h:mm a').format(date); // Example: June 10, 2025, 12:36 PM
-    } catch (e) {
-      return isoString; // fallback if parsing fails
-    }
-  }
-
-  String formatStatus(String status) {
-    return status.replaceAll('_', ' ').toUpperCase();
-  }
-
-  Color getStatusColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'IN_PROGRESS':
-        return const Color(0xFF3498DB);
-      case 'RECEIVED':
-        return const Color(0xFF28A745);
-      case 'CLOSED':
-        return const Color(0xFFE74C3C);
-      default:
-        return const Color(0xFF6C757D);
-    }
-  }
-
-  Color getStatusBackgroundColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'IN_PROGRESS':
-        return const Color(0xFFD6ECFF); // light blue
-      case 'RECEIVED':
-        return const Color(0xFFD6FFE6); // light green
-      case 'CLOSED':
-        return const Color(0xFFFFEBEE); // light red
-      default:
-        return AppColors.mediumGray.withOpacity(0.1);
     }
   }
 
@@ -186,7 +158,7 @@ class _WaterSupplyRequestScreenState extends State<WaterSupplyRequestScreen> {
       onTap: () => _showRequestDetails(req),
       child: Row(
         children: [
-          Icon(Icons.water_drop, color: getStatusColor(req.status), size: 32),
+          Icon(Icons.water_drop, color: WaterRequestStatusColors.getStatusColor(req.status), size: 32),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -206,9 +178,9 @@ class _WaterSupplyRequestScreenState extends State<WaterSupplyRequestScreen> {
                       ),
                     ),
                     AppStatusBadge(
-                      text: formatStatus(req.status),
-                      backgroundColor: getStatusBackgroundColor(req.status),
-                      textColor: getStatusColor(req.status),
+                      text: StatusFormatter.formatWaterRequestStatus(req.status),
+                      backgroundColor: WaterRequestStatusColors.getStatusBackgroundColor(req.status),
+                      textColor: WaterRequestStatusColors.getStatusColor(req.status),
                     ),
                   ],
                 ),
@@ -222,7 +194,7 @@ class _WaterSupplyRequestScreenState extends State<WaterSupplyRequestScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Delivered: ${formatDate(req.deliveredAt)}',
+                  'Delivered: ${DateFormatter.formatDate(req.deliveredAt)}',
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.mediumGray,
@@ -245,16 +217,16 @@ class _WaterSupplyRequestScreenState extends State<WaterSupplyRequestScreen> {
           // Header with icon and status
           Row(
             children: [
-              Container(
+                              Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: getStatusBackgroundColor(request.status),
+                  color: WaterRequestStatusColors.getStatusBackgroundColor(request.status),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Icon(
                   Icons.water_drop,
-                  color: getStatusColor(request.status),
+                  color: WaterRequestStatusColors.getStatusColor(request.status),
                   size: 22,
                 ),
               ),
@@ -272,9 +244,9 @@ class _WaterSupplyRequestScreenState extends State<WaterSupplyRequestScreen> {
                       ),
                     ),
                     AppStatusBadge(
-                      text: formatStatus(request.status),
-                      backgroundColor: getStatusBackgroundColor(request.status),
-                      textColor: getStatusColor(request.status),
+                      text: StatusFormatter.formatWaterRequestStatus(request.status),
+                      backgroundColor: WaterRequestStatusColors.getStatusBackgroundColor(request.status),
+                      textColor: WaterRequestStatusColors.getStatusColor(request.status),
                     ),
                   ],
                 ),
@@ -294,9 +266,9 @@ class _WaterSupplyRequestScreenState extends State<WaterSupplyRequestScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          _buildDetailItem('Status', formatStatus(request.status)),
+          _buildDetailItem('Status', StatusFormatter.formatWaterRequestStatus(request.status)),
           _buildDetailItem('Requested Amount', '${request.requestedLiters} liters'),
-          _buildDetailItem('Delivered At', formatDate(request.deliveredAt)),
+          _buildDetailItem('Delivered At', DateFormatter.formatDate(request.deliveredAt)),
           const SizedBox(height: 24),
           
           // Actions section
