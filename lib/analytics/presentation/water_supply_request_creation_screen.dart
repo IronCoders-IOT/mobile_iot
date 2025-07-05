@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
-import 'package:mobile_iot/analytics/infrastructure/data_sources/water_request_api_service.dart';
+import 'package:mobile_iot/analytics/infrastructure/service/water_request_api_service.dart';
 import 'package:mobile_iot/analytics/infrastructure/repositories/water_request_repository_impl.dart';
+import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart';
 
-class WaterRequestScreen extends StatefulWidget {
-  const WaterRequestScreen({super.key});
+import '../../shared/widgets/app_colors.dart';
+
+class WaterSupplyRequestCreationScreen extends StatefulWidget {
+  const WaterSupplyRequestCreationScreen({super.key});
 
   static Future<int?> show(BuildContext context) {
     return showDialog<int>(
       context: context,
-      builder: (context) => const WaterRequestScreen(),
+      builder: (context) => const WaterSupplyRequestCreationScreen(),
     );
   }
 
   @override
-  State<WaterRequestScreen> createState() => _WaterRequestScreenState();
+  State<WaterSupplyRequestCreationScreen> createState() => _WaterSupplyRequestCreationScreenState();
 }
 
-class _WaterRequestScreenState extends State<WaterRequestScreen> {
+class _WaterSupplyRequestCreationScreenState extends State<WaterSupplyRequestCreationScreen> {
   final TextEditingController litersController = TextEditingController();
   bool _isLoading = false;
 
@@ -26,8 +29,8 @@ class _WaterRequestScreenState extends State<WaterRequestScreen> {
     if (liters == null || liters <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter a valid amount of analytics'),
-          backgroundColor: Color(0xFFE74C3C),
+          content: Text('Please enter a valid amount of water'),
+          backgroundColor: Colors.red,
         ),
       );
       return;
@@ -49,15 +52,15 @@ class _WaterRequestScreenState extends State<WaterRequestScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Water request sent!'),
-            backgroundColor: Color(0xFF27AE60),
+            backgroundColor: AppColors.primaryBlue,
           ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to send request: \\${e.toString()}'),
-          backgroundColor: const Color(0xFFE74C3C),
+          content: Text('Failed to send request: ${e.toString()}'),
+          backgroundColor: Colors.red,
         ),
       );
     } finally {
@@ -82,7 +85,7 @@ class _WaterRequestScreenState extends State<WaterRequestScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2C3E50),
+                color: AppColors.darkBlue,
               ),
             ),
             const SizedBox(height: 24),
@@ -92,12 +95,12 @@ class _WaterRequestScreenState extends State<WaterRequestScreen> {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: const Color(0xFF3498DB).withOpacity(0.1),
+                color: AppColors.primaryBlue.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(32),
               ),
               child: const Icon(
                 Icons.water_drop,
-                color: Color(0xFF3498DB),
+                color: AppColors.primaryBlue,
                 size: 32,
               ),
             ),
@@ -109,7 +112,7 @@ class _WaterRequestScreenState extends State<WaterRequestScreen> {
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'Liters',
-                hintText: 'Enter amount of analytics',
+                hintText: 'Enter amount of water',
                 prefixIcon: const Icon(Icons.water_drop_outlined),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -117,13 +120,13 @@ class _WaterRequestScreenState extends State<WaterRequestScreen> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: const Color(0xFF3498DB).withOpacity(0.2),
+                    color: AppColors.primaryBlue.withOpacity(0.2),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(
-                    color: Color(0xFF3498DB),
+                    color: AppColors.primaryBlue,
                   ),
                 ),
               ),
@@ -140,7 +143,7 @@ class _WaterRequestScreenState extends State<WaterRequestScreen> {
                   child: const Text(
                     'Cancel',
                     style: TextStyle(
-                      color: Color(0xFF6C757D),
+                      color: AppColors.mediumGray,
                     ),
                   ),
                 ),
@@ -149,7 +152,7 @@ class _WaterRequestScreenState extends State<WaterRequestScreen> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : () => _sendRequest(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3498DB),
+                    backgroundColor: AppColors.primaryBlue,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,

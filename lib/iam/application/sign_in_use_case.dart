@@ -1,4 +1,4 @@
-import 'package:mobile_iot/iam/domain/interfaces/auth_repository.dart';
+import 'package:mobile_iot/iam/domain/repositories/auth_repository.dart';
 import 'package:mobile_iot/iam/domain/entities/credentials.dart';
 
 class SignInUseCase {

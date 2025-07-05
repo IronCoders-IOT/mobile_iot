@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_iot/analytics/presentation/tank_events_screen.dart';
-import 'package:mobile_iot/analytics/presentation/water_supply_requests.dart';
-import 'package:mobile_iot/iam/presentation/auth/login_screen.dart';
+import 'package:mobile_iot/analytics/presentation/water_supply_request_screen.dart';
+import 'package:mobile_iot/iam/presentation/login_screen.dart';
 import 'package:mobile_iot/analytics/presentation/dashboard_screen.dart';
-import 'package:mobile_iot/profiles/presentation/profile/profile_screen.dart';
+import 'package:mobile_iot/profiles/presentation/profile_edition_screen.dart';
+import 'package:mobile_iot/profiles/presentation/profile_screen.dart';
 import 'package:mobile_iot/analytics/presentation/reports_screen.dart';
-import 'package:mobile_iot/iam/presentation/auth/splash_screen.dart';
+import 'package:mobile_iot/shared/helpers/splash_screen.dart';
 import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
 
 
@@ -170,16 +171,16 @@ class AquaConectaApp extends StatelessWidget {
       // Pantalla inicial
       home: const SplashScreen(),
       
-      // Rutas nombradas (para navegación futura)
+      // Rutas nombradas
       routes: {
         '/login': (context) => const LoginScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/profile': (context) => const ProfileScreen(),
-        '/edit-profile': (context) => const EditProfileScreen(),
+        '/edit-profile': (context) => const ProfileEditionScreen(),
         '/reports': (context) => const ReportsScreen(),
-        '/history': (context) => const HistoryScreen(),
-        '/request-history': (context) => const RequestHistoryScreen(),
-        '/create-report': (context) => const CreateReportScreen(),
+        '/history': (context) => const TankEventsScreen(),
+        '/request-history': (context) => const WaterSupplyRequestScreen(),
+        '/create-report': (context) => const ReportCreationScreen(),
       },
       
       // Ruta por defecto cuando no se encuentra una ruta

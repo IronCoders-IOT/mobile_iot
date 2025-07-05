@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
-import 'package:mobile_iot/management/infrastructure/data_sources/resident_api_service.dart';
+import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
 import 'package:mobile_iot/analytics/application/report_use_case.dart';
 import 'package:mobile_iot/analytics/infrastructure/repositories/report_repository_impl.dart';
-import 'package:mobile_iot/analytics/infrastructure/data_sources/report_api_service.dart';
+import 'package:mobile_iot/analytics/infrastructure/service/report_api_service.dart';
 import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
+import 'package:mobile_iot/analytics/presentation/widgets/app_header.dart';
+import 'package:mobile_iot/analytics/presentation/widgets/app_error_state.dart';
+import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart';
 
-class CreateReportScreen extends StatefulWidget {
-  const CreateReportScreen({Key? key}) : super(key: key);
+import '../../shared/widgets/app_colors.dart';
+
+class ReportCreationScreen extends StatefulWidget {
+  const ReportCreationScreen({Key? key}) : super(key: key);
 
   @override
-  State<CreateReportScreen> createState() => _CreateReportScreenState();
+  State<ReportCreationScreen> createState() => _ReportCreationScreenState();
 }
 
-class _CreateReportScreenState extends State<CreateReportScreen> {
+class _ReportCreationScreenState extends State<ReportCreationScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -66,7 +71,10 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(context),
+            AppHeader(
+              title: 'New Report',
+              onBack: () => Navigator.pop(context),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20.0),
@@ -114,12 +122,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                       ),
                       const SizedBox(height: 32),
                       if (_error != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Text(
-                            _error!,
-                            style: const TextStyle(color: Colors.red),
-                          ),
+                        AppErrorState(
+                          message: _error!,
+                          onRetry: _handleSubmit,
                         ),
                       SizedBox(
                         width: double.infinity,
@@ -176,41 +181,5 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       ),
     );
   }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: const Icon(
-              Icons.arrow_back,
-              color: AppColors.darkBlue,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Text(
-            'New Report',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.darkBlue,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-// AppColors definition for consistency (can be imported from a shared file if available)
-class AppColors {
-  static const Color primaryBlue = Color(0xFF3498DB);
-  static const Color darkBlue = Color(0xFF2C3E50);
-  static const Color lightGray = Color(0xFFF8F9FA);
-  static const Color mediumGray = Color(0xFF6C757D);
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color green = Color(0xFF28A745);
-}

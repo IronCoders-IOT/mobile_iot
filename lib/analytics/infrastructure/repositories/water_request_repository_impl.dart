@@ -1,4 +1,4 @@
-import 'package:mobile_iot/analytics/infrastructure/data_sources/water_request_api_service.dart';
+import 'package:mobile_iot/analytics/infrastructure/service/water_request_api_service.dart';
 import 'package:mobile_iot/analytics/domain/entities/water_request.dart';
 import 'package:mobile_iot/analytics/domain/repositories/water_request_repository.dart';
 

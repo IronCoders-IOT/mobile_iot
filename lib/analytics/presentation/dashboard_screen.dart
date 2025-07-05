@@ -5,6 +5,10 @@ import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
 import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
 import 'package:mobile_iot/analytics/domain/entities/sensor.dart';
 
+import 'package:mobile_iot/shared/widgets/app_logo.dart';
+
+import '../../shared/widgets/app_colors.dart';
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
 
@@ -17,7 +21,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   late AnimationController _animationController;
   late Animation<double> _animation;
   
-  // Datos simulados del dashboard
   final double currentPercentage = 70.0;
   final String waterStatus = "Safe";
   final String waterQuantity = "700L";
@@ -27,12 +30,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     WaterReading(time: "15:00", quantity: "700L", type: "Water")
   ];
 
-  // Sensor list state
-  List<Sensor> sensors = [];
-  bool _isLoadingSensors = true;
-  String? _sensorError;
-  final TextEditingController _sensorSearchController = TextEditingController();
-  String _sensorSearchQuery = '';
 
   @override
   void initState() {
@@ -65,7 +62,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void dispose() {
     _animationController.dispose();
-    _sensorSearchController.dispose();
     super.dispose();
   }
 
@@ -129,7 +125,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CreateReportScreen()),
+            MaterialPageRoute(builder: (context) => const ReportCreationScreen()),
           );
         },
         backgroundColor: AppColors.primaryBlue,
@@ -145,28 +141,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          RichText(
-            text: const TextSpan(
-              children: [
-                TextSpan(
-                  text: 'Aqua',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.darkBlue,
-                  ),
-                ),
-                TextSpan(
-                  text: 'Conecta',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryBlue,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const AppLogo(fontSize: 24),
         ],
       ),
     );
@@ -275,12 +250,12 @@ class _DashboardScreenState extends State<DashboardScreen>
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () async {
-                final liters = await WaterRequestScreen.show(context);
+                final liters = await WaterSupplyRequestCreationScreen.show(context);
                 if (liters != null) {
                   // TODO: Handle the water request
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Requested $liters liters of analytics'),
+                      content: Text('Requested $liters liters of water'),
                       backgroundColor: AppColors.green,
                     ),
                   );
@@ -338,7 +313,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         Text(
           title,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: color,
           ),
@@ -357,9 +332,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Widget _buildVerticalDivider() {
     return Container(
-      height: 40,
       width: 1,
-      color: AppColors.lightGray,
+      height: 40,
+      color: AppColors.mediumGray.withOpacity(0.3),
     );
   }
 
@@ -367,162 +342,87 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'My Water Tanks',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.darkBlue,
-              ),
-            ),
-          ],
+        const Text(
+          'Recent Activity',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColors.darkBlue,
+          ),
         ),
         const SizedBox(height: 16),
-        ...waterHistory.map((reading) => _buildHistoryItem(reading)).toList(),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: waterHistory.map((reading) => _buildHistoryItem(reading)).toList(),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildHistoryItem(WaterReading reading) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushReplacementNamed(context, '/history');
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 6,
-              offset: const Offset(0, 1),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.circular(4),
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.water_drop,
-                color: AppColors.primaryBlue,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    reading.type,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.darkBlue,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    reading.time,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.mediumGray,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text(
-              reading.quantity,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryBlue,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSensorCard(Sensor sensor) {
-    return Material(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(12),
-      elevation: 0,
-      child: InkWell(
-        onTap: () => _showSensorDetails(sensor),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.primaryBlue.withOpacity(0.2),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
-          child: Row(
-            children: [
-              Icon(Icons.sensors, color: AppColors.primaryBlue, size: 32),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      sensor.type,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primaryBlue,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Description: ${sensor.status}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.mediumGray,
-                        height: 1.3,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  reading.type,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkBlue,
+                  ),
                 ),
-              ),
-              Icon(Icons.chevron_right, color: AppColors.mediumGray.withOpacity(0.5), size: 20),
-            ],
+                Text(
+                  reading.quantity,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.mediumGray,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+          Text(
+            reading.time,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.mediumGray,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSensorDetailsModal(Sensor sensor) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.5,
+      height: MediaQuery.of(context).size.height * 0.6,
       decoration: const BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.only(
@@ -549,12 +449,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: AppColors.primaryBlue.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.sensors,
-                    color: Colors.orange[600],
+                    color: AppColors.primaryBlue,
                     size: 22,
                   ),
                 ),
@@ -564,7 +464,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        sensor.type,
+                        'Sensor ${sensor.id}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -572,7 +472,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ),
                       ),
                       Text(
-                        'Sensor ID: ${sensor.id}',
+                        'Status: Active',
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppColors.mediumGray,
@@ -608,15 +508,85 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    'Type: ${sensor.type}\nDescription: ${sensor.status}\nResident ID: ${sensor.residentId}',
+                  _buildDetailItem('Sensor ID', sensor.id.toString()),
+                  _buildDetailItem('Location', 'Tank ${sensor.id}'),
+                  _buildDetailItem('Type', 'Water Quality Sensor'),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Actions',
                     style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.mediumGray,
-                      height: 1.5,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.darkBlue,
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  _buildActionItem('1. View sensor data'),
+                  _buildActionItem('2. Check sensor status'),
+                  _buildActionItem('3. Contact support if needed'),
                 ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.darkBlue,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.mediumGray,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionItem(String action) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 6),
+            width: 4,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              action,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.mediumGray,
+                height: 1.4,
               ),
             ),
           ),
@@ -626,7 +596,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 }
 
-// Modelo para las lecturas de agua
 class WaterReading {
   final String time;
   final String quantity;
@@ -639,7 +608,6 @@ class WaterReading {
   });
 }
 
-// Painter personalizado para el círculo de progreso
 class CircularProgressPainter extends CustomPainter {
   final double progress;
   final double strokeWidth;
@@ -658,44 +626,36 @@ class CircularProgressPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width - strokeWidth) / 2;
 
-    // Dibujar círculo de fondo
+    // Background circle
     final backgroundPaint = Paint()
       ..color = backgroundColor
-      ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = strokeWidth;
 
     canvas.drawCircle(center, radius, backgroundPaint);
 
-    // Dibujar progreso
+    // Progress arc
     final progressPaint = Paint()
       ..color = progressColor
-      ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    final sweepAngle = 2 * math.pi * progress;
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2, // Empezar desde arriba
-      sweepAngle,
+      -math.pi / 2, // Start from top
+      2 * math.pi * progress, // Progress arc
       false,
       progressPaint,
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return oldDelegate != this;
+  bool shouldRepaint(CircularProgressPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+           oldDelegate.strokeWidth != strokeWidth ||
+           oldDelegate.backgroundColor != backgroundColor ||
+           oldDelegate.progressColor != progressColor;
   }
 }
 
-// Colores de la app (reutilizando los del login)
-class AppColors {
-  static const Color primaryBlue = Color(0xFF3498DB);
-  static const Color darkBlue = Color(0xFF2C3E50);
-  static const Color lightGray = Color(0xFFF8F9FA);
-  static const Color mediumGray = Color(0xFF6C757D);
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color green = Color(0xFF28A745);
-}

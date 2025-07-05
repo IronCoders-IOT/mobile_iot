@@ -1,6 +1,6 @@
-import 'package:mobile_iot/management/domain/interfaces/resident_repository.dart';
-import 'package:mobile_iot/management/domain/entities/resident.dart';
-import 'package:mobile_iot/management/infrastructure/data_sources/resident_api_service.dart';
+import 'package:mobile_iot/profiles/domain/interfaces/resident_repository.dart';
+import 'package:mobile_iot/profiles/domain/entities/resident.dart';
+import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
 
 class ResidentRepositoryImpl implements ResidentRepository {
   final ResidentApiService residentApiService;

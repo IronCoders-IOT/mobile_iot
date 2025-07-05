@@ -1,5 +1,5 @@
-import 'package:mobile_iot/management/domain/interfaces/resident_repository.dart';
-import 'package:mobile_iot/management/domain/entities/resident.dart';
+import 'package:mobile_iot/profiles/domain/interfaces/resident_repository.dart';
+import 'package:mobile_iot/profiles/domain/entities/resident.dart';
 
 class ResidentUseCase{
   final ResidentRepository residentRepository;

@@ -1,4 +1,4 @@
-import 'package:mobile_iot/analytics/infrastructure/data_sources/report_api_service.dart';
+import 'package:mobile_iot/analytics/infrastructure/service/report_api_service.dart';
 import 'package:mobile_iot/analytics/domain/entities/report.dart';
 import 'package:mobile_iot/analytics/domain/repositories/report_repository.dart';
 

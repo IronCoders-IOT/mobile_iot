@@ -1,6 +1,6 @@
 import 'package:mobile_iot/profiles/domain/interfaces/profile_repository.dart';
 import 'package:mobile_iot/profiles/domain/entities/profile.dart';
-import 'package:mobile_iot/profiles/infrastructure/data_sources/profile_api_service.dart';
+import 'package:mobile_iot/profiles/infrastructure/service/profile_api_service.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileApiService apiService;
