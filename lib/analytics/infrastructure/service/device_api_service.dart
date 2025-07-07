@@ -1,13 +1,13 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:mobile_iot/analytics/domain/entities/sensor.dart';
+import 'package:mobile_iot/analytics/domain/entities/device.dart';
 import 'package:mobile_iot/core/config/env.dart';
 import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 
-class SensorApiService {
+class DeviceApiService {
   static final String _baseUrl = '${Env.apiUrl}${Env.sensorsEndpoint}';
 
-  Future<List<Sensor>> getSensor(String token, int id) async {
+  Future<List<Device>> getDevice(String token, int id) async {
     final response = await http.get(
       Uri.parse('$_baseUrl/resident/$id/all'),
       headers: {
@@ -17,12 +17,12 @@ class SensorApiService {
     );
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = jsonDecode(response.body);
-      return jsonList.map((json) => Sensor.fromJson(json)).toList();
+      return jsonList.map((json) => Device.fromJson(json)).toList();
     } else {
       if (response.statusCode == 401 || response.statusCode == 403) {
         throw SessionExpiredException();
       }
-      throw Exception('Failed to load sensors: ${response.statusCode} - ${response.reasonPhrase}');
+      throw Exception('Failed to load devices: ${response.statusCode} - ${response.reasonPhrase}');
     }
   }
 }

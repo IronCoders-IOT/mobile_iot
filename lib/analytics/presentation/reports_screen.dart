@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
 import 'package:mobile_iot/analytics/infrastructure/service/report_api_service.dart';
@@ -19,90 +20,211 @@ import 'package:mobile_iot/analytics/presentation/widgets/app_list_card.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_status_badge.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_modal_bottom_sheet.dart';
 import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
+import 'package:mobile_iot/analytics/presentation/bloc/reports/bloc/bloc.dart';
 
 import '../../shared/widgets/app_colors.dart';
 
-class ReportsScreen extends StatefulWidget {
+/// A screen that displays a list of reports for the authenticated user.
+/// 
+/// This screen uses the BLoC pattern for state management and provides the following features:
+/// - View all reports associated with the user
+/// - Search reports by title or description
+/// - Pull-to-refresh functionality
+/// - Create new reports via floating action button
+/// - View detailed report information in a modal
+/// - Navigate to other app sections via bottom navigation
+/// 
+/// The screen automatically handles:
+/// - Loading states while fetching data
+/// - Error states with retry functionality
+/// - Session expiration and automatic logout
+/// - Empty states when no reports are found
+/// - Report creation and management
+///
+class ReportsScreen extends StatelessWidget {
+  /// Creates a reports screen.
+  /// 
+  /// The [key] parameter is optional and is passed to the superclass.
   const ReportsScreen({Key? key}) : super(key: key);
 
   @override
-  State<ReportsScreen> createState() => _ReportsScreenState();
-}
-
-class _ReportsScreenState extends State<ReportsScreen> {
-  List<Report> reports = [];
-  bool _isLoading = true;
-  String? _error;
-
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchReports();
+  Widget build(BuildContext context) {
+    return BlocProvider<ReportsBloc>(
+      create: (context) => ReportsBloc(
+        reportUseCase: ReportUseCase(ReportRepositoryImpl(ReportApiService())),
+        secureStorage: SecureStorageService(),
+        residentApiService: ResidentApiService(),
+      )..add(FetchReportsEvent()),
+      child: BlocConsumer<ReportsBloc, ReportsState>(
+        listener: (context, state) {
+          if (state is ReportsErrorState && 
+              state.message.contains('Session expired')) {
+            Navigator.pushReplacementNamed(context, '/login');
+          }
+        },
+        builder: (context, state) => Scaffold(
+      backgroundColor: AppColors.lightGray,
+      body: SafeArea(
+        child: Column(
+          children: [
+            AppHeader(
+              title: 'REPORTS',
+              onBack: () => Navigator.pushReplacementNamed(context, '/dashboard'),
+            ),
+                if (state is ReportsLoadedState)
+            AppSearchBar(
+                    controller: TextEditingController(text: state.searchQuery),
+                    onChanged: (value) => context.read<ReportsBloc>().add(SearchReportsEvent(value)),
+              hintText: 'Search reports...',
+            ),
+                Expanded(child: _buildBody(context, state)),
+          ],
+        ),
+      ),
+      bottomNavigationBar: AppBottomNavigationBar(
+        currentIndex: 0,
+            onTap: (index) {
+              if (index == 1) Navigator.pushReplacementNamed(context, '/dashboard');
+              if (index == 2) Navigator.pushReplacementNamed(context, '/profile');
+            },
+      ),
+      floatingActionButton: FloatingActionButton(
+            onPressed: () => _createReport(context),
+        backgroundColor: AppColors.primaryBlue,
+        child: const Icon(Icons.add, color: Colors.white),
+        tooltip: 'Create Report',
+          ),
+        ),
+      ),
+    );
   }
 
-  Future<void> _fetchReports() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-    try {
-      final storage = SecureStorageService();
-      final token = await storage.getToken();
-      if (token == null) throw Exception('No authentication token found');
-      final residentJson = await ResidentApiService().getResident(token);
-      if (residentJson == null || residentJson['id'] == null) throw Exception('Resident not found');
-      final residentId = residentJson['id'];
-      final reportUseCase = ReportUseCase(ReportRepositoryImpl(ReportApiService()));
-      final fetchedReports = await reportUseCase.getReportByResidentId(token, residentId);
-      setState(() {
-        reports = fetchedReports;
-        _isLoading = false;
-      });
-    } on SessionExpiredException catch (e) {
-      await SecureStorageService().deleteToken();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message), backgroundColor: Colors.red),
-        );
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+  /// Builds the main body content based on the current BLoC state.
+  /// 
+  /// This method handles different UI states:
+  /// - [ReportsLoadingState]: Shows loading indicator
+  /// - [ReportsErrorState]: Shows error message with retry button
+  /// - [ReportsLoadedState]: Shows the list of reports with pull-to-refresh
+  /// - Default: Shows loading indicator as fallback
+  /// 
+  /// Parameters:
+  /// - [context]: The build context
+  /// - [state]: The current state from the ReportsBloc
+  /// 
+  /// Returns a widget that represents the appropriate UI for the current state.
+  Widget _buildBody(BuildContext context, ReportsState state) {
+    if (state is ReportsLoadingState) return const AppLoadingState();
+    if (state is ReportsErrorState) {
+      return AppErrorState(
+        message: state.message,
+        onRetry: () => context.read<ReportsBloc>().add(FetchReportsEvent()),
+      );
     }
-  }
-
-  Future<void> _refreshReports() async {
-    await _fetchReports();
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  List<Report> get filteredReports {
-    if (_searchQuery.isEmpty) {
-      return reports;
+    if (state is ReportsLoadedState) {
+      return RefreshIndicator(
+        onRefresh: () async => context.read<ReportsBloc>().add(RefreshReportsEvent()),
+        child: _buildReportsList(context, state),
+      );
     }
-    return reports.where((report) {
-      final titleLower = report.title.toLowerCase();
-      final descriptionLower = report.description.toLowerCase();
-      final statusLower = report.status.toLowerCase();
-      final searchLower = _searchQuery.toLowerCase();
-      return titleLower.contains(searchLower) ||
-          descriptionLower.contains(searchLower) ||
-          statusLower.contains(searchLower);
-    }).toList();
+    return const AppLoadingState();
   }
 
-  void _showReportDetails(Report report) {
+  /// Builds the list of reports when data is successfully loaded.
+  /// 
+  /// This method handles:
+  /// - Empty state when no reports are found
+  /// - List view with all reports when data exists
+  /// - Pull-to-refresh functionality
+  /// 
+  /// Parameters:
+  /// - [context]: The build context
+  /// - [state]: The loaded state containing reports data
+  /// 
+  /// Returns a widget that displays the reports list or empty state.
+  Widget _buildReportsList(BuildContext context, ReportsLoadedState state) {
+    final reports = state.filteredReports;
+    
+    if (reports.isEmpty) {
+      return AppEmptyState(
+        title: 'No reports found',
+        subtitle: 'Pull down to refresh or create a new report',
+        onAction: () => context.read<ReportsBloc>().add(RefreshReportsEvent()),
+        actionText: 'Refresh',
+      );
+    }
+    
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      itemCount: reports.length,
+      itemBuilder: (context, index) => _buildReportItem(context, reports[index]),
+    );
+  }
+
+  /// Builds an individual report item card.
+  /// 
+  /// Each report item displays:
+  /// - Report title
+  /// - Status badge with appropriate colors
+  /// - Description (truncated to 2 lines)
+  /// - Creation date formatted for display
+  /// 
+  /// Parameters:
+  /// - [context]: The build context
+  /// - [report]: The report entity to display
+  /// 
+  /// Returns a card widget representing a single report.
+  Widget _buildReportItem(BuildContext context, Report report) {
+    return AppListCard(
+      onTap: () => _showReportDetails(context, report),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  report.title,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.darkBlue),
+                ),
+              ),
+              AppStatusBadge(
+                text: StatusFormatter.formatReportStatus(report.status),
+                backgroundColor: ReportStatusColors.statusColor(report.status),
+                textColor: ReportStatusColors.statusTextColor(report.status),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            report.description,
+            style: const TextStyle(fontSize: 14, color: AppColors.mediumGray),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Created: ${DateFormatter.formatEmissionDate(report.emissionDate)}',
+            style: const TextStyle(fontSize: 12, color: AppColors.mediumGray),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Shows a modal bottom sheet with detailed report information.
+  /// 
+  /// This method displays a comprehensive view of the report including:
+  /// - Report icon with status-based colors
+  /// - Full title and description
+  /// - Status information
+  /// - Creation date
+  /// - Any additional report metadata
+  /// 
+  /// Parameters:
+  /// - [context]: The build context
+  /// - [report]: The report entity to display details for
+  void _showReportDetails(BuildContext context, Report report) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -115,158 +237,27 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.lightGray,
-      body: SafeArea(
-        child: Column(
-          children: [
-            AppHeader(
-              title: 'REPORTS',
-              onBack: () => Navigator.pushReplacementNamed(context, '/dashboard'),
-            ),
-            AppSearchBar(
-              controller: _searchController,
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-              hintText: 'Search reports...',
-            ),
-            Expanded(
-              child: _isLoading
-                  ? const AppLoadingState()
-                  : _error != null
-                      ? AppErrorState(
-                          message: _error!,
-                          onRetry: _fetchReports,
-                        )
-                      : RefreshIndicator(
-                          onRefresh: _refreshReports,
-                          child: _buildReportsList(),
-                        ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: AppBottomNavigationBar(
-        currentIndex: 0,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              // Already on reports
-              break;
-            case 1:
-              Navigator.pushReplacementNamed(context, '/dashboard');
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, '/profile');
-              break;
-          }
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ReportCreationScreen()),
-          );
-          // Refresh reports after creating a new one
-          if (result == true) {
-            _refreshReports();
-          }
-        },
-        backgroundColor: AppColors.primaryBlue,
-        child: const Icon(Icons.add, color: Colors.white),
-        tooltip: 'Create Report',
-      ),
-    );
-  }
-
-  Widget _buildReportsList() {
-    final reportsToShow = filteredReports;
-    if (reportsToShow.isEmpty) {
-      return AppEmptyState(
-        title: 'No reports found',
-        subtitle: 'Pull down to refresh or create a new report',
-        onAction: _refreshReports,
-        actionText: 'Refresh',
-      );
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      itemCount: reportsToShow.length,
-      itemBuilder: (context, index) {
-        final report = reportsToShow[index];
-        return _buildReportItem(report, index);
-      },
-    );
-  }
-
-  Widget _buildReportItem(Report report, int index) {
-    return AppListCard(
-      onTap: () => _showReportDetails(report),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title and Status
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  report.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.darkBlue,
-                  ),
-                ),
-              ),
-              AppStatusBadge(
-                text: StatusFormatter.formatReportStatus(report.status),
-                backgroundColor: ReportStatusColors.statusColor(report.status),
-                textColor: ReportStatusColors.statusTextColor(report.status),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // Description
-          Text(
-            report.description,
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppColors.mediumGray,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 8),
-          // Date
-          Text(
-            'Created: ${DateFormatter.formatEmissionDate(report.emissionDate)}',
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.mediumGray,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  /// Builds the content for the report details modal.
+  /// 
+  /// This method creates a detailed view of the report with:
+  /// - Status-colored icon container
+  /// - Full report title and description
+  /// - Formatted status and creation date
+  /// - Proper spacing and typography
+  /// 
+  /// Parameters:
+  /// - [report]: The report entity to display detailed information for
+  /// 
+  /// Returns a widget containing the formatted report details.
   Widget _buildReportDetailsContent(Report report) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with status
           Row(
             children: [
-                              Container(
+              Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
@@ -286,11 +277,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   children: [
                     Text(
                       report.title,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.darkBlue,
-                      ),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
                     ),
                     AppStatusBadge(
                       text: StatusFormatter.formatReportStatus(report.status),
@@ -302,42 +289,33 @@ class _ReportsScreenState extends State<ReportsScreen> {
               ),
             ],
           ),
-          
           const Divider(height: 32),
-          
-          // Details section
-          const Text(
-            'Details',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.darkBlue,
-            ),
-          ),
+          const Text('Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.darkBlue)),
           const SizedBox(height: 12),
-          _buildDetailItem('Description', report.description),
-          _buildDetailItem('Status', StatusFormatter.formatReportStatus(report.status)),
-          _buildDetailItem('Created', DateFormatter.formatEmissionDate(report.emissionDate)),
+            _buildDetailItem('Description', report.description),
+            _buildDetailItem('Status', StatusFormatter.formatReportStatus(report.status)),
+            _buildDetailItem('Created', DateFormatter.formatEmissionDate(report.emissionDate)),
           const SizedBox(height: 24),
-          
-          // Actions section
-          const Text(
-            'Actions',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.darkBlue,
-            ),
-          ),
+          const Text('Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.darkBlue)),
           const SizedBox(height: 12),
-          _buildActionItem('1. Review report details'),
-          _buildActionItem('2. Update status if needed'),
-          _buildActionItem('3. Contact support for assistance'),
+            _buildActionItem('1. Review report details'),
+            _buildActionItem('2. Update status if needed'),
+            _buildActionItem('3. Contact support for assistance'),
         ],
       ),
     );
   }
 
+  /// Builds a detail item row for the report details modal.
+  /// 
+  /// This method creates a consistent layout for displaying key-value pairs
+  /// with proper spacing and typography.
+  /// 
+  /// Parameters:
+  /// - [label]: The label text (e.g., "Description", "Status")
+  /// - [value]: The value text to display
+  /// 
+  /// Returns a row widget with label and value properly formatted.
   Widget _buildDetailItem(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -346,29 +324,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
         children: [
           SizedBox(
             width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.darkBlue,
-              ),
-            ),
+            child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.darkBlue)),
           ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.mediumGray,
-              ),
-            ),
-          ),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 14, color: AppColors.mediumGray))),
         ],
       ),
     );
   }
 
+  /// Builds an action item row for the report details modal.
+  /// 
+  /// This method creates a bulleted list item with a small blue dot
+  /// and proper spacing for action suggestions.
+  /// 
+  /// Parameters:
+  /// - [action]: The action text to display
+  /// 
+  /// Returns a row widget with bullet point and action text.
   Widget _buildActionItem(String action) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -385,19 +357,31 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              action,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.mediumGray,
-                height: 1.4,
-              ),
-            ),
-          ),
+          Expanded(child: Text(action, style: const TextStyle(fontSize: 14, color: AppColors.mediumGray, height: 1.4))),
         ],
       ),
     );
+  }
+
+  /// Navigates to the report creation screen and refreshes the reports list on success.
+  /// 
+  /// This method handles the floating action button tap and:
+  /// - Navigates to the ReportCreationScreen
+  /// - Waits for the result from the creation screen
+  /// - Refreshes the reports list if a new report was created successfully
+  /// 
+  /// Parameters:
+  /// - [context]: The build context for navigation
+  /// 
+  /// Returns a Future that completes when the creation flow is finished.
+  Future<void> _createReport(BuildContext context) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ReportCreationScreen()),
+    );
+    if (result == true) {
+      context.read<ReportsBloc>().add(RefreshReportsEvent());
+    }
   }
 }
 

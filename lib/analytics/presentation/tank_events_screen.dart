@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
-import 'package:mobile_iot/analytics/infrastructure/service/sensor_api_service.dart';
+import 'package:mobile_iot/analytics/infrastructure/service/device_api_service.dart';
 import 'package:mobile_iot/analytics/infrastructure/service/event_api_service.dart';
-import 'package:mobile_iot/analytics/infrastructure/repositories/sensor_repository_impl.dart';
+import 'package:mobile_iot/analytics/infrastructure/repositories/device_repository_impl.dart';
 import 'package:mobile_iot/analytics/infrastructure/repositories/event_repository_impl.dart';
-import 'package:mobile_iot/analytics/application/sensor_use_case.dart';
+import 'package:mobile_iot/analytics/application/device_use_case.dart';
 import 'package:mobile_iot/analytics/application/event_use_case.dart';
 import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
 import 'package:mobile_iot/analytics/domain/entities/event.dart';
@@ -18,200 +19,179 @@ import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart
 import 'package:mobile_iot/analytics/presentation/widgets/app_list_card.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_status_badge.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_modal_bottom_sheet.dart';
+import 'package:mobile_iot/analytics/presentation/bloc/tank_events/bloc/bloc.dart';
 
 import '../../shared/widgets/app_colors.dart';
 
-class TankEventsScreen extends StatefulWidget {
+/// A screen that displays a list of tank events for the authenticated user.
+/// 
+/// This screen uses the BLoC pattern for state management and provides the following features:
+/// - View all tank events associated with the user's devices
+/// - Search events by event type, quality value, or level value
+/// - Pull-to-refresh functionality
+/// - View detailed event information in a modal
+/// - Navigate to other app sections via bottom navigation
+/// 
+/// The screen automatically handles:
+/// - Loading states while fetching data
+/// - Error states with retry functionality
+/// - Session expiration and automatic logout
+/// - Empty states when no events are found
+/// - Device detection and event retrieval
+/// 
+class TankEventsScreen extends StatelessWidget {
+  /// Creates a tank events screen.
+  /// 
+  /// The [key] parameter is optional and is passed to the superclass.
   const TankEventsScreen({Key? key}) : super(key: key);
 
   @override
-  State<TankEventsScreen> createState() => _TankEventsScreenState();
-}
-
-class _TankEventsScreenState extends State<TankEventsScreen> {
-  // API-driven data
-  List<Event> events = [];
-  bool _isLoading = true;
-  String? _error;
-
-  // Controller for search text
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchHistory();
-  }
-
-  Future<void> _fetchHistory() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-    try {
-      final storage = SecureStorageService();
-      final token = await storage.getToken();
-      if (token == null) throw Exception('No authentication token found');
-      // Get resident
-      final residentJson = await ResidentApiService().getResident(token);
-      if (residentJson == null || residentJson['id'] == null) throw Exception('Resident not found');
-      final residentId = residentJson['id'] as int;
-      // Get sensors for resident
-      final sensorUseCase = SensorUseCase(SensorRepositoryImpl(SensorApiService()));
-      final sensors = await sensorUseCase.getSensor(token, residentId);
-      if (sensors.isEmpty) throw Exception('No sensors found for resident');
-      final sensorId = sensors.first.id;
-      // Get events for sensor
-      final eventUseCase = EventUseCase(EventRepositoryImpl(EventApiService()));
-      final fetchedEvents = await eventUseCase.getAllEventsBySensorId(token, sensorId);
-      setState(() {
-        events = fetchedEvents;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
-
-  // Determina el estado del reporte según la calidad del agua
-  String _getStatusFromQuality(String quality) {
-    switch (quality.toLowerCase()) {
-      case 'mala':
-      case 'no potable':
-        return 'alert';
-      case 'agua contaminada':
-        return 'critical';
-      default:
-        return 'normal';
-    }
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  // Filtered events based on search query
-  List<Event> get filteredEvents {
-    if (_searchQuery.isEmpty) {
-      return events;
-    }
-    return events.where((event) {
-      return event.eventType.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             event.qualityValue.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             event.levelValue.toLowerCase().contains(_searchQuery.toLowerCase());
-    }).toList();
-  }
-
-  void _showEventDetails(Event event) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => AppModalBottomSheet(
-        title: 'Event Details',
-        onClose: () => Navigator.pop(context),
-        children: [_buildEventDetailsContent(event)],
-      ),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.lightGray,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            AppHeader(
-              title: 'TANKS HISTORY',
-              onBack: () => Navigator.pushReplacementNamed(context, '/dashboard'),
-            ),
-            
-            // Search Bar
-            AppSearchBar(
-              controller: _searchController,
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-              hintText: 'Search events...',
-            ),
-            
-            // Lista de eventos
-            Expanded(
-              child: _isLoading
-                  ? const AppLoadingState()
-                  : _error != null
-                      ? AppErrorState(
-                          message: _error!,
-                          onRetry: _fetchHistory,
-                        )
-                      : _buildEventsList(),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: AppBottomNavigationBar(
-        currentIndex: 0, // or another index if this is not reports
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              // Already on reports/history
-              break;
-            case 1:
-              Navigator.pushReplacementNamed(context, '/dashboard');
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, '/profile');
-              break;
+    return BlocProvider<TankEventsBloc>(
+      create: (context) => TankEventsBloc(
+        deviceUseCase: DeviceUseCase(DeviceRepositoryImpl(DeviceApiService())),
+        eventUseCase: EventUseCase(EventRepositoryImpl(EventApiService())),
+        secureStorage: SecureStorageService(),
+        residentApiService: ResidentApiService(),
+      )..add(FetchTankEventsEvent()),
+      child: BlocConsumer<TankEventsBloc, TankEventsState>(
+        // Listen for state changes to handle side effects (like navigation)
+        listener: (context, state) {
+          if (state is TankEventsErrorState && 
+              (state.message.contains('Session expired') || 
+               state.message.contains('No authentication token'))) {
+            Navigator.pushReplacementNamed(context, '/login');
           }
+        },
+        // Build the UI based on the current state
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: AppColors.lightGray,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  // Header with back navigation
+                  AppHeader(
+                    title: 'TANKS EVENTS',
+                    onBack: () => Navigator.pushReplacementNamed(context, '/dashboard'),
+                  ),
+                  // Search bar - only show when events are loaded
+                  if (state is TankEventsLoadedState) ...[
+                    AppSearchBar(
+                      controller: TextEditingController(text: state.searchQuery),
+                      onChanged: (value) => context.read<TankEventsBloc>().add(SearchTankEventsEvent(value)),
+                      hintText: 'Search events...',
+                    ),
+                  ],
+                  // Main content area
+                  Expanded(
+                    child: _buildBody(context, state),
+                  ),
+                ],
+              ),
+            ),
+            // Bottom navigation bar
+            bottomNavigationBar: AppBottomNavigationBar(
+              currentIndex: 0, // Events tab is active
+              onTap: (index) {
+                if (index == 1) Navigator.pushReplacementNamed(context, '/dashboard');
+                if (index == 2) Navigator.pushReplacementNamed(context, '/profile');
+              },
+            ),
+          );
         },
       ),
     );
   }
 
-  Widget _buildEventsList() {
-    final eventsToShow = filteredEvents;
+  /// Builds the main body content based on the current BLoC state.
+  /// 
+  /// This method handles different UI states:
+  /// - [TankEventsLoadingState]: Shows loading indicator
+  /// - [TankEventsErrorState]: Shows error message with retry button
+  /// - [TankEventsLoadedState]: Shows the list of events
+  /// - Default: Shows loading indicator as fallback
+  /// 
+  /// Parameters:
+  /// - [context]: The build context
+  /// - [state]: The current state from the TankEventsBloc
+  /// 
+  /// Returns a widget that represents the appropriate UI for the current state.
+  Widget _buildBody(BuildContext context, TankEventsState state) {
+    if (state is TankEventsLoadingState) {
+      return const AppLoadingState();
+    } else if (state is TankEventsErrorState) {
+      return AppErrorState(
+        message: state.message,
+        onRetry: () => context.read<TankEventsBloc>().add(FetchTankEventsEvent()),
+      );
+    } else if (state is TankEventsLoadedState) {
+      return RefreshIndicator(
+        onRefresh: () async => context.read<TankEventsBloc>().add(RefreshTankEventsEvent()),
+        child: _buildEventsList(context, state),
+      );
+    }
     
-    if (eventsToShow.isEmpty) {
+    // Fallback to loading state
+    return const AppLoadingState();
+  }
+
+  /// Builds the list of events when data is successfully loaded.
+  /// 
+  /// This method handles:
+  /// - Empty state when no events are found
+  /// - List view with all events when data exists
+  /// - Pull-to-refresh functionality
+  /// 
+  /// Parameters:
+  /// - [context]: The build context
+  /// - [state]: The loaded state containing events data
+  /// 
+  /// Returns a widget that displays the events list or empty state.
+  Widget _buildEventsList(BuildContext context, TankEventsLoadedState state) {
+    final events = state.filteredEvents;
+    
+    // Show empty state if no events match the current search/filter
+    if (events.isEmpty) {
       return AppEmptyState(
         title: 'No events found',
         subtitle: 'Pull down to refresh',
-        onAction: _fetchHistory,
+        onAction: () => context.read<TankEventsBloc>().add(RefreshTankEventsEvent()),
         actionText: 'Refresh',
       );
     }
-
-    return RefreshIndicator(
-      onRefresh: _fetchHistory,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        itemCount: eventsToShow.length,
-        itemBuilder: (context, index) {
-          final event = eventsToShow[index];
-          return _buildEventItem(event, index);
-        },
-      ),
+    
+    // Build list of event items
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      itemCount: events.length,
+      itemBuilder: (context, index) => _buildEventItem(context, events[index], index),
     );
   }
 
-  Widget _buildEventItem(Event event, int index) {
-    final status = _getStatusFromQuality(event.qualityValue);
+  /// Builds an individual event item card.
+  /// 
+  /// Each event item displays:
+  /// - Event ID (index + 1)
+  /// - Event type
+  /// - Quality value and level value
+  /// - Status badge with appropriate colors
+  /// 
+  /// Parameters:
+  /// - [context]: The build context
+  /// - [event]: The event entity to display
+  /// - [index]: The index of the event in the list
+  /// 
+  /// Returns a card widget representing a single event.
+  Widget _buildEventItem(BuildContext context, Event event, int index) {
+    final status = getStatusFromQuality(event.qualityValue);
     
     return AppListCard(
-      onTap: () => _showEventDetails(event),
+      onTap: () => _showEventDetails(context, event),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ID and Event
+          // Event ID and Type row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -234,7 +214,7 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          // Water Quality and Level
+          // Quality and Level values row
           Row(
             children: [
               Expanded(
@@ -256,7 +236,7 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          // Status
+          // Status badge
           Align(
             alignment: Alignment.centerLeft,
             child: AppStatusBadge(
@@ -270,17 +250,54 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
     );
   }
 
+  /// Shows a modal bottom sheet with detailed event information.
+  /// 
+  /// The modal displays:
+  /// - Event icon and type
+  /// - Water level information
+  /// - Detailed information (water quality, status)
+  /// - Recommended actions
+  /// 
+  /// Parameters:
+  /// - [context]: The build context
+  /// - [event]: The event to show details for
+  void _showEventDetails(BuildContext context, Event event) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AppModalBottomSheet(
+        title: 'Event Details',
+        onClose: () => Navigator.pop(context),
+        children: [_buildEventDetailsContent(event)],
+      ),
+    );
+  }
+
+  /// Builds the content for the event details modal.
+  /// 
+  /// This method creates a comprehensive view of the event including:
+  /// - Header with icon and event type
+  /// - Water level information
+  /// - Detailed information section
+  /// - Recommended actions section
+  /// 
+  /// Parameters:
+  /// - [event]: The event to display details for
+  /// 
+  /// Returns a scrollable widget with the event details content.
   Widget _buildEventDetailsContent(Event event) {
-    final status = _getStatusFromQuality(event.qualityValue);
+    final status = getStatusFromQuality(event.qualityValue);
     
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with icon and title
+          // Header with icon and event type
           Row(
             children: [
+              // Status-colored icon container
               Container(
                 width: 40,
                 height: 40,
@@ -299,14 +316,16 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Event type
                     Text(
                       event.eventType,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.darkBlue,
+                        color: AppColors.primaryBlue,
                       ),
                     ),
+                    // Water level
                     Text(
                       'Water Level: ${event.levelValue}',
                       style: const TextStyle(
@@ -336,7 +355,7 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
           _buildDetailItem('Status', getEventStatusColor(status)),
           const SizedBox(height: 24),
           
-          // Recommended Actions section
+          // Actions section
           const Text(
             'Recommended Actions',
             style: TextStyle(
@@ -354,12 +373,23 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
     );
   }
 
+  /// Builds a detail item row with label and value.
+  /// 
+  /// This helper method creates a consistent layout for displaying
+  /// key-value pairs in the details section.
+  /// 
+  /// Parameters:
+  /// - [label]: The label text (left side)
+  /// - [value]: The value text (right side)
+  /// 
+  /// Returns a row widget with the label and value.
   Widget _buildDetailItem(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Fixed width label column
           SizedBox(
             width: 120,
             child: Text(
@@ -371,6 +401,7 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
               ),
             ),
           ),
+          // Flexible value column
           Expanded(
             child: Text(
               value,
@@ -385,12 +416,22 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
     );
   }
 
+  /// Builds an action item with a bullet point.
+  /// 
+  /// This helper method creates a consistent layout for displaying
+  /// action items in the actions section.
+  /// 
+  /// Parameters:
+  /// - [action]: The action text to display
+  /// 
+  /// Returns a row widget with a bullet point and action text.
   Widget _buildActionItem(String action) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Bullet point
           Container(
             margin: const EdgeInsets.only(top: 6),
             width: 4,
@@ -401,6 +442,7 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
             ),
           ),
           const SizedBox(width: 12),
+          // Action text
           Expanded(
             child: Text(
               action,

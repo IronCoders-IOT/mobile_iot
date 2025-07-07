@@ -1,5 +1,24 @@
 import 'package:flutter/material.dart';
 
+String getStatusFromQuality(String quality) {
+  switch (quality.toLowerCase()) {
+    case 'Excellent':
+      return 'normal';
+    case 'Good':
+      return 'normal';
+    case 'Acceptable':
+      return 'normal';
+    case 'Bad':
+      return 'alert';
+    case 'Non-potable':
+      return 'alert';
+    case 'Contaminated water':
+      return 'critical';
+    default:
+      return 'normal';
+  }
+}
+
 String getEventStatusColor(String status) {
   switch (status) {
     case 'normal':

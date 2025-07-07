@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:mobile_iot/analytics/presentation/water_supply_request_creation_screen.dart';
 import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
 import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
-import 'package:mobile_iot/analytics/domain/entities/sensor.dart';
+import 'package:mobile_iot/analytics/domain/entities/device.dart';
 
 import 'package:mobile_iot/shared/widgets/app_logo.dart';
 
@@ -50,7 +50,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     _animationController.forward();
    // _fetchSensors();
   }
-  void _showSensorDetails(Sensor sensor) {
+  void _showSensorDetails(Device sensor) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -425,7 +425,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildSensorDetailsModal(Sensor sensor) {
+  Widget _buildSensorDetailsModal(Device sensor) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
       decoration: const BoxDecoration(

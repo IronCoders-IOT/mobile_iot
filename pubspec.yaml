@@ -41,6 +41,8 @@ dependencies:
   provider: ^6.1.1               # State management
   intl: ^0.18.1
   envied: ^1.1.1
+  flutter_bloc: ^8.1.4           # BLoC pattern
+  equatable: ^2.0.5              # Value equality
 
 dev_dependencies:
   flutter_test:

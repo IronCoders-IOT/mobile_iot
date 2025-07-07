@@ -1,6 +1,4 @@
 class WaterRequest{
- //final int residentId;
-  // final int providerId;
   final String requestedLiters;
   final String status;
   final String deliveredAt;
