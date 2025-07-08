@@ -1,21 +1,79 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mobile_iot/analytics/presentation/tank_history/tank_history_screen.dart';
-import 'package:mobile_iot/analytics/presentation/request_history/request_history_screen.dart';
-import 'package:mobile_iot/iam/presentation/auth/login_screen.dart';
-import 'package:mobile_iot/dashboard/presentation/dashboard/dashboard_screen.dart';
-import 'package:mobile_iot/profiles/presentation/profile/profile_screen.dart';
-import 'package:mobile_iot/analytics/presentation/reports/reports_screen.dart';
-import 'package:mobile_iot/iam/presentation/auth/splash_screen.dart';
-import 'package:mobile_iot/analytics/presentation/create_report/create_report_screen.dart';
+import 'package:mobile_iot/analytics/presentation/tank_events_screen.dart';
+import 'package:mobile_iot/analytics/presentation/water_supply_request_screen.dart';
+import 'package:mobile_iot/iam/presentation/login_screen.dart';
+import 'package:mobile_iot/analytics/presentation/dashboard_screen.dart';
+import 'package:mobile_iot/profiles/presentation/profile_edition_screen.dart';
+import 'package:mobile_iot/profiles/presentation/profile_screen.dart';
+import 'package:mobile_iot/analytics/presentation/reports_screen.dart';
+import 'package:mobile_iot/shared/helpers/splash_screen.dart';
+import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
+import 'l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_iot/iam/presentation/bloc/auth/bloc/auth_bloc.dart';
+import 'package:mobile_iot/iam/application/sign_in_use_case.dart';
+import 'package:mobile_iot/iam/infrastructure/repositories/auth_repository_impl.dart';
+import 'package:mobile_iot/iam/infrastructure/service/auth_api_service.dart';
+import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 void main() {
   runApp(const AquaConectaApp());
 }
 
-class AquaConectaApp extends StatelessWidget {
+class AquaConectaApp extends StatefulWidget {
   const AquaConectaApp({Key? key}) : super(key: key);
+
+  static AquaConectaAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<AquaConectaAppState>();
+
+  @override
+  State<AquaConectaApp> createState() => AquaConectaAppState();
+}
+
+class AquaConectaAppState extends State<AquaConectaApp> {
+  Locale? _locale;
+
+  static AquaConectaAppState? _instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _instance = this;
+    _loadSavedLocale();
+  }
+
+  Future<void> _loadSavedLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedLocale = prefs.getString('locale');
+    if (savedLocale != null) {
+      setState(() {
+        _locale = Locale(savedLocale);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_instance == this) {
+      _instance = null;
+    }
+    super.dispose();
+  }
+
+  void setLocale(Locale locale) async {
+    setState(() {
+      _locale = locale;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('locale', locale.languageCode);
+  }
+
+  static void changeLocale(Locale locale) {
+    _instance?.setLocale(locale);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,58 +224,42 @@ class AquaConectaApp extends StatelessWidget {
           ),
         ),
       ),
-      
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: _locale,
       // Pantalla inicial
       home: const SplashScreen(),
       
-      // Rutas nombradas (para navegación futura)
+      // Rutas nombradas
       routes: {
-        '/login': (context) => const LoginScreen(),
+        '/login': (context) => BlocProvider<AuthBloc>(
+          create: (_) => AuthBloc(
+            signInUseCase: SignInUseCase(AuthRepositoryImpl(AuthApiService())),
+            secureStorage: SecureStorageService(),
+          ),
+          child: const LoginScreen(),
+        ),
         '/dashboard': (context) => const DashboardScreen(),
         '/profile': (context) => const ProfileScreen(),
-        '/edit-profile': (context) => const EditProfileScreen(),
+        '/edit-profile': (context) => const ProfileEditionScreen(),
         '/reports': (context) => const ReportsScreen(),
-        '/history': (context) => const HistoryScreen(),
-        '/request-history': (context) => const RequestHistoryScreen(),
-        '/create-report': (context) => const CreateReportScreen(),
+        '/history': (context) => const TankEventsScreen(),
+        '/request-history': (context) => const WaterSupplyRequestScreen(),
+        '/create-report': (context) => const ReportCreationScreen(),
       },
       
       // Ruta por defecto cuando no se encuentra una ruta
       onUnknownRoute: (settings) {
         return MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
+          builder: (context) => BlocProvider<AuthBloc>(
+            create: (_) => AuthBloc(
+              signInUseCase: SignInUseCase(AuthRepositoryImpl(AuthApiService())),
+              secureStorage: SecureStorageService(),
+            ),
+            child: const LoginScreen(),
+          ),
         );
       },
     );
-  }
-}
-
-// Clase para mantener las rutas organizadas
-class AppRoutes {
-  static const String login = '/login';
-  static const String dashboard = '/dashboard';
-  static const String profile = '/profile';
-  static const String editProfile = '/edit-profile';
-  static const String reports = '/reports';
-  
-  // Método helper para navegación
-  static void navigateToLogin(BuildContext context) {
-    Navigator.pushReplacementNamed(context, login);
-  }
-  
-  static void navigateToDashboard(BuildContext context) {
-    Navigator.pushReplacementNamed(context, dashboard);
-  }
-  
-  static void navigateToProfile(BuildContext context) {
-    Navigator.pushNamed(context, profile);
-  }
-  
-  static void navigateToReports(BuildContext context) {
-    Navigator.pushNamed(context, reports);
-  }
-  
-  static void navigateToEditProfile(BuildContext context) {
-    Navigator.pushNamed(context, editProfile);
   }
 }
