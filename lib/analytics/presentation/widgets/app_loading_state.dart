@@ -1,9 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_iot/shared/widgets/app_colors.dart';
 
+/// A reusable loading state widget for application screens.
+/// 
+/// This widget provides a consistent loading indicator across the application,
+/// displaying a circular progress indicator with an optional message.
+/// It follows Material Design principles and uses the app's color scheme.
+/// 
+/// The loading state supports:
+/// - Centered circular progress indicator with app colors
+/// - Optional loading message below the indicator
+/// - Consistent styling and spacing
+/// - Reusable across different screens and contexts
 class AppLoadingState extends StatelessWidget {
+  /// Optional message to display below the loading indicator.
+  /// If not provided, only the progress indicator will be shown.
   final String? message;
 
+  /// Creates an app loading state with the specified parameters.
+  /// 
+  /// Parameters:
+  /// - [key]: Optional widget key
+  /// - [message]: Optional loading message to display
   const AppLoadingState({
     Key? key,
     this.message,

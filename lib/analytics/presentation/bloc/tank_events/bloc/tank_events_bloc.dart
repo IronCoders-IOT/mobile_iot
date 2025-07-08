@@ -10,14 +10,41 @@ import 'package:mobile_iot/analytics/infrastructure/repositories/device_reposito
 import 'package:mobile_iot/analytics/infrastructure/repositories/event_repository_impl.dart';
 import './bloc.dart';
 
+/// BLoC for managing tank events state and business logic.
+/// 
+/// This BLoC handles all tank events-related operations including fetching,
+/// searching, and refreshing tank events data. It coordinates between the
+/// presentation layer and the business logic layer, managing the complete
+/// lifecycle of tank events data.
+/// 
+/// The BLoC follows the BLoC pattern for state management and provides:
+/// - Data fetching from multiple data sources
+/// - Search functionality with real-time filtering
+/// - Error handling and state management
+/// - Authentication and resident validation
 class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
+  /// Use case for device-related operations.
   final DeviceUseCase _deviceUseCase;
+  
+  /// Use case for event-related operations.
   final EventUseCase _eventUseCase;
+  
+  /// Service for secure storage operations (authentication tokens).
   final SecureStorageService _secureStorage;
+  
+  /// Service for resident API operations.
   final ResidentApiService _residentApiService;
   
+  /// Internal cache of all events for search functionality.
   List<Event> _allEvents = [];
 
+  /// Creates a tank events BLoC with the required dependencies.
+  /// 
+  /// Parameters:
+  /// - [deviceUseCase]: Use case for device operations
+  /// - [eventUseCase]: Use case for event operations
+  /// - [secureStorage]: Service for secure storage
+  /// - [residentApiService]: Service for resident API operations
   TankEventsBloc({
     required DeviceUseCase deviceUseCase,
     required EventUseCase eventUseCase,
@@ -29,11 +56,29 @@ class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
        _residentApiService = residentApiService,
        super(InitialTankEventsState()) {
     
+    // Register event handlers
     on<FetchTankEventsEvent>(_onFetchTankEvents);
     on<SearchTankEventsEvent>(_onSearchTankEvents);
     on<RefreshTankEventsEvent>(_onRefreshTankEvents);
   }
 
+  /// Handles the fetch tank events event.
+  /// 
+  /// This method performs the complete data fetching process:
+  /// 1. Retrieves authentication token
+  /// 2. Validates resident information
+  /// 3. Fetches associated sensors
+  /// 4. Retrieves events for the first sensor
+  /// 5. Updates the internal cache and emits loaded state
+  /// 
+  /// Parameters:
+  /// - [event]: The fetch tank events event
+  /// - [emit]: The state emitter
+  /// 
+  /// Throws:
+  /// - Exception when authentication token is missing
+  /// - Exception when resident is not found
+  /// - Exception when no sensors are available
   Future<void> _onFetchTankEvents(FetchTankEventsEvent event, Emitter<TankEventsState> emit) async {
     emit(TankEventsLoadingState());
     
@@ -61,12 +106,30 @@ class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
     }
   }
 
+  /// Handles the search tank events event.
+  /// 
+  /// This method updates the search query in the current state
+  /// if the BLoC is in a loaded state, enabling real-time filtering
+  /// of the events list.
+  /// 
+  /// Parameters:
+  /// - [event]: The search tank events event containing the query
+  /// - [emit]: The state emitter
   Future<void> _onSearchTankEvents(SearchTankEventsEvent event, Emitter<TankEventsState> emit) async {
     if (state is TankEventsLoadedState) {
       emit(TankEventsLoadedState(events: _allEvents, searchQuery: event.query));
     }
   }
 
+  /// Handles the refresh tank events event.
+  /// 
+  /// This method triggers a complete refresh of the tank events data
+  /// by re-fetching from the data source, typically used for
+  /// pull-to-refresh functionality.
+  /// 
+  /// Parameters:
+  /// - [event]: The refresh tank events event
+  /// - [emit]: The state emitter
   Future<void> _onRefreshTankEvents(RefreshTankEventsEvent event, Emitter<TankEventsState> emit) async {
     await _onFetchTankEvents(FetchTankEventsEvent(), emit);
   }

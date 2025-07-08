@@ -1,11 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_iot/shared/widgets/app_colors.dart';
 
+/// A reusable modal bottom sheet widget for application screens.
+/// 
+/// This widget provides a consistent modal bottom sheet layout across the application,
+/// including a title header with close functionality and customizable content.
+/// It follows Material Design principles and uses the app's color scheme.
+/// 
+/// The modal bottom sheet supports:
+/// - Title header with close button
+/// - Customizable content through children widgets
+/// - Consistent styling with rounded top corners
+/// - Optional custom close callback
+/// - Reusable across different screens and contexts
 class AppModalBottomSheet extends StatelessWidget {
+  /// The title text to display in the modal header.
   final String title;
+  
+  /// The list of widgets to display as content in the modal.
   final List<Widget> children;
+  
+  /// Optional callback for the close button.
+  /// If not provided, defaults to popping the current route.
   final VoidCallback? onClose;
 
+  /// Creates an app modal bottom sheet with the specified parameters.
+  /// 
+  /// Parameters:
+  /// - [key]: Optional widget key
+  /// - [title]: The title text to display in the header
+  /// - [children]: The list of widgets to display as content
+  /// - [onClose]: Optional callback for the close button
   const AppModalBottomSheet({
     Key? key,
     required this.title,

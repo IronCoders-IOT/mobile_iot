@@ -1,34 +1,77 @@
 import 'package:equatable/equatable.dart';
 import 'package:mobile_iot/analytics/domain/entities/water_request.dart';
 
-/// States for the WaterSupplyRequestBloc
+/// Abstract base class for water supply request BLoC states.
+/// 
+/// This class defines the contract for all states that can be emitted
+/// by the WaterSupplyRequestBloc. It extends Equatable to enable proper state
+/// comparison and change detection.
+/// 
+/// All water supply request-related UI states should extend this class to ensure
+/// consistent state management and UI updates.
 abstract class WaterSupplyRequestState extends Equatable {
+  /// Creates a water supply request state.
   const WaterSupplyRequestState();
 
   @override
   List<Object?> get props => [];
 }
 
-/// Initial state
-class WaterSupplyRequestInitialState extends WaterSupplyRequestState {}
+/// Initial state when the water supply request BLoC is first created.
+/// 
+/// This state represents the starting point before any data
+/// loading or user interaction has occurred.
+class WaterSupplyRequestInitialState extends WaterSupplyRequestState {
+  /// Creates an initial water supply request state.
+  const WaterSupplyRequestInitialState();
+}
 
-/// Loading state while fetching requests
-class WaterSupplyRequestLoadingState extends WaterSupplyRequestState {}
+/// Loading state when water supply requests data is being fetched.
+/// 
+/// This state is emitted when the application is loading
+/// water supply requests data from the data source, typically showing
+/// a loading indicator in the UI.
+class WaterSupplyRequestLoadingState extends WaterSupplyRequestState {
+  /// Creates a loading water supply request state.
+  const WaterSupplyRequestLoadingState();
+}
 
-/// Loaded state with requests data
+/// Loaded state when water supply requests data has been successfully retrieved.
+/// 
+/// This state contains the loaded water supply requests data and is emitted
+/// when the data fetching process completes successfully.
+/// 
+/// Parameters:
+/// - [requests]: The list of water supply requests
 class WaterSupplyRequestLoadedState extends WaterSupplyRequestState {
+  /// The list of water supply requests retrieved from the data source.
   final List<WaterRequest> requests;
 
+  /// Creates a loaded water supply request state.
+  /// 
+  /// Parameters:
+  /// - [requests]: The list of water supply requests
   const WaterSupplyRequestLoadedState(this.requests);
 
   @override
   List<Object?> get props => [requests];
 }
 
-/// Error state when fetching fails
+/// Error state when water supply requests data loading has failed.
+/// 
+/// This state is emitted when an error occurs during data loading,
+/// containing an error message to display to the user.
+/// 
+/// Parameters:
+/// - [message]: The error message describing what went wrong
 class WaterSupplyRequestErrorState extends WaterSupplyRequestState {
+  /// The error message to display to the user.
   final String message;
 
+  /// Creates an error water supply request state.
+  /// 
+  /// Parameters:
+  /// - [message]: The error message
   const WaterSupplyRequestErrorState(this.message);
 
   @override

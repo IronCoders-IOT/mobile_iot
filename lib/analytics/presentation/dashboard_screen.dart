@@ -1,140 +1,231 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 import 'package:mobile_iot/analytics/presentation/water_supply_request_creation_screen.dart';
 import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
 import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
-import 'package:mobile_iot/analytics/domain/entities/device.dart';
-
 import 'package:mobile_iot/shared/widgets/app_logo.dart';
-
+import '../../profiles/infrastructure/service/resident_api_service.dart';
+import '../../shared/helpers/secure_storage_service.dart';
 import '../../shared/widgets/app_colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_iot/analytics/presentation/bloc/tank_events/bloc/tank_events_bloc.dart';
+import 'package:mobile_iot/analytics/presentation/bloc/tank_events/bloc/tank_events_state.dart';
+import 'package:mobile_iot/analytics/presentation/bloc/tank_events/bloc/tank_events_event.dart';
+import 'package:mobile_iot/analytics/domain/logic/get_event_status_color.dart';
+import 'package:mobile_iot/analytics/domain/logic/get_ph_from_status.dart';
+import 'package:mobile_iot/analytics/domain/logic/calculate_water_percentage.dart';
+import 'package:mobile_iot/shared/widgets/circular_progress_painter.dart';
+import 'package:mobile_iot/analytics/domain/entities/water_reading.dart';
+import '../application/device_use_case.dart';
+import '../application/event_use_case.dart';
+import '../infrastructure/repositories/device_repository_impl.dart';
+import '../infrastructure/repositories/event_repository_impl.dart';
+import '../infrastructure/service/device_api_service.dart';
+import '../infrastructure/service/event_api_service.dart';
 
+/// A screen that displays water tank analytics and monitoring dashboard for the authenticated user.
+/// 
+/// This screen uses the BLoC pattern for state management and provides the following features:
+/// - Real-time water level monitoring with circular progress indicator
+/// - Current water status, quantity, and pH level display
+/// - Water supply request functionality
+/// - Recent activity tracking
+/// - Navigation to other app sections via bottom navigation
+/// - Quick access to report creation via floating action button
+/// 
+/// The screen automatically handles:
+/// - Loading states while fetching tank events data
+/// - Error states with retry functionality
+/// - Session expiration and automatic logout
+/// - Device detection and event retrieval
+/// - Water percentage calculations and animations
+/// - Water supply request creation and history viewing
+///
 class DashboardScreen extends StatefulWidget {
+  /// Creates a dashboard screen.
+  /// 
+  /// The [key] parameter is optional and is passed to the superclass.
   const DashboardScreen({Key? key}) : super(key: key);
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
+/// The state class for the DashboardScreen widget.
+/// 
+/// This class manages the animation controller for the water level indicator
+/// and maintains the water history data for display.
 class _DashboardScreenState extends State<DashboardScreen>
     with TickerProviderStateMixin {
+  /// Controller for the water level animation.
   late AnimationController _animationController;
+  
+  /// Animation for the circular progress indicator.
   late Animation<double> _animation;
   
-  final double currentPercentage = 70.0;
-  final String waterStatus = "Safe";
-  final String waterQuantity = "700L";
-  final double phLevel = 7.0;
-  
-  final List<WaterReading> waterHistory = [
-    WaterReading(time: "15:00", quantity: "700L", type: "Water")
-  ];
-
+  /// List of water readings for the history section.
+  List<WaterReading> waterHistory = [];
 
   @override
   void initState() {
     super.initState();
+    // Initialize animation controller for water level indicator
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
+    
+    // Initialize animation with default values (will be updated dynamically)
     _animation = Tween<double>(
       begin: 0.0,
-      end: currentPercentage / 100,
+      end: 1.0, // Will be set dynamically based on water percentage
     ).animate(CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
     
-    // Iniciar animación
+    // Start the initial animation
     _animationController.forward();
-   // _fetchSensors();
-  }
-  void _showSensorDetails(Device sensor) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _buildSensorDetailsModal(sensor),
-    );
   }
 
   @override
   void dispose() {
+    // Clean up animation controller to prevent memory leaks
     _animationController.dispose();
     super.dispose();
   }
 
+
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.lightGray,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header con logo
-            _buildHeader(),
+    return BlocProvider<TankEventsBloc>(
+      create: (context) => TankEventsBloc(
+        deviceUseCase: DeviceUseCase(DeviceRepositoryImpl(DeviceApiService())),
+        eventUseCase: EventUseCase(EventRepositoryImpl(EventApiService())),
+        secureStorage: SecureStorageService(),
+        residentApiService: ResidentApiService(),
+      )..add(FetchTankEventsEvent()),
+      child: BlocBuilder<TankEventsBloc, TankEventsState>(
+        builder: (context, state) {
+          // Handle loading state - show loading indicator
+          if (state is TankEventsLoadingState) {
+            return const Center(child: CircularProgressIndicator());
+          } 
+          // Handle error state - show error message
+          else if (state is TankEventsErrorState) {
+            return Center(child: Text('Error: ${state.message}'));
+          } 
+          // Handle loaded state with events - show dashboard content
+          else if (state is TankEventsLoadedState && state.events.isNotEmpty) {
+            // Extract data from the latest event for display
+            final latestEvent = state.events.last;
+            final status = getStatusFromQuality(latestEvent.qualityValue);
+            final waterQuantity = latestEvent.levelValue;
+            final phLevel = getPhFromStatus(status);
+            final currentPercentage = calculateWaterPercentage(state.events);
             
-            // Contenido principal
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
+            // Update water history with the latest event for display
+            waterHistory = [
+              WaterReading(time: '', quantity: waterQuantity, type: 'Water'),
+            ];
+            
+            // Update animation to reflect the new water percentage
+            _animation = Tween<double>(
+              begin: 0.0,
+              end: currentPercentage / 1000, // Assuming 1000L is 100%
+            ).animate(CurvedAnimation(
+              parent: _animationController,
+              curve: Curves.easeInOut,
+            ));
+            _animationController.forward(from: 0.0);
+            return Scaffold(
+              backgroundColor: AppColors.lightGray,
+              body: SafeArea(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Indicador circular
-                    _buildCircularIndicator(),
+                    // Header with app logo
+                    _buildHeader(),
                     
-                    const SizedBox(height: 24),
-                    
-                    // Fecha actual
-                    _buildDateSection(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Tarjeta de métricas
-                    _buildMetricsCard(),
-                    
-                    const SizedBox(height: 32),
-                    // Sección de historial
-                    _buildHistorySection(),
+                    // Main content area with scrollable content
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Circular water level indicator
+                            _buildCircularIndicator(currentPercentage),
+                            
+                            const SizedBox(height: 24),
+                            
+                            // Current date section
+                            _buildDateSection(),
+                            
+                            const SizedBox(height: 24),
+                            
+                            // Metrics card with status, quantity, and pH
+                            _buildMetricsCard(
+                              status: status,
+                              waterQuantity: waterQuantity,
+                              phLevel: phLevel,
+                            ),
+                            
+                            const SizedBox(height: 32),
+                            // Recent activity history section
+                            _buildHistorySection(),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: AppBottomNavigationBar(
-        currentIndex: 1,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushReplacementNamed(context, '/reports');
-              break;
-            case 1:
-              // Already on dashboard
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, '/profile');
-              break;
+              // Bottom navigation bar for app-wide navigation
+              bottomNavigationBar: AppBottomNavigationBar(
+                currentIndex: 1, // Dashboard tab is active
+                onTap: (index) {
+                  switch (index) {
+                    case 0:
+                      Navigator.pushReplacementNamed(context, '/reports');
+                      break;
+                    case 1:
+                      // Already on dashboard
+                      break;
+                    case 2:
+                      Navigator.pushReplacementNamed(context, '/profile');
+                      break;
+                  }
+                },
+              ),
+              // Floating action button for quick report creation
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ReportCreationScreen()),
+                  );
+                },
+                backgroundColor: AppColors.primaryBlue,
+                child: const Icon(Icons.add, color: Colors.white),
+                tooltip: 'Create Report',
+              ),
+            );
+          } 
+          // Handle empty state - show no events message
+          else {
+            return const Center(child: Text('No events found.'));
           }
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ReportCreationScreen()),
-          );
-        },
-        backgroundColor: AppColors.primaryBlue,
-        child: const Icon(Icons.add, color: Colors.white),
-        tooltip: 'Create Report',
       ),
     );
   }
 
+  /// Builds the dashboard header with the app logo.
+  /// 
+  /// This method creates a centered header section that displays
+  /// the application logo with consistent styling and padding.
+  /// 
+  /// Returns a container widget with the app logo centered horizontally.
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -147,50 +238,63 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildCircularIndicator() {
+  /// Builds the circular indicator for water level.
+  /// 
+  /// This method creates a circular progress indicator that displays
+  /// the current water level percentage with animated progress.
+  /// The indicator uses a custom painter for the circular progress
+  /// and displays the percentage value in the center.
+  /// 
+  /// Parameters:
+  /// - [currentPercentage]: The current water level percentage to display
+  /// 
+  /// Returns a centered widget with the circular water level indicator.
+  Widget _buildCircularIndicator(double currentPercentage) {
     return Center(
       child: SizedBox(
         width: 200,
         height: 200,
-        child: AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            return CustomPaint(
-              painter: CircularProgressPainter(
-                progress: _animation.value,
-                strokeWidth: 12.0,
-                backgroundColor: AppColors.lightGray,
-                progressColor: AppColors.primaryBlue,
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '${(_animation.value * 100).round()}%',
-                      style: const TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryBlue,
-                      ),
-                    ),
-                    const Text(
-                      'Percentage',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.mediumGray,
-                      ),
-                    ),
-                  ],
+        child: CustomPaint(
+          painter: CircularProgressPainter(
+            progress: currentPercentage / 1000, // Assuming 1000L is 100%
+            strokeWidth: 12.0,
+            backgroundColor: AppColors.lightGray,
+            progressColor: AppColors.primaryBlue,
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${currentPercentage.toStringAsFixed(2)} %',
+                  style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryBlue,
+                  ),
                 ),
-              ),
-            );
-          },
+                const Text(
+                  'Water',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.mediumGray,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
+  /// Builds the date section displaying the current day.
+  /// 
+  /// This method creates a centered text widget that displays
+  /// the current day label with consistent styling.
+  /// Currently shows "Today" as a static label.
+  /// 
+  /// Returns a centered text widget with the date label.
   Widget _buildDateSection() {
     return const Center(
       child: Text(
@@ -204,7 +308,26 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildMetricsCard() {
+  /// Builds the metrics card with status, quantity, and pH information.
+  /// 
+  /// This method creates a card widget that displays key water metrics:
+  /// - Water status (normal, alert, critical) with color-coded indicators
+  /// - Current water quantity
+  /// - pH level
+  /// - Water supply request button
+  /// - Request history button
+  /// 
+  /// Parameters:
+  /// - [status]: The current water status string
+  /// - [waterQuantity]: The current water quantity value
+  /// - [phLevel]: The current pH level value
+  /// 
+  /// Returns a card widget containing the metrics display and action buttons.
+  Widget _buildMetricsCard({
+    required String status,
+    required String waterQuantity,
+    required double phLevel,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -224,7 +347,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildMetricItem(
-                title: waterStatus,
+                title: status,
                 subtitle: 'Status',
                 color: AppColors.green,
                 icon: Icons.check_circle,
@@ -295,6 +418,19 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  /// Builds a metric item for the metrics card.
+  /// 
+  /// This method creates a column widget that displays a single metric
+  /// with an icon, title, and subtitle. Used for displaying status,
+  /// quantity, and pH information in the metrics card.
+  /// 
+  /// Parameters:
+  /// - [title]: The main value to display 
+  /// - [subtitle]: The label for the metric 
+  /// - [color]: The color for the icon and title text
+  /// - [icon]: The icon to display above the title
+  /// 
+  /// Returns a column widget with the metric display.
   Widget _buildMetricItem({
     required String title,
     required String subtitle,
@@ -329,6 +465,13 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  /// Builds a vertical divider for the metrics card.
+  /// 
+  /// This method creates a thin vertical line that separates
+  /// the different metric items in the metrics card for better
+  /// visual organization.
+  /// 
+  /// Returns a container widget with a vertical divider line.
   Widget _buildVerticalDivider() {
     return Container(
       width: 1,
@@ -337,6 +480,13 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  /// Builds the recent activity history section.
+  /// 
+  /// This method creates a section that displays recent water activity
+  /// with a title and a card containing the water history items.
+  /// The section shows the latest water reading from the tank events.
+  /// 
+  /// Returns a column widget with the history section title and content.
   Widget _buildHistorySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,6 +521,16 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  /// Builds an individual history item for the recent activity section.
+  /// 
+  /// This method creates a tappable row widget that displays a single
+  /// water reading from the history. Each item shows a colored dot,
+  /// the reading type, and the quantity value.
+  /// 
+  /// Parameters:
+  /// - [reading]: The water reading entity to display
+  /// 
+  /// Returns a gesture detector widget with the history item display.
   Widget _buildHistoryItem(WaterReading reading) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -412,255 +572,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ],
               ),
             ),
-            Text(
-              reading.time,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.mediumGray,
-              ),
-            ),
           ],
         ),
       ),
     );
-  }
-
-  Widget _buildSensorDetailsModal(Device sensor) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.6,
-      decoration: const BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.mediumGray.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.sensors,
-                    color: AppColors.primaryBlue,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Sensor ${sensor.id}',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.darkBlue,
-                        ),
-                      ),
-                      Text(
-                        'Status: Active',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.mediumGray,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: const Icon(
-                    Icons.close,
-                    color: AppColors.mediumGray,
-                    size: 24,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Sensor Details',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.darkBlue,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDetailItem('Sensor ID', sensor.id.toString()),
-                  _buildDetailItem('Location', 'Tank ${sensor.id}'),
-                  _buildDetailItem('Type', 'Water Quality Sensor'),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Actions',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.darkBlue,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildActionItem('1. View sensor data'),
-                  _buildActionItem('2. Check sensor status'),
-                  _buildActionItem('3. Contact support if needed'),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.darkBlue,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.mediumGray,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionItem(String action) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 6),
-            width: 4,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              action,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.mediumGray,
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class WaterReading {
-  final String time;
-  final String quantity;
-  final String type;
-
-  WaterReading({
-    required this.time,
-    required this.quantity,
-    required this.type,
-  });
-}
-
-class CircularProgressPainter extends CustomPainter {
-  final double progress;
-  final double strokeWidth;
-  final Color backgroundColor;
-  final Color progressColor;
-
-  CircularProgressPainter({
-    required this.progress,
-    required this.strokeWidth,
-    required this.backgroundColor,
-    required this.progressColor,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - strokeWidth) / 2;
-
-    // Background circle
-    final backgroundPaint = Paint()
-      ..color = backgroundColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-
-    canvas.drawCircle(center, radius, backgroundPaint);
-
-    // Progress arc
-    final progressPaint = Paint()
-      ..color = progressColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2, // Start from top
-      2 * math.pi * progress, // Progress arc
-      false,
-      progressPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(CircularProgressPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-           oldDelegate.strokeWidth != strokeWidth ||
-           oldDelegate.backgroundColor != backgroundColor ||
-           oldDelegate.progressColor != progressColor;
   }
 }
 

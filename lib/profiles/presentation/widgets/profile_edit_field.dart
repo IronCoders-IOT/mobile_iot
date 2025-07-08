@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_iot/shared/widgets/app_colors.dart';
 
+/// Widget for editing a single profile field in a form.
+///
+/// This widget displays a label and a [TextFormField] for editing a profile attribute.
+/// It supports custom keyboard types and validation logic.
 class ProfileEditField extends StatelessWidget {
+  /// The label to display above the input field.
   final String label;
+  /// The controller for the input field.
   final TextEditingController controller;
+  /// The keyboard type for the input field.
   final TextInputType keyboardType;
+  /// The validator function for the input field.
   final String? Function(String?)? validator;
 
+  /// Creates a [ProfileEditField] widget.
+  ///
+  /// Parameters:
+  /// - [label]: The label to display
+  /// - [controller]: The controller for the input field
+  /// - [keyboardType]: The keyboard type for the input field (default: text)
+  /// - [validator]: The validator function for the input field
   const ProfileEditField({
     Key? key,
     required this.label,
@@ -15,6 +30,12 @@ class ProfileEditField extends StatelessWidget {
     this.validator,
   }) : super(key: key);
 
+  /// Builds the profile edit field widget.
+  ///
+  /// Parameters:
+  /// - [context]: The build context
+  ///
+  /// Returns a [Widget] containing the label and input field.
   @override
   Widget build(BuildContext context) {
     return Column(

@@ -1,13 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_iot/shared/widgets/app_colors.dart';
 
+/// A reusable empty state widget for application screens.
+/// 
+/// This widget provides a consistent empty state display across the application,
+/// showing an optional icon, title, subtitle, and action button when no data
+/// is available. It follows Material Design principles and uses the app's color scheme.
+/// 
+/// The empty state supports:
+/// - Optional icon with consistent styling
+/// - Title and optional subtitle text
+/// - Optional action button with customizable text
+/// - Consistent styling and spacing
+/// - Reusable across different screens and contexts
 class AppEmptyState extends StatelessWidget {
+  /// The main title text to display in the empty state.
   final String title;
+  
+  /// Optional subtitle text to display below the title.
   final String? subtitle;
+  
+  /// Optional icon to display above the title.
   final IconData? icon;
+  
+  /// Optional callback for the action button.
+  /// If provided along with actionText, an action button will be displayed.
   final VoidCallback? onAction;
+  
+  /// Optional text for the action button.
+  /// Must be provided along with onAction for the button to appear.
   final String? actionText;
 
+  /// Creates an app empty state with the specified parameters.
+  /// 
+  /// Parameters:
+  /// - [key]: Optional widget key
+  /// - [title]: The main title text to display
+  /// - [subtitle]: Optional subtitle text
+  /// - [icon]: Optional icon to display
+  /// - [onAction]: Optional callback for the action button
+  /// - [actionText]: Optional text for the action button
   const AppEmptyState({
     Key? key,
     required this.title,

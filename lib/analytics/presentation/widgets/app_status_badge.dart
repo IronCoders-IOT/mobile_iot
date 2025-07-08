@@ -1,12 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_iot/shared/widgets/app_colors.dart';
 
+/// A reusable status badge widget for application screens.
+/// 
+/// This widget provides a consistent status indicator across the application,
+/// displaying text with customizable background and text colors in a pill-shaped badge.
+/// It follows Material Design principles and uses the app's color scheme.
+/// 
+/// The status badge supports:
+/// - Customizable text content
+/// - Customizable background and text colors
+/// - Optional custom font size
+/// - Consistent styling with rounded corners
+/// - Reusable across different screens and contexts
 class AppStatusBadge extends StatelessWidget {
+  /// The text to display in the status badge.
   final String text;
+  
+  /// The background color of the status badge.
   final Color backgroundColor;
+  
+  /// The text color of the status badge.
   final Color textColor;
+  
+  /// Optional font size for the badge text.
+  /// Defaults to 12 if not specified.
   final double? fontSize;
 
+  /// Creates an app status badge with the specified parameters.
+  /// 
+  /// Parameters:
+  /// - [key]: Optional widget key
+  /// - [text]: The text to display in the badge
+  /// - [backgroundColor]: The background color of the badge
+  /// - [textColor]: The text color of the badge
+  /// - [fontSize]: Optional font size for the text
   const AppStatusBadge({
     Key? key,
     required this.text,

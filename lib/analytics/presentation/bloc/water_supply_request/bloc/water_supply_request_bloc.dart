@@ -9,21 +9,52 @@ import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 import 'water_supply_request_event.dart';
 import 'water_supply_request_state.dart';
 
-/// BLoC for managing water supply request state and logic
+/// BLoC for managing water supply request state and business logic.
+/// 
+/// This BLoC handles all water supply request-related operations including
+/// fetching and refreshing water supply requests data. It coordinates between
+/// the presentation layer and the business logic layer, managing the complete
+/// lifecycle of water supply request data.
+/// 
+/// The BLoC follows the BLoC pattern for state management and provides:
+/// - Data fetching from the water supply requests data source
+/// - Error handling and state management
+/// - Authentication and session management
+/// - Resident profile validation
 class WaterSupplyRequestBloc extends Bloc<WaterSupplyRequestEvent, WaterSupplyRequestState> {
+  /// Use case for resident-related operations.
   final ResidentUseCase residentUseCase;
+  
+  /// Repository for water request data operations.
   final WaterRequestRepositoryImpl waterRequestRepo;
+  
+  /// Service for secure storage operations (authentication tokens).
   final SecureStorageService secureStorage;
 
+  /// Creates a water supply request BLoC with the required dependencies.
+  /// 
+  /// Parameters:
+  /// - [residentUseCase]: Use case for resident operations
+  /// - [waterRequestRepo]: Repository for water request operations
+  /// - [secureStorage]: Service for secure storage
   WaterSupplyRequestBloc({
     required this.residentUseCase,
     required this.waterRequestRepo,
     required this.secureStorage,
   }) : super(WaterSupplyRequestInitialState()) {
+    // Register event handlers
     on<FetchWaterSupplyRequestsEvent>(_onFetchWaterSupplyRequests);
     on<RefreshWaterSupplyRequestsEvent>(_onRefreshWaterSupplyRequests);
   }
 
+  /// Handles the fetch water supply requests event.
+  /// 
+  /// This method delegates to the common fetch method to retrieve
+  /// water supply requests data from the data source.
+  /// 
+  /// Parameters:
+  /// - [event]: The fetch water supply requests event
+  /// - [emit]: The state emitter
   Future<void> _onFetchWaterSupplyRequests(
     FetchWaterSupplyRequestsEvent event,
     Emitter<WaterSupplyRequestState> emit,
@@ -31,6 +62,14 @@ class WaterSupplyRequestBloc extends Bloc<WaterSupplyRequestEvent, WaterSupplyRe
     await _fetchRequests(emit);
   }
 
+  /// Handles the refresh water supply requests event.
+  /// 
+  /// This method delegates to the common fetch method to refresh
+  /// water supply requests data from the data source.
+  /// 
+  /// Parameters:
+  /// - [event]: The refresh water supply requests event
+  /// - [emit]: The state emitter
   Future<void> _onRefreshWaterSupplyRequests(
     RefreshWaterSupplyRequestsEvent event,
     Emitter<WaterSupplyRequestState> emit,
@@ -38,6 +77,22 @@ class WaterSupplyRequestBloc extends Bloc<WaterSupplyRequestEvent, WaterSupplyRe
     await _fetchRequests(emit);
   }
 
+  /// Common method to fetch water supply requests data.
+  /// 
+  /// This method performs the complete data fetching process:
+  /// 1. Retrieves authentication token
+  /// 2. Validates resident profile information
+  /// 3. Fetches water supply requests for the authenticated resident
+  /// 4. Emits loaded or error state based on the result
+  /// 
+  /// Parameters:
+  /// - [emit]: The state emitter
+  /// 
+  /// Throws:
+  /// - Exception when authentication token is missing
+  /// - Exception when profile cannot be loaded
+  /// - Exception when resident ID is not found
+  /// - SessionExpiredException when the session has expired
   Future<void> _fetchRequests(Emitter<WaterSupplyRequestState> emit) async {
     emit(WaterSupplyRequestLoadingState());
     

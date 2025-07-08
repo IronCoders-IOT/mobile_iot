@@ -5,20 +5,59 @@ import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.
 import 'report_creation_event.dart';
 import 'report_creation_state.dart';
 
-/// BLoC for managing report creation state and logic
+/// BLoC for managing report creation state and business logic.
+/// 
+/// This BLoC handles the report creation process, coordinating between
+/// the presentation layer and the business logic layer. It manages the
+/// complete lifecycle of report creation including validation, submission,
+/// and error handling.
+/// 
+/// The BLoC follows the BLoC pattern for state management and provides:
+/// - Report creation with validation
+/// - Authentication and resident validation
+/// - Error handling and state management
+/// - Loading states for user feedback
 class ReportCreationBloc extends Bloc<ReportCreationEvent, ReportCreationState> {
+  /// Use case for report-related operations.
   final ReportUseCase reportUseCase;
+  
+  /// Service for secure storage operations (authentication tokens).
   final SecureStorageService secureStorage;
+  
+  /// Service for resident API operations.
   final ResidentApiService residentApiService;
 
+  /// Creates a report creation BLoC with the required dependencies.
+  /// 
+  /// Parameters:
+  /// - [reportUseCase]: Use case for report operations
+  /// - [secureStorage]: Service for secure storage
+  /// - [residentApiService]: Service for resident API operations
   ReportCreationBloc({
     required this.reportUseCase,
     required this.secureStorage,
     required this.residentApiService,
   }) : super(ReportCreationInitialState()) {
+    // Register event handlers
     on<CreateReportEvent>(_onCreateReport);
   }
 
+  /// Handles the create report event.
+  /// 
+  /// This method performs the complete report creation process:
+  /// 1. Retrieves authentication token
+  /// 2. Validates resident information
+  /// 3. Creates the report with the provided title and description
+  /// 4. Emits success or error state based on the result
+  /// 
+  /// Parameters:
+  /// - [event]: The create report event containing title and description
+  /// - [emit]: The state emitter
+  /// 
+  /// Throws:
+  /// - Exception when authentication token is missing
+  /// - Exception when resident is not found
+  /// - Exception when report creation fails
   Future<void> _onCreateReport(
     CreateReportEvent event,
     Emitter<ReportCreationState> emit,
