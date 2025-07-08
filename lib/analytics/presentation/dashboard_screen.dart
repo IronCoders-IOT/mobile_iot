@@ -21,6 +21,9 @@ import '../infrastructure/repositories/device_repository_impl.dart';
 import '../infrastructure/repositories/event_repository_impl.dart';
 import '../infrastructure/service/device_api_service.dart';
 import '../infrastructure/service/event_api_service.dart';
+import '../../l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
+import '../../../main.dart';
 
 /// A screen that displays water tank analytics and monitoring dashboard for the authenticated user.
 /// 
@@ -113,7 +116,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           } 
           // Handle error state - show error message
           else if (state is TankEventsErrorState) {
-            return Center(child: Text('Error: ${state.message}'));
+            return Center(child: Text('${AppLocalizations.of(context)!.error}: ${state.message}'));
           } 
           // Handle loaded state with events - show dashboard content
           else if (state is TankEventsLoadedState && state.events.isNotEmpty) {
@@ -207,13 +210,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                 },
                 backgroundColor: AppColors.primaryBlue,
                 child: const Icon(Icons.add, color: Colors.white),
-                tooltip: 'Create Report',
+                tooltip: AppLocalizations.of(context)!.createReport,
               ),
             );
           } 
           // Handle empty state - show no events message
           else {
-            return const Center(child: Text('No events found.'));
+            return Center(child: Text(AppLocalizations.of(context)!.noEventsFound));
           }
         },
       ),
@@ -230,11 +233,36 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const AppLogo(fontSize: 24),
+          _buildLanguageDropdown(),
         ],
       ),
+    );
+  }
+
+  Widget _buildLanguageDropdown() {
+    Locale currentLocale = Localizations.localeOf(context);
+    return DropdownButton<Locale>(
+      value: currentLocale.languageCode == 'es' ? const Locale('es') : const Locale('en'),
+      icon: const Icon(Icons.language, color: Colors.blue),
+      underline: Container(height: 0),
+      onChanged: (Locale? newLocale) {
+        if (newLocale != null) {
+          AquaConectaAppState.changeLocale(newLocale);
+        }
+      },
+      items: [
+        DropdownMenuItem(
+          value: const Locale('en'),
+          child: Text('English'),
+        ),
+        DropdownMenuItem(
+          value: const Locale('es'),
+          child: Text('Español'),
+        ),
+      ],
     );
   }
 
@@ -273,9 +301,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                     color: AppColors.primaryBlue,
                   ),
                 ),
-                const Text(
-                  'Water',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.water,
+                  style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.mediumGray,
                   ),
@@ -296,10 +324,10 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// 
   /// Returns a centered text widget with the date label.
   Widget _buildDateSection() {
-    return const Center(
+    return Center(
       child: Text(
-        'Today',
-        style: TextStyle(
+        AppLocalizations.of(context)!.today,
+        style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: AppColors.darkBlue,
@@ -348,21 +376,21 @@ class _DashboardScreenState extends State<DashboardScreen>
             children: [
               _buildMetricItem(
                 title: status,
-                subtitle: 'Status',
+                subtitle: AppLocalizations.of(context)!.status,
                 color: AppColors.green,
                 icon: Icons.check_circle,
               ),
               _buildVerticalDivider(),
               _buildMetricItem(
                 title: waterQuantity,
-                subtitle: 'Quantity',
+                subtitle: AppLocalizations.of(context)!.quantity,
                 color: AppColors.primaryBlue,
                 icon: Icons.water_drop,
               ),
               _buildVerticalDivider(),
               _buildMetricItem(
                 title: phLevel.toString(),
-                subtitle: 'pH',
+                subtitle: AppLocalizations.of(context)!.ph,
                 color: AppColors.darkBlue,
                 icon: Icons.science,
               ),
@@ -377,14 +405,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                 if (liters != null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Requested $liters liters of water'),
+                      content: Text(AppLocalizations.of(context)!.requestedLitersOfWater(liters)),
                       backgroundColor: AppColors.green,
                     ),
                   );
                 }
               },
               icon: const Icon(Icons.add),
-              label: const Text('Request Water'),
+              label: Text(AppLocalizations.of(context)!.requestWater),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryBlue,
                 foregroundColor: Colors.white,
@@ -403,7 +431,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Navigator.pushNamed(context, '/request-history');
               },
               icon: const Icon(Icons.history, color: AppColors.primaryBlue),
-              label: const Text('View Request History', style: TextStyle(color: AppColors.primaryBlue)),
+              label: Text(AppLocalizations.of(context)!.viewRequestHistory, style: const TextStyle(color: AppColors.primaryBlue)),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppColors.primaryBlue),
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -491,9 +519,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Recent Activity',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context)!.recentActivity,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: AppColors.darkBlue,

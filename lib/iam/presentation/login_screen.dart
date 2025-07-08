@@ -12,6 +12,7 @@ import 'package:mobile_iot/shared/widgets/app_button.dart';
 import 'package:mobile_iot/iam/presentation/widgets/app_welcome_section.dart';
 import 'package:mobile_iot/iam/presentation/bloc/auth/bloc/bloc.dart';
 import '../../shared/widgets/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// A screen that handles user authentication and login.
 /// 
@@ -125,8 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
         listener: (context, state) {
           if (state is AuthSuccessState) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Login successful!'),
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.loginSuccessful),
                 backgroundColor: AppColors.primaryBlue,
               ),
             );
@@ -164,9 +165,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 60),
 
                           // Welcome message section
-                          const AppWelcomeSection(
-                            title: 'Welcome back!',
-                            subtitle: 'Login to your account',
+                          AppWelcomeSection(
+                            title: AppLocalizations.of(context)!.welcomeBack,
+                            subtitle: AppLocalizations.of(context)!.loginToYourAccount,
                           ),
 
                           const SizedBox(height: 40),

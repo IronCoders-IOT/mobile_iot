@@ -19,6 +19,7 @@ import 'package:mobile_iot/analytics/presentation/widgets/app_list_card.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_status_badge.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_modal_bottom_sheet.dart';
 import 'package:mobile_iot/analytics/presentation/bloc/water_supply_request/bloc/bloc.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';
 
@@ -64,7 +65,7 @@ class WaterSupplyRequestScreen extends StatelessWidget {
             child: Column(
               children: [
                 AppHeader(
-                  title: 'Request History',
+                  title: AppLocalizations.of(context)!.requestHistory,
                   onBack: () => Navigator.pop(context),
                 ),
                 Expanded(child: _buildBody(context, state)),
@@ -140,10 +141,10 @@ class WaterSupplyRequestScreen extends StatelessWidget {
     
     if (requests.isEmpty) {
       return AppEmptyState(
-        title: 'No water supply requests found',
-        subtitle: 'Pull down to refresh',
+        title: AppLocalizations.of(context)!.noWaterSupplyRequestsFound,
+        subtitle: AppLocalizations.of(context)!.pullDownToRefresh,
         onAction: () => context.read<WaterSupplyRequestBloc>().add(RefreshWaterSupplyRequestsEvent()),
-        actionText: 'Refresh',
+        actionText: AppLocalizations.of(context)!.refresh,
       );
     }
     
@@ -184,7 +185,7 @@ class WaterSupplyRequestScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        'Water Supply Request',
+                        AppLocalizations.of(context)!.waterSupplyRequest,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -193,7 +194,7 @@ class WaterSupplyRequestScreen extends StatelessWidget {
                       ),
                     ),
                     AppStatusBadge(
-                      text: StatusFormatter.formatWaterRequestStatus(request.status),
+                      text: StatusFormatter.formatWaterRequestStatus(context, request.status),
                       backgroundColor: WaterRequestStatusColors.getStatusBackgroundColor(request.status),
                       textColor: WaterRequestStatusColors.getStatusColor(request.status),
                     ),
@@ -201,7 +202,7 @@ class WaterSupplyRequestScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Requested: ${request.requestedLiters} liters',
+                  '${AppLocalizations.of(context)!.requested}: ${request.requestedLiters} liters',
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.mediumGray,
@@ -209,7 +210,7 @@ class WaterSupplyRequestScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Delivered: ${DateFormatter.formatDate(request.deliveredAt)}',
+                  '${AppLocalizations.of(context)!.delivered}: ${DateFormatter.formatDate(context, request.deliveredAt)}',
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.mediumGray,
@@ -240,9 +241,9 @@ class WaterSupplyRequestScreen extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AppModalBottomSheet(
-        title: 'Request Details',
+        title: AppLocalizations.of(context)!.requestDetails,
         onClose: () => Navigator.pop(context),
-        children: [_buildRequestDetailsContent(request)],
+        children: [_buildRequestDetailsContent(context, request)],
       ),
     );
   }
@@ -256,10 +257,11 @@ class WaterSupplyRequestScreen extends StatelessWidget {
   /// - Action suggestions with proper styling
   /// 
   /// Parameters:
+  /// - [context]: The build context
   /// - [request]: The water request entity to display detailed information for
   /// 
   /// Returns a widget containing the formatted request details.
-  Widget _buildRequestDetailsContent(WaterRequest request) {
+  Widget _buildRequestDetailsContent(BuildContext context, WaterRequest request) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -285,16 +287,16 @@ class WaterSupplyRequestScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Water Supply Request',
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context)!.waterSupplyRequest,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: AppColors.darkBlue,
                       ),
                     ),
                     AppStatusBadge(
-                      text: StatusFormatter.formatWaterRequestStatus(request.status),
+                      text: StatusFormatter.formatWaterRequestStatus(context, request.status),
                       backgroundColor: WaterRequestStatusColors.getStatusBackgroundColor(request.status),
                       textColor: WaterRequestStatusColors.getStatusColor(request.status),
                     ),
@@ -304,31 +306,31 @@ class WaterSupplyRequestScreen extends StatelessWidget {
             ],
           ),
           const Divider(height: 32),
-          const Text(
-            'Details',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.details,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppColors.darkBlue,
             ),
           ),
           const SizedBox(height: 12),
-          _buildDetailItem('Status', StatusFormatter.formatWaterRequestStatus(request.status)),
-          _buildDetailItem('Requested Amount', '${request.requestedLiters} liters'),
-          _buildDetailItem('Delivered At', DateFormatter.formatDate(request.deliveredAt)),
+          _buildDetailItem(AppLocalizations.of(context)!.status, StatusFormatter.formatWaterRequestStatus(context, request.status)),
+          _buildDetailItem(AppLocalizations.of(context)!.requestedAmount, '${request.requestedLiters} liters'),
+          _buildDetailItem(AppLocalizations.of(context)!.deliveredAt, DateFormatter.formatDate(context, request.deliveredAt)),
           const SizedBox(height: 24),
-          const Text(
-            'Actions',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.actions,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppColors.darkBlue,
             ),
           ),
           const SizedBox(height: 12),
-          _buildActionItem('1. Monitor request status'),
-          _buildActionItem('2. Contact support if needed'),
-          _buildActionItem('3. Check water supply updates'),
+          _buildActionItem(AppLocalizations.of(context)!.monitorRequestStatus),
+          _buildActionItem(AppLocalizations.of(context)!.contactSupportIfNeeded),
+          _buildActionItem(AppLocalizations.of(context)!.checkWaterSupplyUpdates),
         ],
       ),
     );

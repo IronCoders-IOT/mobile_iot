@@ -11,6 +11,7 @@ import 'package:mobile_iot/profiles/presentation/widgets/profile_header.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_avatar.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_field_display.dart';
 import 'package:mobile_iot/profiles/presentation/bloc/profile_view/bloc/bloc.dart';
+import '../../l10n/app_localizations.dart';
 
 /// A screen that displays the user's profile information.
 /// 
@@ -62,8 +63,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Logged out successfully'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.logoutSuccessful),
             backgroundColor: AppColors.green,
           ),
         );
@@ -72,8 +73,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error logging out'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorLoggingOut),
             backgroundColor: Colors.red,
           ),
         );
@@ -173,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => context.read<ProfileViewBloc>().add(const LoadProfileViewEvent()),
-              child: const Text('Retry'),
+              child: Text(AppLocalizations.of(context)!.retry),
             ),
           ],
         ),
@@ -243,27 +244,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       children: [
         ProfileFieldDisplay(
-          label: 'First Name',
+          label: AppLocalizations.of(context)!.firstName,
           value: profile.firstName,
         ),
         const SizedBox(height: 24),
         ProfileFieldDisplay(
-          label: 'Last Name',
+          label: AppLocalizations.of(context)!.lastName,
           value: profile.lastName,
         ),
         const SizedBox(height: 24),
         ProfileFieldDisplay(
-          label: 'Email',
+          label: AppLocalizations.of(context)!.email,
           value: profile.email,
         ),
         const SizedBox(height: 24),
         ProfileFieldDisplay(
-          label: 'Document',
+          label: AppLocalizations.of(context)!.document,
           value: profile.documentNumber,
         ),
         const SizedBox(height: 24),
         ProfileFieldDisplay(
-          label: 'Phone Number',
+          label: AppLocalizations.of(context)!.phoneNumber,
           value: profile.phone,
         ),
       ],

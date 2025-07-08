@@ -9,14 +9,52 @@ import 'package:mobile_iot/profiles/presentation/profile_screen.dart';
 import 'package:mobile_iot/analytics/presentation/reports_screen.dart';
 import 'package:mobile_iot/shared/helpers/splash_screen.dart';
 import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 
 
 void main() {
   runApp(const AquaConectaApp());
 }
 
-class AquaConectaApp extends StatelessWidget {
+class AquaConectaApp extends StatefulWidget {
   const AquaConectaApp({Key? key}) : super(key: key);
+
+  static AquaConectaAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<AquaConectaAppState>();
+
+  @override
+  State<AquaConectaApp> createState() => AquaConectaAppState();
+}
+
+class AquaConectaAppState extends State<AquaConectaApp> {
+  Locale? _locale;
+
+  static AquaConectaAppState? _instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _instance = this;
+  }
+
+  @override
+  void dispose() {
+    if (_instance == this) {
+      _instance = null;
+    }
+    super.dispose();
+  }
+
+  void setLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+
+  static void changeLocale(Locale locale) {
+    _instance?.setLocale(locale);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +205,9 @@ class AquaConectaApp extends StatelessWidget {
           ),
         ),
       ),
-      
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: _locale,
       // Pantalla inicial
       home: const SplashScreen(),
       

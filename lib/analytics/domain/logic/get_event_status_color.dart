@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Converts water quality values to standardized status categories.
 /// 
@@ -38,16 +39,16 @@ String getStatusFromQuality(String quality) {
 /// - [status]: The internal status value ('normal', 'alert', 'critical')
 /// 
 /// Returns a user-friendly status text ('Normal', 'Alert', 'Critical').
-String getEventStatusColor(String status) {
+String getEventStatusColor(BuildContext context, String status) {
   switch (status) {
     case 'normal':
-      return 'Normal';
+      return AppLocalizations.of(context)!.normal;
     case 'alert':
-      return 'Alert';
+      return AppLocalizations.of(context)!.alert;
     case 'critical':
-      return 'Critical';
+      return AppLocalizations.of(context)!.critical;
     default:
-      return 'Unknown';
+      return AppLocalizations.of(context)!.unknown;
   }
 }
 

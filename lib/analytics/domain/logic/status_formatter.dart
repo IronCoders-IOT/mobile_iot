@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+import '../../../l10n/app_localizations.dart';
+
 /// Utility class for formatting status values for display in the user interface.
 /// 
 /// This class provides static methods to convert internal status values
@@ -10,17 +13,18 @@ class StatusFormatter {
   /// for water supply request status indicators.
   /// 
   /// Parameters:
+  /// - [context]: The BuildContext of the calling widget
   /// - [status]: The internal status value (e.g., 'received', 'in_progress', 'closed')
   /// 
   /// Returns a formatted status string suitable for UI display.
-  static String formatWaterRequestStatus(String status) {
+  static String formatWaterRequestStatus(BuildContext context, String status) {
     switch (status.toLowerCase()) {
       case 'received':
-        return 'Received';
+        return AppLocalizations.of(context)!.received;
       case 'in_progress':
-        return 'In Progress';
+        return AppLocalizations.of(context)!.inProgress;
       case 'closed':
-        return 'Closed';
+        return AppLocalizations.of(context)!.closed;
       default:
         return status;
     }
@@ -32,17 +36,18 @@ class StatusFormatter {
   /// for report status indicators.
   /// 
   /// Parameters:
+  /// - [context]: The BuildContext of the calling widget
   /// - [status]: The internal status value (e.g., 'received', 'in_progress', 'closed')
   /// 
   /// Returns a formatted status string suitable for UI display.
-  static String formatReportStatus(String status) {
+  static String formatReportStatus(BuildContext context, String status) {
     switch (status.toLowerCase()) {
       case 'received':
-        return 'Received';
+        return AppLocalizations.of(context)!.received;
       case 'in_progress':
-        return 'In Progress';
+        return AppLocalizations.of(context)!.inProgress;
       case 'closed':
-        return 'Closed';
+        return AppLocalizations.of(context)!.closed;
       default:
         return status;
     }

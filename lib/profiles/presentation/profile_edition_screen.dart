@@ -12,6 +12,7 @@ import 'package:mobile_iot/profiles/presentation/widgets/profile_avatar.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_edit_field.dart';
 import 'package:mobile_iot/shared/widgets/app_button.dart';
 import 'package:mobile_iot/profiles/presentation/bloc/profile_edition/bloc/bloc.dart';
+import '../../l10n/app_localizations.dart';
 /// A screen that allows users to edit their profile information.
 /// 
 /// This screen provides a form interface for users to update their profile
@@ -135,8 +136,8 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
             _populateFormFields(state.profile);
           } else if (state is ProfileEditionUpdatedState) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Profile updated successfully!'),
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.profileUpdated),
                 backgroundColor: AppColors.green,
               ),
             );
@@ -156,7 +157,7 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
             body: SafeArea(
               child: Column(
                 children: [
-                  BackHeader(title: 'Edit Profile'),
+                  BackHeader(title: AppLocalizations.of(context)!.editProfile),
                   Expanded(
                     child: _buildBody(state),
                   ),
@@ -182,7 +183,7 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => context.read<ProfileEditionBloc>().add(const LoadProfileEvent()),
-              child: const Text('Retry'),
+              child: Text(AppLocalizations.of(context)!.retry),
             ),
           ],
         ),
@@ -205,8 +206,6 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
     }
   }
 
-
-
   /// Builds the avatar section with camera icon for photo upload.
   /// 
   /// This method creates a profile avatar widget with a camera icon
@@ -218,8 +217,8 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
       showCameraIcon: true,
       onCameraTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Photo upload coming soon!'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.photoUploadComingSoon),
             backgroundColor: AppColors.primaryBlue,
           ),
         );
@@ -241,39 +240,39 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
       child: Column(
         children: [
           ProfileEditField(
-            label: 'First Name',
+            label: AppLocalizations.of(context)!.firstName,
             controller: _firstNameController,
-            validator: (value) => validateName(value, 'First Name'),
+            validator: (value) => validateName(value, AppLocalizations.of(context)!.firstName),
           ),
           const SizedBox(height: 20),
           ProfileEditField(
-            label: 'Last Name',
+            label: AppLocalizations.of(context)!.lastName,
             controller: _lastNameController,
-            validator: (value) => validateName(value, 'Last Name'),
+            validator: (value) => validateName(value, AppLocalizations.of(context)!.lastName),
           ),
           const SizedBox(height: 20),
           ProfileEditField(
-            label: 'Username',
+            label: AppLocalizations.of(context)!.username,
             controller: _usernameController,
             validator: validateUsername,
           ),
           const SizedBox(height: 20),
           ProfileEditField(
-            label: 'Email',
+            label: AppLocalizations.of(context)!.email,
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             validator: validateEmail,
           ),
           const SizedBox(height: 20),
           ProfileEditField(
-            label: 'Document',
+            label: AppLocalizations.of(context)!.document,
             controller: _documentNumberController,
             keyboardType: TextInputType.number,
             validator: validateDocumentNumber,
           ),
           const SizedBox(height: 20),
           ProfileEditField(
-            label: 'Phone Number',
+            label: AppLocalizations.of(context)!.phoneNumber,
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             validator: validatePhone,
@@ -282,8 +281,6 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
       ),
     );
   }
-
-
 
   /// Builds the save button for the profile form.
   /// 
@@ -297,7 +294,7 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
       builder: (context, state) {
         final isLoading = state is ProfileEditionUpdatingState;
         return AppButton(
-          text: 'Save changes',
+          text: AppLocalizations.of(context)!.saveChanges,
           onPressed: isLoading ? null : _handleSaveChanges,
           isLoading: isLoading,
         );

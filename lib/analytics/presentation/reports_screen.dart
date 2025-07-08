@@ -19,8 +19,8 @@ import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart
 import 'package:mobile_iot/analytics/presentation/widgets/app_list_card.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_status_badge.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_modal_bottom_sheet.dart';
-import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 import 'package:mobile_iot/analytics/presentation/bloc/reports/bloc/bloc.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';
 
@@ -68,14 +68,14 @@ class ReportsScreen extends StatelessWidget {
         child: Column(
           children: [
             AppHeader(
-              title: 'REPORTS',
+              title: AppLocalizations.of(context)!.reports,
               onBack: () => Navigator.pushReplacementNamed(context, '/dashboard'),
             ),
                 if (state is ReportsLoadedState)
             AppSearchBar(
                     controller: TextEditingController(text: state.searchQuery),
                     onChanged: (value) => context.read<ReportsBloc>().add(SearchReportsEvent(value)),
-              hintText: 'Search reports...',
+              hintText: AppLocalizations.of(context)!.searchReports,
             ),
                 Expanded(child: _buildBody(context, state)),
           ],
@@ -189,7 +189,7 @@ class ReportsScreen extends StatelessWidget {
                 ),
               ),
               AppStatusBadge(
-                text: StatusFormatter.formatReportStatus(report.status),
+                text: StatusFormatter.formatReportStatus(context, report.status),
                 backgroundColor: ReportStatusColors.statusColor(report.status),
                 textColor: ReportStatusColors.statusTextColor(report.status),
               ),
@@ -204,7 +204,7 @@ class ReportsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Created: ${DateFormatter.formatEmissionDate(report.emissionDate)}',
+            '${AppLocalizations.of(context)!.created}: ${DateFormatter.formatEmissionDate(context, report.emissionDate)}',
             style: const TextStyle(fontSize: 12, color: AppColors.mediumGray),
           ),
         ],
@@ -230,9 +230,9 @@ class ReportsScreen extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AppModalBottomSheet(
-        title: 'Report Details',
+        title: AppLocalizations.of(context)!.reportDetails,
         onClose: () => Navigator.pop(context),
-        children: [_buildReportDetailsContent(report)],
+        children: [_buildReportDetailsContent(context, report)],
       ),
     );
   }
@@ -246,10 +246,11 @@ class ReportsScreen extends StatelessWidget {
   /// - Proper spacing and typography
   /// 
   /// Parameters:
+  /// - [context]: The build context
   /// - [report]: The report entity to display detailed information for
   /// 
   /// Returns a widget containing the formatted report details.
-  Widget _buildReportDetailsContent(Report report) {
+  Widget _buildReportDetailsContent(BuildContext context, Report report) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -280,7 +281,7 @@ class ReportsScreen extends StatelessWidget {
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkBlue),
                     ),
                     AppStatusBadge(
-                      text: StatusFormatter.formatReportStatus(report.status),
+                      text: StatusFormatter.formatReportStatus(context, report.status),
                       backgroundColor: ReportStatusColors.statusColor(report.status),
                       textColor: ReportStatusColors.statusTextColor(report.status),
                     ),
@@ -290,17 +291,17 @@ class ReportsScreen extends StatelessWidget {
             ],
           ),
           const Divider(height: 32),
-          const Text('Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.darkBlue)),
+          Text(AppLocalizations.of(context)!.details, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.darkBlue)),
           const SizedBox(height: 12),
-            _buildDetailItem('Description', report.description),
-            _buildDetailItem('Status', StatusFormatter.formatReportStatus(report.status)),
-            _buildDetailItem('Created', DateFormatter.formatEmissionDate(report.emissionDate)),
+            _buildDetailItem(AppLocalizations.of(context)!.description, report.description),
+            _buildDetailItem(AppLocalizations.of(context)!.status, StatusFormatter.formatReportStatus(context, report.status)),
+            _buildDetailItem(AppLocalizations.of(context)!.created, DateFormatter.formatEmissionDate(context, report.emissionDate)),
           const SizedBox(height: 24),
-          const Text('Actions', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.darkBlue)),
+          Text(AppLocalizations.of(context)!.actions, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.darkBlue)),
           const SizedBox(height: 12),
-            _buildActionItem('1. Review report details'),
-            _buildActionItem('2. Update status if needed'),
-            _buildActionItem('3. Contact support for assistance'),
+            _buildActionItem(AppLocalizations.of(context)!.reviewReportDetails),
+            _buildActionItem(AppLocalizations.of(context)!.updateStatusIfNeeded),
+            _buildActionItem(AppLocalizations.of(context)!.contactSupportForAssistance),
         ],
       ),
     );

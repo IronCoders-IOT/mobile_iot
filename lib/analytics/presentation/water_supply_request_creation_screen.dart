@@ -4,6 +4,7 @@ import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 import 'package:mobile_iot/analytics/infrastructure/service/water_request_api_service.dart';
 import 'package:mobile_iot/analytics/infrastructure/repositories/water_request_repository_impl.dart';
 import 'package:mobile_iot/analytics/presentation/bloc/water_supply_request_creation/bloc/bloc.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';
 
@@ -54,8 +55,8 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
           if (state is WaterSupplyRequestCreationSuccessState) {
             Navigator.pop(context, state.liters);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Water request sent!'),
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.waterRequestSent),
                 backgroundColor: AppColors.primaryBlue,
               ),
             );
@@ -77,9 +78,9 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Request Water',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.requestWater,
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: AppColors.darkBlue,
@@ -130,8 +131,8 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
       controller: litersController,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
-        labelText: 'Liters',
-        hintText: 'Enter amount of water',
+        labelText: AppLocalizations.of(context)!.liters,
+        hintText: AppLocalizations.of(context)!.enterAmountOfWater,
         prefixIcon: const Icon(Icons.water_drop_outlined),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -173,9 +174,9 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
       children: [
         TextButton(
           onPressed: isLoading ? null : () => Navigator.pop(context),
-          child: const Text(
-            'Cancel',
-            style: TextStyle(
+          child: Text(
+            AppLocalizations.of(context)!.cancel,
+            style: const TextStyle(
               color: AppColors.mediumGray,
             ),
           ),
@@ -203,7 +204,7 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
-              : const Text('Request'),
+              : Text(AppLocalizations.of(context)!.request),
         ),
       ],
     );

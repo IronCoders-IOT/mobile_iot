@@ -11,6 +11,7 @@ import 'package:mobile_iot/analytics/application/event_use_case.dart';
 import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
 import 'package:mobile_iot/analytics/domain/entities/event.dart';
 import 'package:mobile_iot/analytics/domain/logic/get_event_status_color.dart';
+import 'package:mobile_iot/analytics/domain/logic/event_type_localization.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_header.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_search_bar.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_empty_state.dart';
@@ -20,6 +21,7 @@ import 'package:mobile_iot/analytics/presentation/widgets/app_list_card.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_status_badge.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_modal_bottom_sheet.dart';
 import 'package:mobile_iot/analytics/presentation/bloc/tank_events/bloc/bloc.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';
 
@@ -72,7 +74,7 @@ class TankEventsScreen extends StatelessWidget {
                 children: [
                   // Header with back navigation
                   AppHeader(
-                    title: 'TANKS EVENTS',
+                    title: AppLocalizations.of(context)!.tanksEvents,
                     onBack: () => Navigator.pushReplacementNamed(context, '/dashboard'),
                   ),
                   // Search bar - only show when events are loaded
@@ -80,7 +82,7 @@ class TankEventsScreen extends StatelessWidget {
                     AppSearchBar(
                       controller: TextEditingController(text: state.searchQuery),
                       onChanged: (value) => context.read<TankEventsBloc>().add(SearchTankEventsEvent(value)),
-                      hintText: 'Search events...',
+                      hintText: AppLocalizations.of(context)!.searchEvents,
                     ),
                   ],
                   // Main content area
@@ -154,10 +156,10 @@ class TankEventsScreen extends StatelessWidget {
     // Show empty state if no events match the current search/filter
     if (events.isEmpty) {
       return AppEmptyState(
-        title: 'No events found',
-        subtitle: 'Pull down to refresh',
+        title: AppLocalizations.of(context)!.noEventsFound,
+        subtitle: AppLocalizations.of(context)!.pullDownToRefresh,
         onAction: () => context.read<TankEventsBloc>().add(RefreshTankEventsEvent()),
-        actionText: 'Refresh',
+        actionText: AppLocalizations.of(context)!.refresh,
       );
     }
     
@@ -204,7 +206,7 @@ class TankEventsScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                event.eventType,
+                getLocalizedEventType(context, event.eventType),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -227,7 +229,7 @@ class TankEventsScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                'Level: ${event.levelValue}',
+                '${AppLocalizations.of(context)!.level}: ${event.levelValue}',
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.mediumGray,
@@ -240,7 +242,7 @@ class TankEventsScreen extends StatelessWidget {
           Align(
             alignment: Alignment.centerLeft,
             child: AppStatusBadge(
-              text: getEventStatusColor(status),
+              text: getEventStatusColor(context, status),
               backgroundColor: getReportStatusColor(status),
               textColor: getReportStatusTextColor(status),
             ),
@@ -267,9 +269,9 @@ class TankEventsScreen extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AppModalBottomSheet(
-        title: 'Event Details',
+        title: AppLocalizations.of(context)!.eventDetails,
         onClose: () => Navigator.pop(context),
-        children: [_buildEventDetailsContent(event)],
+        children: [_buildEventDetailsContent(context, event)],
       ),
     );
   }
@@ -283,10 +285,11 @@ class TankEventsScreen extends StatelessWidget {
   /// - Recommended actions section
   /// 
   /// Parameters:
+  /// - [context]: The build context
   /// - [event]: The event to display details for
   /// 
   /// Returns a scrollable widget with the event details content.
-  Widget _buildEventDetailsContent(Event event) {
+  Widget _buildEventDetailsContent(BuildContext context, Event event) {
     final status = getStatusFromQuality(event.qualityValue);
     
     return SingleChildScrollView(
@@ -318,7 +321,7 @@ class TankEventsScreen extends StatelessWidget {
                   children: [
                     // Event type
                     Text(
-                      event.eventType,
+                      getLocalizedEventType(context, event.eventType),
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -327,7 +330,7 @@ class TankEventsScreen extends StatelessWidget {
                     ),
                     // Water level
                     Text(
-                      'Water Level: ${event.levelValue}',
+                      '${AppLocalizations.of(context)!.waterLevel}: ${event.levelValue}',
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.mediumGray,
@@ -342,32 +345,32 @@ class TankEventsScreen extends StatelessWidget {
           const Divider(height: 32),
           
           // Details section
-          const Text(
-            'Details',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.details,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppColors.darkBlue,
             ),
           ),
           const SizedBox(height: 12),
-          _buildDetailItem('Water Quality', event.qualityValue),
-          _buildDetailItem('Status', getEventStatusColor(status)),
+          _buildDetailItem(AppLocalizations.of(context)!.waterQuality, event.qualityValue),
+          _buildDetailItem(AppLocalizations.of(context)!.status, getEventStatusColor(context, status)),
           const SizedBox(height: 24),
           
           // Actions section
-          const Text(
-            'Recommended Actions',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.recommendedActions,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppColors.darkBlue,
             ),
           ),
           const SizedBox(height: 12),
-          _buildActionItem('1. Monitor analytics quality levels'),
-          _buildActionItem('2. Check tank analytics level'),
-          _buildActionItem('3. Contact support if issues persist'),
+          _buildActionItem(AppLocalizations.of(context)!.monitorAnalyticsQualityLevels),
+          _buildActionItem(AppLocalizations.of(context)!.checkTankAnalyticsLevel),
+          _buildActionItem(AppLocalizations.of(context)!.contactSupportIfIssuesPersist),
         ],
       ),
     );

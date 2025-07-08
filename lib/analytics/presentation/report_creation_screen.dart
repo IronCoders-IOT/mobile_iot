@@ -10,6 +10,7 @@ import 'package:mobile_iot/analytics/presentation/widgets/app_header.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_error_state.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart';
 import 'package:mobile_iot/analytics/presentation/bloc/report_creation/bloc/bloc.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';
 
@@ -56,7 +57,7 @@ class ReportCreationScreen extends StatelessWidget {
             child: Column(
               children: [
                 AppHeader(
-                  title: 'New Report',
+                  title: AppLocalizations.of(context)!.newReport,
                   onBack: () => Navigator.pop(context),
                 ),
                 Expanded(
@@ -114,9 +115,9 @@ class ReportCreationScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Create Report',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.createReport,
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: AppColors.darkBlue,
@@ -125,13 +126,13 @@ class ReportCreationScreen extends StatelessWidget {
             const SizedBox(height: 24),
             TextFormField(
               controller: titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                hintText: 'Enter report title',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.title,
+                hintText: AppLocalizations.of(context)!.enterReportTitle,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a title';
+                  return AppLocalizations.of(context)!.pleaseEnterTitle;
                 }
                 return null;
               },
@@ -140,13 +141,13 @@ class ReportCreationScreen extends StatelessWidget {
             TextFormField(
               controller: descriptionController,
               maxLines: 5,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                hintText: 'Describe the issue...',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.description,
+                hintText: AppLocalizations.of(context)!.describeTheIssue,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a description';
+                  return AppLocalizations.of(context)!.pleaseEnterDescription;
                 }
                 return null;
               },
@@ -174,7 +175,7 @@ class ReportCreationScreen extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                child: const Text('Submit'),
+                child: Text(AppLocalizations.of(context)!.submit),
               ),
             ),
           ],
