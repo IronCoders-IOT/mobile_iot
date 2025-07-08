@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mobile_iot/iam/application/sign_in_use_case.dart';
 import 'package:mobile_iot/iam/domain/entities/credentials.dart';
 import 'package:mobile_iot/iam/domain/logic/auth_validators.dart';
-import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
-import 'package:mobile_iot/iam/infrastructure/service/auth_api_service.dart';
-import 'package:mobile_iot/iam/infrastructure/repositories/auth_repository_impl.dart';
 import 'package:mobile_iot/shared/widgets/app_logo.dart';
 import 'package:mobile_iot/shared/widgets/app_text_field.dart';
 import 'package:mobile_iot/shared/widgets/app_button.dart';
@@ -13,6 +9,7 @@ import 'package:mobile_iot/iam/presentation/widgets/app_welcome_section.dart';
 import 'package:mobile_iot/iam/presentation/bloc/auth/bloc/bloc.dart';
 import '../../shared/widgets/app_colors.dart';
 import '../../l10n/app_localizations.dart';
+import '../../../main.dart';
 
 /// A screen that handles user authentication and login.
 /// 
@@ -116,81 +113,75 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthBloc>(
-      create: (context) => AuthBloc(
-        signInUseCase: SignInUseCase(AuthRepositoryImpl(AuthApiService())),
-        secureStorage: SecureStorageService(),
-      ),
-      child: BlocConsumer<AuthBloc, AuthState>(
-        // Listen for state changes to handle side effects (like navigation)
-        listener: (context, state) {
-          if (state is AuthSuccessState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(AppLocalizations.of(context)!.loginSuccessful),
-                backgroundColor: AppColors.primaryBlue,
-              ),
-            );
-            Navigator.pushReplacementNamed(context, '/dashboard');
-          } else if (state is AuthErrorState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
-        // Build the UI based on the current state
-        builder: (context, state) {
-          return Scaffold(
-            backgroundColor: AppColors.lightGray,
-            body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
-                    ),
-                    child: IntrinsicHeight(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // App logo section
-                          const Spacer(flex: 2),
-                          const AppLogo(fontSize: 36),
-
-                          const SizedBox(height: 60),
-
-                          // Welcome message section
-                          AppWelcomeSection(
-                            title: AppLocalizations.of(context)!.welcomeBack,
-                            subtitle: AppLocalizations.of(context)!.loginToYourAccount,
-                          ),
-
-                          const SizedBox(height: 40),
-
-                          // Login form with username and password fields
-                          _buildLoginForm(),
-
-                          const SizedBox(height: 24),
-
-                          const SizedBox(height: 32),
-
-                          // Sign in button
-                          _buildSignInButton(state),
-                        ],
-                      ),
+    return BlocConsumer<AuthBloc, AuthState>(
+      // Listen for state changes to handle side effects (like navigation)
+      listener: (context, state) {
+        if (state is AuthSuccessState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.loginSuccessful),
+              backgroundColor: AppColors.primaryBlue,
+            ),
+          );
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        } else if (state is AuthErrorState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      // Build the UI based on the current state
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: AppColors.lightGray,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Language switcher aligned to the right
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            _buildLanguageDropdown(context),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        // App logo section
+                        const AppLogo(fontSize: 36),
+                        const SizedBox(height: 60),
+                        // Welcome message section
+                        AppWelcomeSection(
+                          title: AppLocalizations.of(context)!.welcomeBack,
+                          subtitle: AppLocalizations.of(context)!.loginToYourAccount,
+                        ),
+                        const SizedBox(height: 40),
+                        // Login form with username and password fields
+                        _buildLoginForm(),
+                        const SizedBox(height: 24),
+                        const SizedBox(height: 32),
+                        // Sign in button
+                        _buildSignInButton(state),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -213,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
           // Username field
           AppTextField(
             controller: _usernameController,
-            hintText: 'Username',
+            hintText: AppLocalizations.of(context)!.username,
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.next,
             validator: validateUsername,
@@ -224,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
           // Password field
           AppTextField(
             controller: _passwordController,
-            hintText: 'Password',
+            hintText: AppLocalizations.of(context)!.password,
             obscureText: !_isPasswordVisible,
             textInputAction: TextInputAction.done,
             suffixIcon: IconButton(
@@ -261,9 +252,33 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildSignInButton(AuthState state) {
     final isLoading = state is AuthLoadingState;
     return AppButton(
-      text: 'Sign in',
+      text: AppLocalizations.of(context)!.signIn,
       onPressed: isLoading ? null : _handleLogin,
       isLoading: isLoading,
+    );
+  }
+
+  Widget _buildLanguageDropdown(BuildContext context) {
+    Locale currentLocale = Localizations.localeOf(context);
+    return DropdownButton<Locale>(
+      value: currentLocale.languageCode == 'es' ? const Locale('es') : const Locale('en'),
+      icon: const Icon(Icons.language, color: Colors.blue),
+      underline: Container(height: 0),
+      onChanged: (Locale? newLocale) {
+        if (newLocale != null) {
+          AquaConectaAppState.changeLocale(newLocale);
+        }
+      },
+      items: [
+        DropdownMenuItem(
+          value: const Locale('en'),
+          child: Text('English'),
+        ),
+        DropdownMenuItem(
+          value: const Locale('es'),
+          child: Text('Español'),
+        ),
+      ],
     );
   }
 }

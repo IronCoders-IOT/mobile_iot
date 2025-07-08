@@ -81,5 +81,9 @@
   "waterMeasurement": "Medición de Agua",
   "searchReports": "Buscar reportes...",
   "reports": "REPORTES",
+  "username": "Usuario",
+  "password": "Contraseña",
+  "signIn": "Iniciar sesión",
+  "water": "Agua",
   "requestedLitersOfWater": "Solicitados {liters} litros de agua"
 } 

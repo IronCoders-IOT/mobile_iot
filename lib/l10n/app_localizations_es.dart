@@ -168,7 +168,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get lastName => 'Apellido';
 
   @override
-  String get username => 'Nombre de Usuario';
+  String get username => 'Usuario';
 
   @override
   String get email => 'Correo Electrónico';
@@ -253,6 +253,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reports => 'REPORTES';
+
+  @override
+  String get password => 'Contraseña';
+
+  @override
+  String get signIn => 'Iniciar sesión';
 
   @override
   String requestedLitersOfWater(int liters) {

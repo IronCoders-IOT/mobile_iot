@@ -587,6 +587,18 @@ abstract class AppLocalizations {
   /// **'REPORTS'**
   String get reports;
 
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signIn;
+
   /// Message showing requested water amount
   ///
   /// In en, this message translates to:

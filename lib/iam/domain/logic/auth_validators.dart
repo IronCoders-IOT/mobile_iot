@@ -16,17 +16,12 @@ String? validateUsername(String? value) {
     return 'Please enter your username';
   }
   
-  if (value.trim().length < 3) {
+  if (value.trim().length < 2) {
     return 'Username must be at least 3 characters long';
   }
   
   if (value.trim().length > 50) {
     return 'Username cannot exceed 50 characters';
-  }
-  
-  // Allow letters, numbers, underscores, and hyphens
-  if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(value.trim())) {
-    return 'Username can only contain letters, numbers, underscores, and hyphens';
   }
   
   return null;
@@ -45,7 +40,7 @@ String? validatePassword(String? value) {
     return 'Please enter your password';
   }
   
-  if (value.length < 6) {
+  if (value.length < 2) {
     return 'Password must be at least 6 characters long';
   }
   

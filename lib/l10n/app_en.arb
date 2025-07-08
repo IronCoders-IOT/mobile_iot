@@ -81,6 +81,10 @@
   "waterMeasurement": "Water Measurement",
   "searchReports": "Search reports...",
   "reports": "REPORTS",
+  "username": "Username",
+  "password": "Password",
+  "signIn": "Sign in",
+  "water": "Water",
   "requestedLitersOfWater": "Requested {liters} liters of water",
   "@helloWorld": {
     "description": "The conventional newborn programmer greeting"

@@ -9,8 +9,14 @@ import 'package:mobile_iot/profiles/presentation/profile_screen.dart';
 import 'package:mobile_iot/analytics/presentation/reports_screen.dart';
 import 'package:mobile_iot/shared/helpers/splash_screen.dart';
 import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_iot/iam/presentation/bloc/auth/bloc/auth_bloc.dart';
+import 'package:mobile_iot/iam/application/sign_in_use_case.dart';
+import 'package:mobile_iot/iam/infrastructure/repositories/auth_repository_impl.dart';
+import 'package:mobile_iot/iam/infrastructure/service/auth_api_service.dart';
+import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 void main() {
@@ -36,6 +42,17 @@ class AquaConectaAppState extends State<AquaConectaApp> {
   void initState() {
     super.initState();
     _instance = this;
+    _loadSavedLocale();
+  }
+
+  Future<void> _loadSavedLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedLocale = prefs.getString('locale');
+    if (savedLocale != null) {
+      setState(() {
+        _locale = Locale(savedLocale);
+      });
+    }
   }
 
   @override
@@ -46,10 +63,12 @@ class AquaConectaAppState extends State<AquaConectaApp> {
     super.dispose();
   }
 
-  void setLocale(Locale locale) {
+  void setLocale(Locale locale) async {
     setState(() {
       _locale = locale;
     });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('locale', locale.languageCode);
   }
 
   static void changeLocale(Locale locale) {
@@ -213,7 +232,13 @@ class AquaConectaAppState extends State<AquaConectaApp> {
       
       // Rutas nombradas
       routes: {
-        '/login': (context) => const LoginScreen(),
+        '/login': (context) => BlocProvider<AuthBloc>(
+          create: (_) => AuthBloc(
+            signInUseCase: SignInUseCase(AuthRepositoryImpl(AuthApiService())),
+            secureStorage: SecureStorageService(),
+          ),
+          child: const LoginScreen(),
+        ),
         '/dashboard': (context) => const DashboardScreen(),
         '/profile': (context) => const ProfileScreen(),
         '/edit-profile': (context) => const ProfileEditionScreen(),
@@ -226,7 +251,13 @@ class AquaConectaAppState extends State<AquaConectaApp> {
       // Ruta por defecto cuando no se encuentra una ruta
       onUnknownRoute: (settings) {
         return MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
+          builder: (context) => BlocProvider<AuthBloc>(
+            create: (_) => AuthBloc(
+              signInUseCase: SignInUseCase(AuthRepositoryImpl(AuthApiService())),
+              secureStorage: SecureStorageService(),
+            ),
+            child: const LoginScreen(),
+          ),
         );
       },
     );

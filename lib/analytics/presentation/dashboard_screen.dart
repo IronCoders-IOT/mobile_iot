@@ -17,12 +17,12 @@ import 'package:mobile_iot/shared/widgets/circular_progress_painter.dart';
 import 'package:mobile_iot/analytics/domain/entities/water_reading.dart';
 import '../application/device_use_case.dart';
 import '../application/event_use_case.dart';
+import '../domain/logic/get_localized_water_type.dart';
 import '../infrastructure/repositories/device_repository_impl.dart';
 import '../infrastructure/repositories/event_repository_impl.dart';
 import '../infrastructure/service/device_api_service.dart';
 import '../infrastructure/service/event_api_service.dart';
 import '../../l10n/app_localizations.dart';
-import 'package:flutter/foundation.dart';
 import '../../../main.dart';
 
 /// A screen that displays water tank analytics and monitoring dashboard for the authenticated user.
@@ -583,7 +583,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    reading.type,
+                    getLocalizedWaterType(context, reading.type),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

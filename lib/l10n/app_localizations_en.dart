@@ -255,6 +255,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reports => 'REPORTS';
 
   @override
+  String get password => 'Password';
+
+  @override
+  String get signIn => 'Sign in';
+
+  @override
   String requestedLitersOfWater(int liters) {
     return 'Requested $liters liters of water';
   }
