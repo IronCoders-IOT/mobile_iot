@@ -3,6 +3,7 @@ import 'package:mobile_iot/profiles/application/profile_use_case.dart';
 import 'package:mobile_iot/profiles/presentation/bloc/profile_edition/profile_edition_event.dart';
 import 'package:mobile_iot/profiles/presentation/bloc/profile_edition/profile_edition_state.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
+import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 
 /// BLoC for managing profile edition state and business logic.
 ///
@@ -63,6 +64,8 @@ class ProfileEditionBloc extends Bloc<ProfileEditionEvent, ProfileEditionState> 
       } else {
         emit(ProfileEditionErrorState('Failed to load profile data'));
       }
+    } on SessionExpiredException {
+      emit(ProfileEditionSessionExpiredState());
     } catch (e) {
       emit(ProfileEditionErrorState('Error loading profile: ˜{e.toString()}'));
     }
@@ -90,6 +93,8 @@ class ProfileEditionBloc extends Bloc<ProfileEditionEvent, ProfileEditionState> 
       if (token == null) throw Exception('No authentication token found');
       await _profileUseCase.updateProfile(token, event.profile);
       emit(ProfileEditionUpdatedState(profile: event.profile));
+    } on SessionExpiredException {
+      emit(ProfileEditionSessionExpiredState());
     } catch (e) {
       emit(ProfileEditionErrorState('Error updating profile: ˜{e.toString()}'));
     }

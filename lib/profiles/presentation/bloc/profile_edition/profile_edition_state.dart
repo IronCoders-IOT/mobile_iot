@@ -91,4 +91,12 @@ class ProfileEditionErrorState extends ProfileEditionState {
 
   @override
   List<Object?> get props => [message];
+}
+
+/// Session expired state when the user's session has expired.
+class ProfileEditionSessionExpiredState extends ProfileEditionState {
+  const ProfileEditionSessionExpiredState();
+
+  @override
+  List<Object?> get props => [];
 } 

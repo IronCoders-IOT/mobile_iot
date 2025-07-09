@@ -13,7 +13,7 @@ import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 /// The service uses the http package for network communication and
 /// includes proper error handling for authentication and network issues.
 class EventApiService {
-  static final String _baseUrl = '${Env.apiUrl}${Env.eventsEndpoint}';
+  static final String _baseUrl = '${Env.apiUrl}/devices ';
 
   /// Retrieves all events associated with a specific sensor device from the API.
   /// 
@@ -30,9 +30,9 @@ class EventApiService {
   /// Throws:
   /// - [SessionExpiredException] when the authentication token is invalid (401/403)
   /// - [Exception] for other network or data access errors
-  Future<List<Event>> getAllEventsBySensorId(String token, int id) async {
+  Future<List<Event>> getAllEventsBySensorId(String token, int deviceId) async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/sensor/$id'),
+      Uri.parse('$_baseUrl/$deviceId/events'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

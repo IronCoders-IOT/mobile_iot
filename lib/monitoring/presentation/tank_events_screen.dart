@@ -24,6 +24,7 @@ import 'package:mobile_iot/monitoring/presentation/bloc/tank_events/bloc.dart';
 import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';
+import '../../shared/widgets/session_expired_screen.dart';
 
 /// A screen that displays a list of tank events for the authenticated user.
 /// 
@@ -56,14 +57,19 @@ class TankEventsScreen extends StatelessWidget {
       child: BlocConsumer<TankEventsBloc, TankEventsState>(
         // Listen for state changes to handle side effects (like navigation)
         listener: (context, state) {
-          if (state is TankEventsErrorState && 
-              (state.message.contains('Session expired') || 
-               state.message.contains('No authentication token'))) {
-            Navigator.pushReplacementNamed(context, '/login');
+          if (state is TankEventsSessionExpiredState) {
+            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
           }
         },
         // Build the UI based on the current state
         builder: (context, state) {
+          if (state is TankEventsSessionExpiredState) {
+            return SessionExpiredScreen(
+              onLoginAgain: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            );
+          }
           return Scaffold(
             backgroundColor: AppColors.lightGray,
             body: SafeArea(

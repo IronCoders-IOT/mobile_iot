@@ -3,6 +3,7 @@ import 'package:mobile_iot/analytics/infrastructure/repositories/water_request_r
 import 'package:mobile_iot/analytics/infrastructure/service/water_request_api_service.dart';
 import 'package:mobile_iot/analytics/domain/logic/water_request_validator.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
+import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 import 'water_supply_request_creation_event.dart';
 import 'water_supply_request_creation_state.dart';
 
@@ -79,6 +80,8 @@ class WaterSupplyRequestCreationBloc extends Bloc<WaterSupplyRequestCreationEven
       );
       
       emit(WaterSupplyRequestCreationSuccessState(liters));
+    } on SessionExpiredException {
+      emit(WaterSupplyRequestCreationSessionExpiredState());
     } catch (e) {
       emit(WaterSupplyRequestCreationErrorState('Failed to send request: ${e.toString()}'));
     }

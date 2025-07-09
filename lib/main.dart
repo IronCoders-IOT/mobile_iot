@@ -25,6 +25,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// multiple screens, including dashboard, reports, profile, and more.
 ///
 void main() {
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.dumpErrorToConsole(details);
+    print(details.exceptionAsString());
+  };
   runApp(const AquaConectaApp());
 }
 

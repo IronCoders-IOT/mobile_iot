@@ -13,6 +13,7 @@ import 'package:mobile_iot/profiles/presentation/widgets/profile_edit_field.dart
 import 'package:mobile_iot/shared/widgets/app_button.dart';
 import 'package:mobile_iot/profiles/presentation/bloc/profile_edition/bloc.dart';
 import '../../l10n/app_localizations.dart';
+import '../../shared/widgets/session_expired_screen.dart';
 /// A screen that allows users to edit their profile information.
 /// 
 /// This screen provides a form interface for users to update their profile
@@ -130,6 +131,9 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
       )..add(const LoadProfileEvent()),
       child: BlocConsumer<ProfileEditionBloc, ProfileEditionState>(
         listener: (context, state) {
+          if (state is ProfileEditionSessionExpiredState) {
+            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+          }
           if (state is ProfileEditionLoadedState) {
             _populateFormFields(state.profile);
           } else if (state is ProfileEditionUpdatedState) {
@@ -150,6 +154,13 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
           }
         },
         builder: (context, state) {
+          if (state is ProfileEditionSessionExpiredState) {
+            return SessionExpiredScreen(
+              onLoginAgain: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            );
+          }
           return Scaffold(
             backgroundColor: AppColors.lightGray,
             body: SafeArea(

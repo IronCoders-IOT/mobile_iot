@@ -4,6 +4,7 @@ import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
 import 'report_creation_event.dart';
 import 'report_creation_state.dart';
+import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 
 /// BLoC for managing report creation state and business logic.
 /// 
@@ -73,6 +74,8 @@ class ReportCreationBloc extends Bloc<ReportCreationEvent, ReportCreationState> 
       );
       
       emit(ReportCreationSuccessState());
+    } on SessionExpiredException {
+      emit(ReportCreationSessionExpiredState());
     } catch (e) {
       emit(ReportCreationErrorState(e.toString()));
     }

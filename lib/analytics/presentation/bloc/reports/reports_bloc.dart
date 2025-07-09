@@ -86,7 +86,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       
     } on SessionExpiredException catch (e) {
       await _secureStorage.deleteToken();
-      emit(ReportsErrorState(e.message));
+      emit(ReportsSessionExpiredState());
     } catch (e) {
       emit(ReportsErrorState(e.toString()));
     }

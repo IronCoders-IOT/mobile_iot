@@ -7,6 +7,7 @@ import 'package:mobile_iot/analytics/presentation/bloc/water_supply_request_crea
 import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';
+import '../../shared/widgets/session_expired_screen.dart';
 
 /// A dialog screen for creating water supply requests with BLoC state management.
 /// 
@@ -52,6 +53,9 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
       ),
       child: BlocConsumer<WaterSupplyRequestCreationBloc, WaterSupplyRequestCreationState>(
         listener: (context, state) {
+          if (state is WaterSupplyRequestCreationSessionExpiredState) {
+            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+          }
           if (state is WaterSupplyRequestCreationSuccessState) {
             Navigator.pop(context, state.liters);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -69,45 +73,54 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
             );
           }
         },
-        builder: (context, state) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.requestWater,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.darkBlue,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(32),
-                  ),
-                  child: const Icon(
-                    Icons.water_drop,
-                    color: AppColors.primaryBlue,
-                    size: 32,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildInputField(context),
-                const SizedBox(height: 24),
-                _buildButtons(context, state),
-              ],
+        builder: (context, state) {
+          if (state is WaterSupplyRequestCreationSessionExpiredState) {
+            return SessionExpiredScreen(
+              onLoginAgain: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            );
+          }
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-          ),
-        ),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.requestWater,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkBlue,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: const Icon(
+                      Icons.water_drop,
+                      color: AppColors.primaryBlue,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _buildInputField(context),
+                  const SizedBox(height: 24),
+                  _buildButtons(context, state),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

@@ -4,6 +4,8 @@ import 'package:mobile_iot/profiles/presentation/bloc/profile_view/profile_view_
 import 'package:mobile_iot/profiles/presentation/bloc/profile_view/profile_view_state.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 
+import '../../../../shared/exceptions/session_expired_exception.dart';
+
 /// BLoC for managing profile viewing state and business logic.
 ///
 /// This BLoC handles all profile view-related operations including fetching
@@ -60,6 +62,8 @@ class ProfileViewBloc extends Bloc<ProfileViewEvent, ProfileViewState> {
       } else {
         emit(ProfileViewErrorState('Failed to load profile data'));
       }
+    } on SessionExpiredException {
+      emit(ProfileViewSessionExpiredState());
     } catch (e) {
       emit(ProfileViewErrorState('Error loading profile: ${e.toString()}'));
     }

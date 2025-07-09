@@ -12,6 +12,7 @@ import 'package:mobile_iot/profiles/presentation/widgets/profile_avatar.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_field_display.dart';
 import 'package:mobile_iot/profiles/presentation/bloc/profile_view/bloc.dart';
 import '../../l10n/app_localizations.dart';
+import 'package:mobile_iot/shared/widgets/session_expired_screen.dart';
 
 /// A screen that displays the user's profile information.
 /// 
@@ -96,6 +97,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         },
         // Build the UI based on the current state
         builder: (context, state) {
+          if (state is ProfileViewSessionExpiredState) {
+            return SessionExpiredScreen(
+              onLoginAgain: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            );
+          }
           return Scaffold(
             backgroundColor: AppColors.lightGray,
             body: SafeArea(

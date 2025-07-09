@@ -92,3 +92,11 @@ class ReportsErrorState extends ReportsState {
   @override
   List<Object?> get props => [message];
 } 
+
+/// Session expired state when the user's session has expired.
+class ReportsSessionExpiredState extends ReportsState {
+  const ReportsSessionExpiredState();
+
+  @override
+  List<Object?> get props => [];
+} 

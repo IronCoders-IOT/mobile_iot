@@ -14,7 +14,7 @@ import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 /// includes proper error handling for authentication and network issues.
 class ReportApiService {
 
-  static final String _baseUrl = '${Env.apiUrl}${Env.requestsEndpoint}';
+  static final String _baseUrl = '${Env.apiUrl}/issue-reports';
 
   /// Creates a new report in the backend system via API.
   /// 
@@ -73,9 +73,9 @@ class ReportApiService {
   /// Throws:
   /// - [SessionExpiredException] when the authentication token is invalid (401/403)
   /// - [Exception] for other network or data access errors
-  Future<List<Report>> getReportByResidentId(String token, int residentId) async {
+  Future<List<Report>> getReportByResidentId(String token, int issueReportId) async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/resident/$residentId'),
+      Uri.parse('$_baseUrl/$issueReportId'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

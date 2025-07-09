@@ -7,6 +7,8 @@ import 'package:mobile_iot/monitoring/presentation/bloc/tank_events/tank_events_
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
 
+import '../../../../shared/exceptions/session_expired_exception.dart';
+
 /// BLoC for managing tank events state and business logic.
 /// 
 /// This BLoC handles all tank events-related operations including fetching,
@@ -86,6 +88,8 @@ class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
       _allEvents = events;
       emit(TankEventsLoadedState(events: events));
       
+    } on SessionExpiredException {
+      emit(TankEventsSessionExpiredState());
     } catch (e) {
       emit(TankEventsErrorState(e.toString()));
     }

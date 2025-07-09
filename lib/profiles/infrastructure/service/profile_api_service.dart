@@ -8,7 +8,7 @@ import 'package:mobile_iot/core/config/env.dart';
 /// including creation, update, and retrieval of user profile data. It handles HTTP requests
 /// and response parsing, as well as error handling for profile endpoints.
 class ProfileApiService {
-  static final String _baseUrl = '${Env.apiUrl}${Env.profileEndpoint}';
+  static final String _baseUrl = '${Env.apiUrl}';
 
   /// Updates the profile information for the user via a PUT request.
   ///
@@ -33,7 +33,7 @@ class ProfileApiService {
       String documentType,
       String phone ) async{
     final response =await http.put(
-      Uri.parse('$_baseUrl/me/edit'),
+      Uri.parse('$_baseUrl/profiles'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ class ProfileApiService {
   Future<Map<String, dynamic>?> getProfile(String token) async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/me'),
+        Uri.parse('$_baseUrl/{residentId}/profiles'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ class ProfileApiService {
         final json = jsonDecode(response.body);
         return json;
       } else if (response.statusCode == 401) {
-        throw Exception('Sesión expirada. Por favor, inicie sesión nuevamente.');
+        throw Exception('Sesión expirada');
       } else if (response.statusCode == 404) {
         throw Exception('Perfil no encontrado');
       } else {

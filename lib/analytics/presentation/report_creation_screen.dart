@@ -15,6 +15,7 @@ import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/app_colors.dart';
 import 'bloc/report_creation/report_creation_bloc.dart';
 import 'bloc/report_creation/report_creation_event.dart';
+import '../../shared/widgets/session_expired_screen.dart';
 
 /// A screen for creating new reports with BLoC state management.
 /// 
@@ -49,44 +50,56 @@ class ReportCreationScreen extends StatelessWidget {
       ),
       child: BlocConsumer<ReportCreationBloc, ReportCreationState>(
         listener: (context, state) {
+          if (state is ReportCreationSessionExpiredState) {
+            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+          }
           if (state is ReportCreationSuccessState) {
             Navigator.pop(context, true);
           }
         },
-        builder: (context, state) => Scaffold(
-          backgroundColor: AppColors.lightGray,
-          body: SafeArea(
-            child: Column(
-              children: [
-                AppHeader(
-                  title: AppLocalizations.of(context)!.newReport,
-                  onBack: () => Navigator.pop(context),
-                ),
-                Expanded(
-                  child: state is ReportCreationLoadingState
-                      ? const AppLoadingState()
-                      : _buildForm(context, state),
-                ),
-              ],
+        builder: (context, state) {
+          if (state is ReportCreationSessionExpiredState) {
+            return SessionExpiredScreen(
+              onLoginAgain: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            );
+          }
+          return Scaffold(
+            backgroundColor: AppColors.lightGray,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  AppHeader(
+                    title: AppLocalizations.of(context)!.newReport,
+                    onBack: () => Navigator.pop(context),
+                  ),
+                  Expanded(
+                    child: state is ReportCreationLoadingState
+                        ? const AppLoadingState()
+                        : _buildForm(context, state),
+                  ),
+                ],
+              ),
             ),
-          ),
-          bottomNavigationBar: AppBottomNavigationBar(
-            currentIndex: 0,
-            onTap: (index) {
-              switch (index) {
-                case 0:
-                  Navigator.pushReplacementNamed(context, '/reports');
-                  break;
-                case 1:
-                  Navigator.pushReplacementNamed(context, '/dashboard');
-                  break;
-                case 2:
-                  Navigator.pushReplacementNamed(context, '/profile');
-                  break;
-              }
-            },
-          ),
-        ),
+            bottomNavigationBar: AppBottomNavigationBar(
+              currentIndex: 0,
+              onTap: (index) {
+                switch (index) {
+                  case 0:
+                    Navigator.pushReplacementNamed(context, '/reports');
+                    break;
+                  case 1:
+                    Navigator.pushReplacementNamed(context, '/dashboard');
+                    break;
+                  case 2:
+                    Navigator.pushReplacementNamed(context, '/profile');
+                    break;
+                }
+              },
+            ),
+          );
+        },
       ),
     );
   }
