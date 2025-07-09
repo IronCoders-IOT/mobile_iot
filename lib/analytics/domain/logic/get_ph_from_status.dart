@@ -10,13 +10,20 @@
 ///
 double getPhFromStatus(String status) {
   switch (status) {
-    case 'normal':
+    case 'Excellent':
+      return 7.2;
+    case 'Good':
       return 7.0;
-    case 'alert':
+    case 'Acceptable':
+      return 6.8;
+    case 'Bad':
       return 5.5;
-    case 'critical':
+    case 'Non-potable':
+      return 4.8;
+    case 'Contaminated water':
       return 3.0;
     default:
-      return 7.0;
+      return 7.0; // default fallback pH
   }
+
 } 

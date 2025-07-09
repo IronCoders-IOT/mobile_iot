@@ -27,8 +27,17 @@ class ProfileHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          if (onEdit != null)
+            GestureDetector(
+              onTap: onEdit,
+              child: const Icon(
+                Icons.edit,
+                color: AppColors.darkBlue,
+                size: 24,
+              ),
+            ),
+          if (onEdit != null) const SizedBox(width: 16),
           Expanded(
             child: Center(
               child: AppLogo(),
@@ -43,27 +52,6 @@ class ProfileHeader extends StatelessWidget {
                 size: 24,
               ),
             ),
-          if (onEdit != null) ...[
-            const SizedBox(width: 16),
-            GestureDetector(
-              onTap: onEdit,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBlue,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'Edit',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );

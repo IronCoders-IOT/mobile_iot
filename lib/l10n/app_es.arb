@@ -39,7 +39,7 @@
   "enterAmountOfWater": "Ingresa la cantidad de agua",
   "cancel": "Cancelar",
   "request": "Solicitar",
-  "waterSupplyRequest": "Solicitud de Suministro de Agua",
+  "waterSupplyRequest": "Solicitud de Suministro \nde Agua",
   "requested": "Solicitado",
   "delivered": "Entregado",
   "requestDetails": "Detalles de la Solicitud",
@@ -67,7 +67,7 @@
   "requestHistory": "Historial de Solicitudes",
   "dashboard": "Panel de Control",
   "today": "Hoy",
-  "water": "Agua",
+  "tank": "Tanque 1",
   "quantity": "Cantidad",
   "ph": "pH",
   "recentActivity": "Actividad reciente",
@@ -85,5 +85,6 @@
   "password": "Contraseña",
   "signIn": "Iniciar sesión",
   "water": "Agua",
+  "logout": "Cerrar sesión",
   "requestedLitersOfWater": "Solicitados {liters} litros de agua"
 } 
