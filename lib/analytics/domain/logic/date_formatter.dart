@@ -16,7 +16,7 @@ class DateFormatter {
   /// - [context]: The BuildContext of the calling widget
   /// - [isoString]: The ISO 8601 date string to format
   /// 
-  /// Returns a formatted date string (e.g., "December 25, 2023, 2:30 PM")
+  /// Returns a formatted date string
   /// or the original string if parsing fails.
   static String formatDate(BuildContext context, String isoString) {
     try {
@@ -37,7 +37,7 @@ class DateFormatter {
   /// - [context]: The BuildContext of the calling widget
   /// - [isoString]: The ISO 8601 date string to format
   /// 
-  /// Returns a formatted date string (e.g., "December 25, 2023, 2:30 PM")
+  /// Returns a formatted date string
   /// or the original string if parsing fails.
   static String formatEmissionDate(BuildContext context, String isoString) {
     try {

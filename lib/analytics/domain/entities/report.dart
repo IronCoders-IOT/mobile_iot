@@ -8,31 +8,14 @@
 /// for API communication and report management.
 class Report{
 
-  /// The unique identifier for the report.
   final int id;
-  
-  /// The title or subject of the report.
   final String title;
-  
-  /// The detailed description of the issue or observation.
   final String description;
-  
-  /// The date when the report was created or emitted.
   final String emissionDate;
-  
-  /// The current status of the report (e.g., 'pending', 'in_progress', 'resolved').
   final String status;
-  
-  /// The identifier of the resident who created the report.
   final int residentId;
-  
-  /// The identifier of the water provider associated with the report.
   final int providerId;
 
-  /// Creates a report with the specified parameters.
-  /// 
-  /// All parameters are required and represent the core data
-  /// for report tracking and management.
   Report({
     required this.id,
     required this.title,

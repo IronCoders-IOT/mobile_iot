@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 import 'package:mobile_iot/analytics/infrastructure/service/water_request_api_service.dart';
 import 'package:mobile_iot/analytics/infrastructure/repositories/water_request_repository_impl.dart';
-import 'package:mobile_iot/analytics/presentation/bloc/water_supply_request_creation/bloc/bloc.dart';
+import 'package:mobile_iot/analytics/presentation/bloc/water_supply_request_creation/bloc.dart';
 import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';

@@ -7,19 +7,12 @@
 /// The entity provides JSON serialization and deserialization methods
 /// for API communication.
 class WaterRequest{
-  /// The amount of water requested in liters.
   final String requestedLiters;
   
-  /// The current status of the request (e.g., 'pending', 'approved', 'delivered').
   final String status;
   
-  /// The date and time when the water was delivered or is scheduled for delivery.
   final String deliveredAt;
-  
-  /// Creates a water request with the specified parameters.
-  /// 
-  /// All parameters are required and represent the core data
-  /// for water supply request tracking.
+
   WaterRequest({
     required this.requestedLiters,
     required this.status,

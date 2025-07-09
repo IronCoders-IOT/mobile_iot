@@ -6,7 +6,7 @@ import 'package:mobile_iot/shared/widgets/app_logo.dart';
 import 'package:mobile_iot/shared/widgets/app_text_field.dart';
 import 'package:mobile_iot/shared/widgets/app_button.dart';
 import 'package:mobile_iot/iam/presentation/widgets/app_welcome_section.dart';
-import 'package:mobile_iot/iam/presentation/bloc/auth/bloc/bloc.dart';
+import 'package:mobile_iot/iam/presentation/bloc/bloc.dart';
 import '../../shared/widgets/app_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../../main.dart';
@@ -18,26 +18,7 @@ import '../../../main.dart';
 /// authentication requests, and navigation to the main app after
 /// successful login.
 /// 
-/// The LoginScreen implements a complete authentication flow using:
-/// - Clean Architecture principles with proper layer separation
-/// - BLoC pattern for state management and business logic
-/// - Form validation using domain logic validators
-/// - Secure token storage for authenticated sessions
-/// - Responsive UI with loading states and error handling
-/// 
-/// Features:
-/// - Username and password input with validation
-/// - Password visibility toggle
-/// - Loading states during authentication
-/// - Error handling and user feedback
-/// - Secure token storage after successful login
-/// - Navigation to dashboard after authentication
-/// - Responsive design with proper keyboard handling
-///
 class LoginScreen extends StatefulWidget {
-  /// Creates a login screen.
-  /// 
-  /// The [key] parameter is optional and is passed to the superclass.
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
@@ -50,12 +31,6 @@ class LoginScreen extends StatefulWidget {
 /// for the login screen. The authentication logic is handled by the AuthBloc
 /// following the BLoC pattern for clean separation of concerns.
 /// 
-/// The state class is responsible for:
-/// - Managing form input controllers
-/// - Handling password visibility toggle
-/// - Coordinating with AuthBloc for authentication
-/// - Building the UI based on authentication state
-/// - Managing widget lifecycle and resource cleanup
 class _LoginScreenState extends State<LoginScreen> {
   /// Global key for form validation.
   /// 
@@ -108,12 +83,12 @@ class _LoginScreenState extends State<LoginScreen> {
       password: _passwordController.text,
     );
 
-    context.read<AuthBloc>().add(LoginEvent(credentials: credentials));
+    context.read<LoginBloc>().add(SignInEvent(credentials: credentials));
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthBloc, AuthState>(
+    return BlocConsumer<LoginBloc, LoginState>(
       // Listen for state changes to handle side effects (like navigation)
       listener: (context, state) {
         if (state is AuthSuccessState) {
@@ -249,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
   /// - [state]: The current authentication state from AuthBloc
   /// 
   /// Returns an AppButton widget for signing in with appropriate state handling.
-  Widget _buildSignInButton(AuthState state) {
+  Widget _buildSignInButton(LoginState state) {
     final isLoading = state is AuthLoadingState;
     return AppButton(
       text: AppLocalizations.of(context)!.signIn,

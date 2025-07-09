@@ -1,4 +1,4 @@
-import 'package:mobile_iot/profiles/domain/interfaces/resident_repository.dart';
+import 'package:mobile_iot/profiles/domain/repositories/resident_repository.dart';
 import 'package:mobile_iot/profiles/domain/entities/resident.dart';
 
 /// Use case for handling resident-related business logic.
@@ -7,16 +7,8 @@ import 'package:mobile_iot/profiles/domain/entities/resident.dart';
 /// encapsulating the application-specific logic for resident profile retrieval. It ensures
 /// that resident management follows the application's business rules and requirements.
 class ResidentUseCase{
-  /// The resident repository that handles the actual resident operations.
-  ///
-  /// This dependency is injected through the constructor, following the
-  /// dependency inversion principle. The use case depends on the abstract
-  /// ResidentRepository interface rather than concrete implementations.
   final ResidentRepository residentRepository;
 
-  /// Creates a new ResidentUseCase instance with the required repository dependency.
-  ///
-  /// [residentRepository] - The resident repository that will handle the actual resident operations
   ResidentUseCase(this.residentRepository);
 
   /// Retrieves the resident profile information for the user.

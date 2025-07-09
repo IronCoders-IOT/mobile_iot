@@ -67,7 +67,7 @@
   "requestHistory": "Request History",
   "dashboard": "Dashboard",
   "today": "Today",
-  "water": "Water",
+  "tank": "Tank 1",
   "quantity": "Quantity",
   "ph": "pH",
   "recentActivity": "Recent Activity",
@@ -85,6 +85,7 @@
   "password": "Password",
   "signIn": "Sign in",
   "water": "Water",
+  "logout": "Logout",
   "requestedLitersOfWater": "Requested {liters} liters of water",
   "@helloWorld": {
     "description": "The conventional newborn programmer greeting"

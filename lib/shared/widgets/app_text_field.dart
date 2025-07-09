@@ -1,6 +1,14 @@
+/// A reusable text field widget for forms and input in the application.
+///
+/// This file defines the [AppTextField] widget, which provides a consistent
+/// style and validation for text input fields across the app. It supports
+/// customization for icons, validation, read-only mode, and more.
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
+/// A customizable text field with consistent app styling and validation.
+///
+/// Supports prefix/suffix icons, validation, read-only mode, and more.
 class AppTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;

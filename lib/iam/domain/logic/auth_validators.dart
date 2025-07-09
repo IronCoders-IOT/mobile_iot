@@ -1,7 +1,3 @@
-/// Validators for authentication form fields.
-/// 
-/// This file contains validation functions for login and registration
-/// fields including username, password, and email validation.
 
 /// Validates a username field for authentication.
 /// 

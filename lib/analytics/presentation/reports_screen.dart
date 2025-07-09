@@ -19,10 +19,12 @@ import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart
 import 'package:mobile_iot/analytics/presentation/widgets/app_list_card.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_status_badge.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_modal_bottom_sheet.dart';
-import 'package:mobile_iot/analytics/presentation/bloc/reports/bloc/bloc.dart';
 import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';
+import 'bloc/reports/reports_bloc.dart';
+import 'bloc/reports/reports_event.dart';
+import 'bloc/reports/reports_state.dart';
 
 /// A screen that displays a list of reports for the authenticated user.
 /// 

@@ -1,3 +1,7 @@
+/// A reusable custom painter for circular progress indicators in the app.
+///
+/// This file defines the [CircularProgressPainter] class, which is used to draw
+/// circular progress indicators with customizable colors and stroke width.
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 

@@ -129,7 +129,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get request => 'Solicitar';
 
   @override
-  String get waterSupplyRequest => 'Solicitud de Suministro de Agua';
+  String get waterSupplyRequest => 'Solicitud de Suministro \nde Agua';
 
   @override
   String get requested => 'Solicitado';
@@ -213,7 +213,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get today => 'Hoy';
 
   @override
-  String get water => 'Agua';
+  String get tank => 'Tanque 1';
 
   @override
   String get quantity => 'Cantidad';
@@ -259,6 +259,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get signIn => 'Iniciar sesión';
+
+  @override
+  String get water => 'Agua';
+
+  @override
+  String get logout => 'Cerrar sesión';
 
   @override
   String requestedLitersOfWater(int liters) {

@@ -1,6 +1,13 @@
+/// A reusable logo widget for displaying the app's brand.
+///
+/// This file defines the [AppLogo] widget, which displays the AquaConecta logo
+/// with consistent styling and color scheme.
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
+/// A stylized logo widget for AquaConecta.
+///
+/// Displays the app name with brand colors and customizable font size.
 class AppLogo extends StatelessWidget {
   final double fontSize;
   final TextAlign textAlign;

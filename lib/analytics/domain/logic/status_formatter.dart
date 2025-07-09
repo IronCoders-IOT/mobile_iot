@@ -14,7 +14,7 @@ class StatusFormatter {
   /// 
   /// Parameters:
   /// - [context]: The BuildContext of the calling widget
-  /// - [status]: The internal status value (e.g., 'received', 'in_progress', 'closed')
+  /// - [status]: The internal status value
   /// 
   /// Returns a formatted status string suitable for UI display.
   static String formatWaterRequestStatus(BuildContext context, String status) {
@@ -37,7 +37,7 @@ class StatusFormatter {
   /// 
   /// Parameters:
   /// - [context]: The BuildContext of the calling widget
-  /// - [status]: The internal status value (e.g., 'received', 'in_progress', 'closed')
+  /// - [status]: The internal status value
   /// 
   /// Returns a formatted status string suitable for UI display.
   static String formatReportStatus(BuildContext context, String status) {

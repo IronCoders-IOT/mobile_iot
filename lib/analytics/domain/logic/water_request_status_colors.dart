@@ -12,13 +12,8 @@ class WaterRequestStatusColors {
   /// quickly identify the current state of their water requests.
   /// 
   /// Parameters:
-  /// - [status]: The water request status (e.g., 'IN_PROGRESS', 'RECEIVED', 'CLOSED')
+  /// - [status]: The water request status
   /// 
-  /// Returns a Color object representing the status color:
-  /// - 'IN_PROGRESS': Blue (#3498DB)
-  /// - 'RECEIVED': Green (#28A745)
-  /// - 'CLOSED': Red (#E74C3C)
-  /// - default: Gray (#6C757D)
   static Color getStatusColor(String status) {
     switch (status.toUpperCase()) {
       case 'IN_PROGRESS':
@@ -38,13 +33,8 @@ class WaterRequestStatusColors {
   /// status colors for creating visually appealing status indicators.
   /// 
   /// Parameters:
-  /// - [status]: The water request status (e.g., 'IN_PROGRESS', 'RECEIVED', 'CLOSED')
+  /// - [status]: The water request status
   /// 
-  /// Returns a Color object representing the background color:
-  /// - 'IN_PROGRESS': Light blue (#E3F2FD)
-  /// - 'RECEIVED': Light green (#D6FFE6)
-  /// - 'CLOSED': Light red (#FFE3E3)
-  /// - default: Light gray (#F0F1F2)
   static Color getStatusBackgroundColor(String status) {
     switch (status.toUpperCase()) {
       case 'IN_PROGRESS':

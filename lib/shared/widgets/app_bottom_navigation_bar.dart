@@ -1,5 +1,12 @@
+/// A reusable bottom navigation bar for main app navigation.
+///
+/// This file defines the [AppBottomNavigationBar] widget, which provides a
+/// consistent navigation bar for switching between main sections of the app.
 import 'package:flutter/material.dart';
 
+/// A customizable bottom navigation bar for the app's main sections.
+///
+/// Supports navigation between reports, dashboard, and profile screens.
 class AppBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;

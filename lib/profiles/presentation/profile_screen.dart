@@ -10,7 +10,7 @@ import 'package:mobile_iot/shared/widgets/app_colors.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_header.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_avatar.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_field_display.dart';
-import 'package:mobile_iot/profiles/presentation/bloc/profile_view/bloc/bloc.dart';
+import 'package:mobile_iot/profiles/presentation/bloc/profile_view/bloc.dart';
 import '../../l10n/app_localizations.dart';
 
 /// A screen that displays the user's profile information.
@@ -29,9 +29,7 @@ import '../../l10n/app_localizations.dart';
 /// - Profile updates from edit screen
 ///
 class ProfileScreen extends StatefulWidget {
-  /// Creates a profile screen.
-  /// 
-  /// The [key] parameter is optional and is passed to the superclass.
+
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override

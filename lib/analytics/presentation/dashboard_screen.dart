@@ -7,21 +7,18 @@ import '../../profiles/infrastructure/service/resident_api_service.dart';
 import '../../shared/helpers/secure_storage_service.dart';
 import '../../shared/widgets/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mobile_iot/analytics/presentation/bloc/tank_events/bloc/tank_events_bloc.dart';
-import 'package:mobile_iot/analytics/presentation/bloc/tank_events/bloc/tank_events_state.dart';
-import 'package:mobile_iot/analytics/presentation/bloc/tank_events/bloc/tank_events_event.dart';
-import 'package:mobile_iot/analytics/domain/logic/get_event_status_color.dart';
+import 'package:mobile_iot/monitoring/presentation/bloc/tank_events/tank_events_bloc.dart';
+import 'package:mobile_iot/monitoring/presentation/bloc/tank_events/tank_events_state.dart';
+import 'package:mobile_iot/monitoring/presentation/bloc/tank_events/tank_events_event.dart';
 import 'package:mobile_iot/analytics/domain/logic/get_ph_from_status.dart';
-import 'package:mobile_iot/analytics/domain/logic/calculate_water_percentage.dart';
 import 'package:mobile_iot/shared/widgets/circular_progress_painter.dart';
 import 'package:mobile_iot/analytics/domain/entities/water_reading.dart';
-import '../application/device_use_case.dart';
-import '../application/event_use_case.dart';
-import '../domain/logic/get_localized_water_type.dart';
-import '../infrastructure/repositories/device_repository_impl.dart';
-import '../infrastructure/repositories/event_repository_impl.dart';
-import '../infrastructure/service/device_api_service.dart';
-import '../infrastructure/service/event_api_service.dart';
+import '../../monitoring/application/device_use_case.dart';
+import '../../monitoring/application/event_use_case.dart';
+import '../../monitoring/infrastructure/repositories/device_repository_impl.dart';
+import '../../monitoring/infrastructure/repositories/event_repository_impl.dart';
+import '../../monitoring/infrastructure/service/device_api_service.dart';
+import '../../monitoring/infrastructure/service/event_api_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../../../main.dart';
 
@@ -66,7 +63,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   late Animation<double> _animation;
   
   /// List of water readings for the history section.
-  List<WaterReading> waterHistory = [];
+  List<WaterReading> tanks = [];
 
   @override
   void initState() {
@@ -122,20 +119,20 @@ class _DashboardScreenState extends State<DashboardScreen>
           else if (state is TankEventsLoadedState && state.events.isNotEmpty) {
             // Extract data from the latest event for display
             final latestEvent = state.events.last;
-            final status = getStatusFromQuality(latestEvent.qualityValue);
-            final waterQuantity = latestEvent.levelValue;
+            final status = latestEvent.qualityValue;
+            const waterQuantity = 1;
             final phLevel = getPhFromStatus(status);
-            final currentPercentage = calculateWaterPercentage(state.events);
+            final currentPercentage = double.parse(latestEvent.levelValue);
             
             // Update water history with the latest event for display
-            waterHistory = [
-              WaterReading(time: '', quantity: waterQuantity, type: 'Water'),
+            tanks = [
+              WaterReading(time: '', quantity: '600ml', type: AppLocalizations.of(context)!.tank),
             ];
             
             // Update animation to reflect the new water percentage
             _animation = Tween<double>(
               begin: 0.0,
-              end: currentPercentage / 1000, // Assuming 1000L is 100%
+              end: currentPercentage / 100, // Assuming 1000L is 100%
             ).animate(CurvedAnimation(
               parent: _animationController,
               curve: Curves.easeInOut,
@@ -169,13 +166,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                             // Metrics card with status, quantity, and pH
                             _buildMetricsCard(
                               status: status,
-                              waterQuantity: waterQuantity,
+                              waterQuantity: waterQuantity.toString(),
                               phLevel: phLevel,
                             ),
                             
                             const SizedBox(height: 32),
                             // Recent activity history section
-                            _buildHistorySection(),
+                            _buildRecentActivitySection(),
                           ],
                         ),
                       ),
@@ -284,9 +281,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         height: 200,
         child: CustomPaint(
           painter: CircularProgressPainter(
-            progress: currentPercentage / 1000, // Assuming 1000L is 100%
+            progress: currentPercentage / 100, // Assuming 1000L is 100%
             strokeWidth: 12.0,
-            backgroundColor: AppColors.lightGray,
+            backgroundColor: AppColors.customGray,
             progressColor: AppColors.primaryBlue,
           ),
           child: Center(
@@ -305,7 +302,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   AppLocalizations.of(context)!.water,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: AppColors.mediumGray,
+                    color: AppColors.darkBlue,
                   ),
                 ),
               ],
@@ -486,7 +483,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           subtitle,
           style: const TextStyle(
             fontSize: 12,
-            color: AppColors.mediumGray,
+            color: AppColors.darkBlue,
           ),
         ),
       ],
@@ -504,18 +501,17 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Container(
       width: 1,
       height: 40,
-      color: AppColors.mediumGray.withOpacity(0.3),
+      color: AppColors.darkBlue.withOpacity(0.3),
     );
   }
 
-  /// Builds the recent activity history section.
-  /// 
+  ///
   /// This method creates a section that displays recent water activity
   /// with a title and a card containing the water history items.
   /// The section shows the latest water reading from the tank events.
   /// 
   /// Returns a column widget with the history section title and content.
-  Widget _buildHistorySection() {
+  Widget _buildRecentActivitySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -542,7 +538,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             ],
           ),
           child: Column(
-            children: waterHistory.map((reading) => _buildHistoryItem(reading)).toList(),
+            children: tanks.map((reading) => _buildHistoryItem(reading)).toList(),
           ),
         ),
       ],
@@ -583,7 +579,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    getLocalizedWaterType(context, reading.type),
+                    reading.type,
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -594,7 +590,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     reading.quantity,
                     style: const TextStyle(
                       fontSize: 12,
-                      color: AppColors.mediumGray,
+                      color: AppColors.darkBlue,
                     ),
                   ),
                 ],

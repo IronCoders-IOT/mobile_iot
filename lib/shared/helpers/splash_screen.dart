@@ -1,6 +1,15 @@
+/// A splash screen widget that checks authentication and navigates accordingly.
+///
+/// This file defines the [SplashScreen] widget, which displays a loading indicator
+/// while checking for an authentication token and redirects the user to the
+/// appropriate screen (dashboard or login).
 import 'package:flutter/material.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 
+/// Splash screen that checks authentication status and redirects the user.
+///
+/// Shows a loading indicator while verifying the presence of a token, then navigates
+/// to the dashboard if authenticated or to the login screen otherwise.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 

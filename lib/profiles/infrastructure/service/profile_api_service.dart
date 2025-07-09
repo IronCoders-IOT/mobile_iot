@@ -55,49 +55,6 @@ class ProfileApiService {
     return null;
   }
 
-  /// Creates a new profile for the user via a POST request.
-  ///
-  /// Parameters:
-  /// - [token]: The authentication token for the user
-  /// - [firstName]: The user's first name
-  /// - [lastName]: The user's last name
-  /// - [email]: The user's email address
-  /// - [direction]: The user's address or direction
-  /// - [documentNumber]: The user's document number
-  /// - [documentType]: The type of document
-  /// - [phone]: The user's phone number
-  ///
-  /// Returns a [Future] that completes with a new token if successful, or null otherwise.
-  Future<String?>createProfile(String token,
-      String firstName,
-      String lastName,
-      String email,
-      String direction,
-      String documentNumber,
-      String documentType,
-      String phone ) async{
-    final response =await http.post(
-      Uri.parse(_baseUrl),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'firstName': firstName,
-        'lastName': lastName,
-        'email': email,
-        'direction': direction,
-        'documentNumber': documentNumber,
-        'documentType': documentType,
-        'phone': phone
-      }),
-    );
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      final json = jsonDecode(response.body);
-      return json['token'];
-    }
-    return null;
-  }
 
   /// Retrieves the profile information for the user via a GET request.
   ///

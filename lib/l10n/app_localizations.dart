@@ -503,11 +503,11 @@ abstract class AppLocalizations {
   /// **'Today'**
   String get today;
 
-  /// No description provided for @water.
+  /// No description provided for @tank.
   ///
   /// In en, this message translates to:
-  /// **'Water'**
-  String get water;
+  /// **'Tank 1'**
+  String get tank;
 
   /// No description provided for @quantity.
   ///
@@ -598,6 +598,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in'**
   String get signIn;
+
+  /// No description provided for @water.
+  ///
+  /// In en, this message translates to:
+  /// **'Water'**
+  String get water;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
 
   /// Message showing requested water amount
   ///

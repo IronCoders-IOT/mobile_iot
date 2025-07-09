@@ -6,19 +6,11 @@ import 'package:mobile_iot/shared/widgets/app_colors.dart';
 /// This widget displays a user's avatar as a circle. If [showCameraIcon] is true and [onCameraTap]
 /// is provided, a camera icon is shown in the corner for photo upload or change actions.
 class ProfileAvatar extends StatelessWidget {
-  /// The size (diameter) of the avatar.
   final double size;
-  /// Callback triggered when the camera icon is tapped.
   final VoidCallback? onCameraTap;
-  /// Whether to show the camera icon overlay.
   final bool showCameraIcon;
 
-  /// Creates a [ProfileAvatar] widget.
-  ///
-  /// Parameters:
-  /// - [size]: The diameter of the avatar (default: 100)
-  /// - [onCameraTap]: Callback for camera icon tap
-  /// - [showCameraIcon]: Whether to show the camera icon (default: false)
+
   const ProfileAvatar({
     Key? key,
     this.size = 100,

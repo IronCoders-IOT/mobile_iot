@@ -1,6 +1,14 @@
+/// A reusable button widget for actions and forms in the application.
+///
+/// This file defines the [AppButton] widget, which provides a consistent
+/// style for primary, outlined, and loading buttons across the app. It supports
+/// icons, custom colors, loading state, and more.
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
+/// A customizable button with consistent app styling.
+///
+/// Supports loading state, icons, outlined style, and custom colors.
 class AppButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
