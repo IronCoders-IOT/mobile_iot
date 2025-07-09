@@ -9,10 +9,12 @@ import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_header.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_error_state.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart';
-import 'package:mobile_iot/analytics/presentation/bloc/report_creation/bloc/bloc.dart';
+import 'package:mobile_iot/analytics/presentation/bloc/report_creation/bloc.dart';
 import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';
+import 'bloc/report_creation/report_creation_bloc.dart';
+import 'bloc/report_creation/report_creation_event.dart';
 
 /// A screen for creating new reports with BLoC state management.
 /// 

@@ -1,5 +1,10 @@
+/// Defines the color palette used throughout the application.
+///
+/// This file provides the [AppColors] class, which contains static color constants
+/// for consistent use of colors across the app's widgets and themes.
 import 'package:flutter/material.dart';
 
+/// Static color definitions for the app's theme and widgets.
 class AppColors {
   static const Color primaryBlue = Color(0xFF3498DB);
   static const Color darkBlue = Color(0xFF2C3E50);

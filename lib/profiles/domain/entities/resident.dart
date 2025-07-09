@@ -3,10 +3,8 @@
 /// This class encapsulates the minimal information for a resident, currently only the unique ID.
 /// It provides deserialization from JSON data.
 class Resident{
-  /// The unique resident ID.
   final int id;
 
-  /// Creates a new [Resident] entity with the given ID.
   Resident({required this.id});
 
   /// Creates a [Resident] entity from a JSON map.

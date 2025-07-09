@@ -4,24 +4,15 @@
 /// including names, email, address, document details, phone, and user ID. It provides
 /// serialization and deserialization methods for working with JSON data.
 class Profile{
-  /// The user's first name.
   final String firstName;
-  /// The user's last name.
   final String lastName;
-  /// The user's email address.
   final String email;
-  /// The user's address or direction.
   final String direction;
-  /// The user's document number (e.g., ID or passport).
   final String documentNumber;
-  /// The type of document (e.g., ID, passport).
   final String documentType;
-  /// The user's phone number.
   final String phone;
-  /// The unique user ID.
   final int userId;
 
-  /// Creates a new [Profile] entity with the given user information.
   const Profile({
     required this.firstName,
     required this.lastName,

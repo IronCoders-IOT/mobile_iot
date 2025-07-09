@@ -13,10 +13,7 @@ import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 /// The service uses the http package for network communication and
 /// includes proper error handling for authentication and network issues.
 class ReportApiService {
-  /// The base URL for report-related API endpoints.
-  /// 
-  /// Constructed from the environment configuration to ensure
-  /// consistency across different deployment environments.
+
   static final String _baseUrl = '${Env.apiUrl}${Env.requestsEndpoint}';
 
   /// Creates a new report in the backend system via API.
@@ -32,7 +29,7 @@ class ReportApiService {
   /// - [status]: The initial status of the report (typically 'received')
   /// 
   /// Returns a Future that completes with a success token or null.
-  /// 
+  ///
   /// Throws:
   /// - [SessionExpiredException] when the authentication token is invalid (401/403)
   /// - [Exception] for other network or data access errors
@@ -72,7 +69,7 @@ class ReportApiService {
   /// - [residentId]: The unique identifier of the resident
   /// 
   /// Returns a Future that completes with a list of Report entities.
-  /// 
+  ///
   /// Throws:
   /// - [SessionExpiredException] when the authentication token is invalid (401/403)
   /// - [Exception] for other network or data access errors

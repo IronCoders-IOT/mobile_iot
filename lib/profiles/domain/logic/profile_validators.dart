@@ -1,10 +1,3 @@
-/// Validators for profile form fields.
-///
-/// This file contains validation functions for various profile fields
-/// including names, email, phone, and document numbers. These functions
-/// are used to ensure that user input meets the application's business
-/// rules and requirements for profile data.
-
 /// Validates a first or last name field.
 /// 
 /// Parameters:

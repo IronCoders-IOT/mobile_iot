@@ -7,16 +7,9 @@ import 'package:mobile_iot/shared/widgets/app_logo.dart';
 /// This widget is used at the top of the profile screen to provide branding (logo),
 /// a logout button, and an edit button. It is customizable via callbacks for logout and edit actions.
 class ProfileHeader extends StatelessWidget {
-  /// Callback triggered when the logout icon is tapped.
   final VoidCallback? onLogout;
-  /// Callback triggered when the edit button is tapped.
   final VoidCallback? onEdit;
 
-  /// Creates a [ProfileHeader] widget.
-  ///
-  /// Parameters:
-  /// - [onLogout]: Callback for logout action
-  /// - [onEdit]: Callback for edit action
   const ProfileHeader({
     Key? key,
     this.onLogout,

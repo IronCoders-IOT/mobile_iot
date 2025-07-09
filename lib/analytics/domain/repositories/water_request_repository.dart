@@ -21,10 +21,6 @@ abstract class WaterRequestRepository {
   /// - [deliveredAt]: The expected or actual delivery date/time
   /// 
   /// Returns a Future that completes when the request is successfully created.
-  /// 
-  /// Throws:
-  /// - [SessionExpiredException] when the authentication token is invalid
-  /// - [Exception] for other network or data access errors
   Future<void> createWaterRequest(String token,
       String requestedLiters, String status, String deliveredAt);
   
@@ -38,9 +34,5 @@ abstract class WaterRequestRepository {
   /// - [id]: The unique identifier of the resident
   /// 
   /// Returns a Future that completes with a list of WaterRequest entities.
-  /// 
-  /// Throws:
-  /// - [SessionExpiredException] when the authentication token is invalid
-  /// - [Exception] for other network or data access errors
   Future<List<WaterRequest>> getAllRequestsByResidentId(String token, int id);
 }

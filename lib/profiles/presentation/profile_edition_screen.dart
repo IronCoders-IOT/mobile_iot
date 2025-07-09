@@ -11,7 +11,7 @@ import 'package:mobile_iot/shared/widgets/back_header.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_avatar.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_edit_field.dart';
 import 'package:mobile_iot/shared/widgets/app_button.dart';
-import 'package:mobile_iot/profiles/presentation/bloc/profile_edition/bloc/bloc.dart';
+import 'package:mobile_iot/profiles/presentation/bloc/profile_edition/bloc.dart';
 import '../../l10n/app_localizations.dart';
 /// A screen that allows users to edit their profile information.
 /// 
@@ -29,9 +29,7 @@ import '../../l10n/app_localizations.dart';
 /// - Navigation back to profile screen after successful save
 ///
 class ProfileEditionScreen extends StatefulWidget {
-  /// Creates a profile edition screen.
-  /// 
-  /// The [key] parameter is optional and is passed to the superclass.
+
   const ProfileEditionScreen({Key? key}) : super(key: key);
 
   @override

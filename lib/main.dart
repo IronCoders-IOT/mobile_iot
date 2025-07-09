@@ -1,6 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mobile_iot/analytics/presentation/tank_events_screen.dart';
+import 'package:mobile_iot/monitoring/presentation/tank_events_screen.dart';
 import 'package:mobile_iot/analytics/presentation/water_supply_request_screen.dart';
 import 'package:mobile_iot/iam/presentation/login_screen.dart';
 import 'package:mobile_iot/analytics/presentation/dashboard_screen.dart';
@@ -9,30 +10,42 @@ import 'package:mobile_iot/profiles/presentation/profile_screen.dart';
 import 'package:mobile_iot/analytics/presentation/reports_screen.dart';
 import 'package:mobile_iot/shared/helpers/splash_screen.dart';
 import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
+import 'iam/presentation/bloc/login_bloc.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mobile_iot/iam/presentation/bloc/auth/bloc/auth_bloc.dart';
 import 'package:mobile_iot/iam/application/sign_in_use_case.dart';
 import 'package:mobile_iot/iam/infrastructure/repositories/auth_repository_impl.dart';
 import 'package:mobile_iot/iam/infrastructure/service/auth_api_service.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
+/// This file initializes the Flutter app, sets up localization, theme, and routing.
+/// It defines the [AquaConectaApp] widget, which manages the app's locale, theme,
+/// and navigation structure. The app uses BLoC for authentication and supports
+/// multiple screens, including dashboard, reports, profile, and more.
+///
 void main() {
   runApp(const AquaConectaApp());
 }
 
+/// Creates the main application widget for AquaConecta.
+///
+/// This widget manages the app's state, including locale and navigation.
 class AquaConectaApp extends StatefulWidget {
-  const AquaConectaApp({Key? key}) : super(key: key);
-
+  /// Provides access to the [AquaConectaAppState] from a [BuildContext].
   static AquaConectaAppState? of(BuildContext context) =>
       context.findAncestorStateOfType<AquaConectaAppState>();
+
+  /// Creates the main application widget for AquaConecta.
+  const AquaConectaApp({Key? key}) : super(key: key);
 
   @override
   State<AquaConectaApp> createState() => AquaConectaAppState();
 }
 
+/// State class for [AquaConectaApp].
+///
+/// Handles locale management, theme configuration, and routing.
 class AquaConectaAppState extends State<AquaConectaApp> {
   Locale? _locale;
 
@@ -45,6 +58,7 @@ class AquaConectaAppState extends State<AquaConectaApp> {
     _loadSavedLocale();
   }
 
+  /// Loads the saved locale from persistent storage (SharedPreferences).
   Future<void> _loadSavedLocale() async {
     final prefs = await SharedPreferences.getInstance();
     final savedLocale = prefs.getString('locale');
@@ -63,6 +77,7 @@ class AquaConectaAppState extends State<AquaConectaApp> {
     super.dispose();
   }
 
+  /// Sets the app's locale and saves it to persistent storage.
   void setLocale(Locale locale) async {
     setState(() {
       _locale = locale;
@@ -71,13 +86,14 @@ class AquaConectaAppState extends State<AquaConectaApp> {
     await prefs.setString('locale', locale.languageCode);
   }
 
+  /// Changes the app's locale from anywhere in the widget tree.
   static void changeLocale(Locale locale) {
     _instance?.setLocale(locale);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Configurar la barra de estado
+    // Configure the system status bar appearance
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -90,7 +106,7 @@ class AquaConectaAppState extends State<AquaConectaApp> {
       title: 'AquaConecta',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // Tema principal
+        // Main theme configuration
         primarySwatch: MaterialColor(
           0xFF3498DB,
           <int, Color>{
@@ -99,7 +115,7 @@ class AquaConectaAppState extends State<AquaConectaApp> {
             200: const Color(0xFF90CAF9),
             300: const Color(0xFF64B5F6),
             400: const Color(0xFF42A5F5),
-            500: const Color(0xFF3498DB), // Color principal
+            500: const Color(0xFF3498DB), // Primary color
             600: const Color(0xFF1E88E5),
             700: const Color(0xFF1976D2),
             800: const Color(0xFF1565C0),
@@ -107,7 +123,7 @@ class AquaConectaAppState extends State<AquaConectaApp> {
           },
         ),
         
-        // Configuración de colores
+        // Color configuration
         colorScheme: const ColorScheme.light(
           primary: Color(0xFF3498DB),
           secondary: Color(0xFF2C3E50),
@@ -119,7 +135,7 @@ class AquaConectaAppState extends State<AquaConectaApp> {
           onSurface: Color(0xFF2C3E50),
         ),
 
-        // Configuración de fuentes
+        // Font configuration
         fontFamily: 'System',
         textTheme: const TextTheme(
           displayLarge: TextStyle(
@@ -142,7 +158,7 @@ class AquaConectaAppState extends State<AquaConectaApp> {
           ),
         ),
 
-        // Configuración de AppBar
+        // AppBar configuration
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF3498DB),
           foregroundColor: Color(0xFFFFFFFF),
@@ -155,7 +171,7 @@ class AquaConectaAppState extends State<AquaConectaApp> {
           ),
         ),
 
-        // Configuración de botones elevados
+        // ElevatedButton configuration
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF3498DB),
@@ -171,7 +187,7 @@ class AquaConectaAppState extends State<AquaConectaApp> {
           ),
         ),
 
-        // Configuración de campos de texto
+        // TextField configuration
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: const Color(0xFFFFFFFF),
@@ -206,10 +222,10 @@ class AquaConectaAppState extends State<AquaConectaApp> {
           ),
         ),
 
-        // Configuración del Scaffold
+        // Scaffold configuration
         scaffoldBackgroundColor: const Color(0xFFF8F9FA),
 
-        // Configuración de SnackBar
+        // SnackBar configuration
         snackBarTheme: const SnackBarThemeData(
           backgroundColor: Color(0xFF3498DB),
           contentTextStyle: TextStyle(
@@ -227,13 +243,13 @@ class AquaConectaAppState extends State<AquaConectaApp> {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: _locale,
-      // Pantalla inicial
+      // Initial screen
       home: const SplashScreen(),
       
-      // Rutas nombradas
+      // Named routes
       routes: {
-        '/login': (context) => BlocProvider<AuthBloc>(
-          create: (_) => AuthBloc(
+        '/login': (context) => BlocProvider<LoginBloc>(
+          create: (_) => LoginBloc(
             signInUseCase: SignInUseCase(AuthRepositoryImpl(AuthApiService())),
             secureStorage: SecureStorageService(),
           ),
@@ -248,11 +264,11 @@ class AquaConectaAppState extends State<AquaConectaApp> {
         '/create-report': (context) => const ReportCreationScreen(),
       },
       
-      // Ruta por defecto cuando no se encuentra una ruta
+      // Default route when a route is not found
       onUnknownRoute: (settings) {
         return MaterialPageRoute(
-          builder: (context) => BlocProvider<AuthBloc>(
-            create: (_) => AuthBloc(
+          builder: (context) => BlocProvider<LoginBloc>(
+            create: (_) => LoginBloc(
               signInUseCase: SignInUseCase(AuthRepositoryImpl(AuthApiService())),
               secureStorage: SecureStorageService(),
             ),

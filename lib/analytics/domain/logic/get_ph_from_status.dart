@@ -7,11 +7,6 @@
 /// Parameters:
 /// - [status]: The water status ('normal', 'alert', 'critical')
 ///
-/// Returns a double representing the pH value:
-/// - 'normal': 7.0 (neutral)
-/// - 'alert': 5.5 (slightly acidic)
-/// - 'critical': 3.0 (highly acidic)
-/// - default: 7.0 (neutral)
 ///
 double getPhFromStatus(String status) {
   switch (status) {

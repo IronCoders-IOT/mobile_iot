@@ -5,16 +5,9 @@ import 'package:mobile_iot/shared/widgets/app_colors.dart';
 ///
 /// This widget displays a label and the corresponding value for a profile attribute.
 class ProfileFieldDisplay extends StatelessWidget {
-  /// The label to display above the value.
   final String label;
-  /// The value to display.
   final String value;
 
-  /// Creates a [ProfileFieldDisplay] widget.
-  ///
-  /// Parameters:
-  /// - [label]: The label to display
-  /// - [value]: The value to display
   const ProfileFieldDisplay({
     Key? key,
     required this.label,

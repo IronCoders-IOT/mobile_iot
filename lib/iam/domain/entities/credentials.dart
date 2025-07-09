@@ -9,28 +9,9 @@
 /// - API authentication requests
 /// - Secure credential handling during authentication flow
 /// 
-/// Note: This entity should be handled with care as it contains sensitive
-/// information. Passwords should never be stored in plain text and should
-/// be cleared from memory after use.
 class Credentials {
-  /// The username or email used for authentication.
-  /// 
-  /// This field identifies the user account that is attempting to authenticate.
-  /// It can be either a username or email address depending on the system's
-  /// authentication requirements.
   final String username;
-
-  /// The password for the user account.
-  /// 
-  /// This field contains the secret password that validates the user's identity.
-  /// The password should be handled securely and never logged or stored in
-  /// plain text format.
   final String password;
-
-  /// Creates a new Credentials instance with username and password.
-  /// 
-  /// [username] - The username or email for authentication
-  /// [password] - The password for the user account
   Credentials({required this.username, required this.password});
 
   /// Converts the Credentials instance to a JSON object for API requests.

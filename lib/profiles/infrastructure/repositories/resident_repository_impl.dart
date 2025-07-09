@@ -1,5 +1,4 @@
-import 'package:mobile_iot/profiles/domain/interfaces/resident_repository.dart';
-import 'package:mobile_iot/profiles/domain/entities/resident.dart';
+import 'package:mobile_iot/profiles/domain/repositories/resident_repository.dart';
 import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
 
 /// Implementation of [ResidentRepository] for resident operations using a remote API service.

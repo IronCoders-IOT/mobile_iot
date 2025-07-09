@@ -13,10 +13,7 @@ import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 /// The service uses the http package for network communication and
 /// includes proper error handling for authentication and network issues.
 class WaterRequestApiService {
-  /// The base URL for water request-related API endpoints.
-  /// 
-  /// Constructed from the environment configuration to ensure
-  /// consistency across different deployment environments.
+
   static final String _baseUrl = '${Env.apiUrl}${Env.waterRequestsEndpoint}';
 
   /// Creates a new water supply request in the backend system via API.

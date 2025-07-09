@@ -9,13 +9,8 @@ import 'package:mobile_iot/analytics/domain/repositories/water_request_repositor
 /// It follows the repository pattern to abstract data access details
 /// from the business logic layer.
 class WaterRequestRepositoryImpl implements WaterRequestRepository {
-  /// The API service instance used for HTTP communication with the backend.
   final WaterRequestApiService waterRequestApiService;
 
-  /// Creates a water request repository implementation with the specified API service.
-  /// 
-  /// Parameters:
-  /// - [waterRequestApiService]: The API service to use for backend communication
   WaterRequestRepositoryImpl(this.waterRequestApiService);
 
   @override
@@ -31,10 +26,7 @@ class WaterRequestRepositoryImpl implements WaterRequestRepository {
   /// - [deliveredAt]: The expected or actual delivery date/time
   /// 
   /// Returns a Future that completes when the request is successfully created.
-  /// 
-  /// Throws:
-  /// - [SessionExpiredException] when the authentication token is invalid
-  /// - [Exception] for other network or data access errors
+
   Future<void> createWaterRequest(
       String token,
       String requestedLiters, String status, String deliveredAt
@@ -54,10 +46,6 @@ class WaterRequestRepositoryImpl implements WaterRequestRepository {
   /// - [id]: The unique identifier of the resident
   /// 
   /// Returns a Future that completes with a list of WaterRequest entities.
-  /// 
-  /// Throws:
-  /// - [SessionExpiredException] when the authentication token is invalid
-  /// - [Exception] for other network or data access errors
   Future<List<WaterRequest>> getAllRequestsByResidentId(String token, int id) {
     return waterRequestApiService.getAllRequestsByResidentId(token, id);
   }

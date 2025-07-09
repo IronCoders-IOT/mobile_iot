@@ -21,10 +21,6 @@ abstract class ReportRepository {
   /// - [status]: The initial status of the report (typically 'received')
   /// 
   /// Returns a Future that completes when the report is successfully created.
-  /// 
-  /// Throws:
-  /// - [SessionExpiredException] when the authentication token is invalid
-  /// - [Exception] for other network or data access errors
   Future<void> createReport(String token, String tittle, String description, String status);
   
   /// Retrieves all reports associated with a specific resident.
@@ -37,9 +33,5 @@ abstract class ReportRepository {
   /// - [residentId]: The unique identifier of the resident
   /// 
   /// Returns a Future that completes with a list of Report entities.
-  /// 
-  /// Throws:
-  /// - [SessionExpiredException] when the authentication token is invalid
-  /// - [Exception] for other network or data access errors
   Future<List<Report>> getReportByResidentId(String token, int residentId);
 }

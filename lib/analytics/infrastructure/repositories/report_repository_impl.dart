@@ -10,13 +10,8 @@ import 'package:mobile_iot/analytics/domain/repositories/report_repository.dart'
 /// from the business logic layer.
 class ReportRepositoryImpl implements ReportRepository {
 
-  /// The API service instance used for HTTP communication with the backend.
   final ReportApiService reportApiService;
   
-  /// Creates a report repository implementation with the specified API service.
-  /// 
-  /// Parameters:
-  /// - [reportApiService]: The API service to use for backend communication
   ReportRepositoryImpl(this.reportApiService);
   
   @override
@@ -32,10 +27,6 @@ class ReportRepositoryImpl implements ReportRepository {
   /// - [status]: The initial status of the report (typically 'received')
   /// 
   /// Returns a Future that completes with a success message or error details.
-  /// 
-  /// Throws:
-  /// - [SessionExpiredException] when the authentication token is invalid
-  /// - [Exception] for other network or data access errors
   Future<String?> createReport(String token, String title, String description, String status) {
     return reportApiService.createReport(token, title, description, status);
   }
@@ -51,10 +42,6 @@ class ReportRepositoryImpl implements ReportRepository {
   /// - [residentId]: The unique identifier of the resident
   /// 
   /// Returns a Future that completes with a list of Report entities.
-  /// 
-  /// Throws:
-  /// - [SessionExpiredException] when the authentication token is invalid
-  /// - [Exception] for other network or data access errors
   Future<List<Report>> getReportByResidentId(String token, int residentId) {
     return reportApiService.getReportByResidentId(token, residentId);
   }

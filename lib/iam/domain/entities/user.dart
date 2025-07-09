@@ -9,30 +9,10 @@
 /// - Display user information in the UI
 /// - Manage user sessions and authentication state
 class User {
-  /// The unique identifier for the user in the system.
-  /// 
-  /// This field is used for:
-  /// - User identification during authentication
-  /// - Displaying user information in the UI
-  /// - Logging and audit trails
-  /// - API requests that require user context
   final String username;
 
-  /// List of roles assigned to the user that determine their permissions.
-  /// 
-  /// Roles are used to:
-  /// - Control access to different features and screens
-  /// - Determine what actions the user can perform
-  /// - Customize the UI based on user permissions
-  /// - Enforce business rules and security policies
-  /// 
-  /// Common roles might include: 'admin', 'resident', 'manager', etc.
   final List<String> roles;
 
-  /// Creates a new User instance with the required username and roles.
-  /// 
-  /// [username] - The unique identifier for the user
-  /// [roles] - List of roles that determine user permissions
   User({required this.username, required this.roles});
 
   /// Creates a User instance from a JSON object.

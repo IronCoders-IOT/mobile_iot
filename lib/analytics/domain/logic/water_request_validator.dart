@@ -27,11 +27,6 @@ class WaterRequestValidator {
   /// - [litersText]: The text input to validate
   /// 
   /// Returns null if validation passes, or an error message string if validation fails.
-  /// Error messages include:
-  /// - 'Please enter an amount of water' for empty input
-  /// - 'Please enter a valid number' for non-numeric input
-  /// - 'Amount must be greater than 0' for zero or negative values
-  /// - 'Amount cannot exceed 10,000 liters' for values above the maximum limit
   static String? validateLiters(String litersText) {
     if (litersText.isEmpty) {
       return 'Please enter an amount of water';
