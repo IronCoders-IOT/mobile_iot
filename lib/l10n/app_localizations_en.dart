@@ -183,10 +183,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noWaterAnalysisMessage => 'No water analysis available';
 
   @override
-  String get contaminatedMonitoring => 'Contaminated Monitoring';
-
-  @override
-  String get loadingMessage => 'Loading data, please wait...';
+  String get loadingMessage => '';
 
   @override
   String get document => 'Document';
@@ -297,7 +294,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nonPotable => 'Non-potable';
 
   @override
-  String get contaminatedWater => 'Contaminated water';
+  String get contaminated => 'Contaminated';
 
   @override
   String requestedLitersOfWater(int liters) {

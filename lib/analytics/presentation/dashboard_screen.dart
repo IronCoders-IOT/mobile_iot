@@ -20,16 +20,10 @@ import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/session_expired_screen.dart';
 import '../../../main.dart';
 import 'package:mobile_iot/monitoring/presentation/widgets/app_loading_state.dart';
+import 'package:mobile_iot/monitoring/domain/logic/get_event_status_color.dart';
+import 'package:mobile_iot/analytics/domain/logic/percentage_formatter.dart';
 
 /// A screen that displays water tank analytics and monitoring dashboard for the authenticated user.
-///
-/// This screen uses the BLoC pattern for state management and provides the following features:
-/// - Real-time water level monitoring with circular progress indicator
-/// - Current water status, quantity, and pH level display
-/// - Water supply request functionality
-/// - Recent activity tracking
-/// - Navigation to other app sections via bottom navigation
-/// - Quick access to report creation via floating action button
 ///
 /// The screen automatically handles:
 /// - Loading states while fetching tank events data
@@ -93,8 +87,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.dispose();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider<TankEventsBloc>(
@@ -102,7 +94,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         deviceUseCase: DeviceUseCase(DeviceRepositoryImpl(DeviceApiService())),
         secureStorage: SecureStorageService(),
         residentApiService: ResidentApiService(),
-      )..add(FetchTankEventsEvent()),
+      )..add(const FetchTankEventsEvent()),
       child: BlocConsumer<TankEventsBloc, TankEventsState>(
         listener: (context, state) {
           if (state is TankEventsSessionExpiredState) {
@@ -149,28 +141,32 @@ class _DashboardScreenState extends State<DashboardScreen>
                       children: [
                         _buildHeader(),
                         Expanded(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildCircularIndicator(currentPercentage),
+                          child: RefreshIndicator(
+                            onRefresh: () async => context.read<TankEventsBloc>().add(const RefreshTankEventsEvent()),
+                            child: SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildCircularIndicator(currentPercentage),
 
-                                const SizedBox(height: 24),
+                                  const SizedBox(height: 24),
 
-                                _buildDateSection(),
+                                  _buildDateSection(),
 
-                                const SizedBox(height: 24),
+                                  const SizedBox(height: 24),
 
-                                _buildMetricsCard(
-                                  status: status,
-                                  waterQuantity: waterQuantity.toString(),
-                                  phLevel: phLevel,
-                                ),
+                                  _buildMetricsCard(
+                                    status: status,
+                                    waterQuantity: waterQuantity.toString(),
+                                    phLevel: phLevel,
+                                  ),
 
-                                const SizedBox(height: 32),
-                                _buildRecentActivitySection(),
-                              ],
+                                  const SizedBox(height: 32),
+                                  _buildRecentActivitySection(),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -216,12 +212,13 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  /// Builds the dashboard header with the app logo.
+  /// Builds the dashboard header with the app logo and refresh button.
   ///
-  /// This method creates a centered header section that displays
-  /// the application logo with consistent styling and padding.
+  /// This method creates a header section that displays
+  /// the application logo with a refresh button for manual
+  /// data updates and a language selector.
   ///
-  /// Returns a container widget with the app logo centered horizontally.
+  /// Returns a container widget with the app logo, refresh button, and language dropdown.
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -229,7 +226,30 @@ class _DashboardScreenState extends State<DashboardScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const AppLogo(fontSize: 24),
-          _buildLanguageDropdown(),
+          Row(
+            children: [
+              // Refresh button
+              BlocBuilder<TankEventsBloc, TankEventsState>(
+                builder: (context, state) {
+                  return IconButton(
+                    onPressed: state is TankEventsLoadingState ? null : () => context.read<TankEventsBloc>().add(const RefreshTankEventsEvent()),
+                    icon: state is TankEventsLoadingState
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                            ),
+                          )
+                        : const Icon(Icons.refresh, color: AppColors.primaryBlue),
+                    tooltip: AppLocalizations.of(context)!.refresh,
+                  );
+                },
+              ),
+              _buildLanguageDropdown(),
+            ],
+          ),
         ],
       ),
     );
@@ -286,12 +306,15 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  '${currentPercentage.toStringAsFixed(2)} %',
-                  style: const TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryBlue,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    formatDashboardPercentage(currentPercentage),
+                    style: const TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryBlue,
+                    ),
                   ),
                 ),
                 Text(
@@ -373,7 +396,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 color: (status.trim().toLowerCase().contains('without water') ||
                         status.trim().toLowerCase().contains(AppLocalizations.of(context)!.withoutWater.toLowerCase()))
                     ? AppColors.mediumGray
-                    : AppColors.green,
+                    : getReportStatusTextColor(getStatusFromQuality(context, status)),
                 icon: Icons.check_circle,
               ),
               _buildVerticalDivider(),

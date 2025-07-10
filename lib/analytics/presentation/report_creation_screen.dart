@@ -19,14 +19,6 @@ import '../../shared/widgets/session_expired_screen.dart';
 
 /// A screen for creating new reports with BLoC state management.
 /// 
-/// This screen uses the BLoC pattern for state management and provides the following features:
-/// - Create new reports with title and description
-/// - Form validation for required fields
-/// - Real-time error handling and display
-/// - Loading states during report creation
-/// - Automatic navigation on successful creation
-/// - Navigate to other app sections via bottom navigation
-/// 
 /// The screen automatically handles:
 /// - Form validation and error display
 /// - Loading states while creating reports

@@ -26,7 +26,7 @@ String getStatusFromQuality(BuildContext context, String quality) {
     return 'alert';
   } else if (q == localizations.nonPotable.toLowerCase() || q == 'non-potable') {
     return 'alert';
-  } else if (q == localizations.contaminatedWater.toLowerCase() || q == 'contaminated water' || q == 'contaminated monitoring') {
+  } else if (q == localizations.contaminated.toLowerCase() || q == 'contaminated' || q == 'contaminated water' || q == 'contaminated monitoring') {
     return 'critical';
   } else {
     return 'normal';

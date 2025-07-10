@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:mobile_iot/analytics/domain/entities/report.dart';
+import 'package:mobile_iot/shared/helpers/search_service.dart';
 
 /// Abstract base class for reports BLoC states.
 /// 
@@ -55,22 +56,24 @@ class ReportsLoadedState extends ReportsState {
 
   /// Returns the filtered list of reports based on the search query.
   /// 
-  /// This getter performs case-insensitive filtering on report title,
-  /// description, and status fields. If no search query is provided,
-  /// returns the complete reports list.
+  /// This getter uses the SearchService for scalable, language-agnostic search
+  /// across all report fields including title, description, status, ID, and dates.
   /// 
   /// Returns a filtered list of reports matching the search criteria.
   List<Report> get filteredReports {
-    if (searchQuery.isEmpty) return reports;
-    final searchLower = searchQuery.toLowerCase();
-    return reports.where((report) {
-      final titleLower = report.title.toLowerCase();
-      final descriptionLower = report.description.toLowerCase();
-      final statusLower = report.status.toLowerCase();
-      return titleLower.contains(searchLower) ||
-          descriptionLower.contains(searchLower) ||
-          statusLower.contains(searchLower);
-    }).toList();
+    return SearchService.fuzzySearch<Report>(
+      items: reports,
+      searchQuery: searchQuery,
+      getSearchableText: (report) => SearchService.createSearchableText([
+        report.title,
+        report.description,
+        report.status,
+        report.id.toString(),
+        report.emissionDate,
+        report.residentId.toString(),
+        report.providerId.toString(),
+      ]),
+    );
   }
 
   @override

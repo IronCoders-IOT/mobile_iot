@@ -51,7 +51,7 @@
   "monitorRequestStatus": "1. Monitorear estado de la solicitud",
   "contactSupportIfNeeded": "2. Contactar soporte si es necesario",
   "checkWaterSupplyUpdates": "3. Verificar actualizaciones del suministro de agua",
-  "contaminatedMonitoring": "Monitoreo de Contaminación",
+
   "editProfile": "Editar Perfil",
   "saveChanges": "Guardar cambios",
   "firstName": "Nombre",
@@ -82,7 +82,7 @@
   "alert": "Alerta",
   "critical": "Crítico",
   "unknown": "Desconocido",
-  "loadingMessage": "Cargando datos, por favor espera...",
+  "loadingMessage": "",
   "waterMeasurement": "Medición de Agua",
   "searchReports": "Buscar reportes...",
   "reports": "REPORTES",
@@ -96,7 +96,6 @@
   "acceptable": "Aceptable",
   "bad": "Mala",
   "nonPotable": "No potable",
-  "contaminatedWater": "Agua contaminada",
-  "requestedLitersOfWater": "Solicitados {liters} litros de agua",
-  "loadingMessage": "Cargando datos, por favor espera..."
+  "contaminated": "Contaminada",
+  "requestedLitersOfWater": "Solicitados {liters} litros de agua"
 } 

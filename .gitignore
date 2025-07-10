@@ -10,6 +10,16 @@
 .svn/
 migrate_working_dir/
 
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Localizations generated files
+lib/l10n/*.dart
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -152,3 +162,48 @@ GoogleService-Info.plist
 **/android/**/GeneratedPluginRegistrant.h
 **/android/**/GeneratedPluginRegistrant.m
 **/android/**/GeneratedPluginRegistrant.swift
+
+# Additional IDE and editor files
+*.sublime-project
+*.sublime-workspace
+.project
+.settings/
+.classpath
+
+# Logs and databases
+*.log
+*.sqlite
+*.sqlite3
+*.db
+
+# Crashlytics plugin (if using)
+crashlytics.properties
+crashlytics-build.properties
+
+# Firebase
+firebase_options.dart
+firebase_app_id_file.json
+
+# Test coverage
+coverage/
+test_coverage/
+
+# Build outputs
+build/
+dist/
+out/
+
+# Package manager files
+yarn.lock
+package-lock.json
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# OS generated files
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db

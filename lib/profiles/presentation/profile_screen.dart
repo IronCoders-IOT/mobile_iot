@@ -17,13 +17,6 @@ import 'package:mobile_iot/monitoring/presentation/widgets/app_loading_state.dar
 
 /// A screen that displays the user's profile information.
 /// 
-/// This screen uses the BLoC pattern for state management and provides the following features:
-/// - Display user profile information (personal details, contact info, document details)
-/// - Edit profile functionality with navigation to edit screen
-/// - Logout functionality
-/// - Pull-to-refresh capability
-/// - Navigation to other app sections via bottom navigation
-/// 
 /// The screen automatically handles:
 /// - Loading states while fetching profile data
 /// - Error states with retry functionality

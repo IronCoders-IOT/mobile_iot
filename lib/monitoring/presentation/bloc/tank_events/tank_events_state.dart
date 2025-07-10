@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:mobile_iot/monitoring/domain/entities/event.dart';
+import 'package:mobile_iot/shared/helpers/search_service.dart';
 
 /// Abstract base class for tank events BLoC states.
 /// 
@@ -54,19 +55,27 @@ class TankEventsLoadedState extends TankEventsState {
 
   /// Returns the filtered list of events based on the search query.
   /// 
-  /// This getter performs case-insensitive filtering on event type,
-  /// quality value, and level value fields. If no search query is
-  /// provided, returns the complete events list.
+  /// This getter uses the SearchService for scalable, language-agnostic search
+  /// across all event fields including event type, quality value, level value, and device ID.
+  /// The events are ordered from most recent to oldest for better user experience.
   /// 
-  /// Returns a filtered list of events matching the search criteria.
+  /// Returns a filtered and sorted list of events matching the search criteria.
   List<Event> get filteredEvents {
-    if (searchQuery.isEmpty) return events;
-    final searchLower = searchQuery.toLowerCase();
-    return events.where((event) =>
-      event.eventType.toLowerCase().contains(searchLower) ||
-      event.qualityValue.toLowerCase().contains(searchLower) ||
-      event.levelValue.toLowerCase().contains(searchLower)
-    ).toList();
+    final filtered = SearchService.fuzzySearch<Event>(
+      items: events,
+      searchQuery: searchQuery,
+      getSearchableText: (event) => SearchService.createSearchableText([
+        event.eventType,
+        event.qualityValue,
+        event.levelValue,
+        event.deviceId.toString(),
+      ]),
+    );
+    
+    // Sort events from most recent to oldest
+    // Since the API returns events in chronological order (oldest first),
+    // we reverse the filtered list to show most recent events first
+    return filtered.reversed.toList();
   }
 
   @override

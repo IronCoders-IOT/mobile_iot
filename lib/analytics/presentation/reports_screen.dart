@@ -29,14 +29,6 @@ import '../../shared/widgets/session_expired_screen.dart';
 
 /// A screen that displays a list of reports for the authenticated user.
 /// 
-/// This screen uses the BLoC pattern for state management and provides the following features:
-/// - View all reports associated with the user
-/// - Search reports by title or description
-/// - Pull-to-refresh functionality
-/// - Create new reports via floating action button
-/// - View detailed report information in a modal
-/// - Navigate to other app sections via bottom navigation
-/// 
 /// The screen automatically handles:
 /// - Loading states while fetching data
 /// - Error states with retry functionality
@@ -44,11 +36,30 @@ import '../../shared/widgets/session_expired_screen.dart';
 /// - Empty states when no reports are found
 /// - Report creation and management
 ///
-class ReportsScreen extends StatelessWidget {
+class ReportsScreen extends StatefulWidget {
   /// Creates a reports screen.
   /// 
   /// The [key] parameter is optional and is passed to the superclass.
   const ReportsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ReportsScreen> createState() => _ReportsScreenState();
+}
+
+class _ReportsScreenState extends State<ReportsScreen> {
+  late TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +97,7 @@ class ReportsScreen extends StatelessWidget {
                   ),
                   if (state is ReportsLoadedState)
                     AppSearchBar(
-                      controller: TextEditingController(text: state.searchQuery),
+                      controller: _searchController,
                       onChanged: (value) => context.read<ReportsBloc>().add(SearchReportsEvent(value)),
                       hintText: AppLocalizations.of(context)!.searchReports,
                     ),
