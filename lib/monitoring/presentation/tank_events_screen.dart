@@ -180,7 +180,7 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       itemCount: events.length,
-      itemBuilder: (context, index) => _buildEventItem(context, events[index], index),
+      itemBuilder: (context, index) => _buildEventItem(context, events[index], index, events.length),
     );
   }
 
@@ -202,9 +202,10 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
   /// - [context]: The build context
   /// - [event]: The event entity to display
   /// - [index]: The index of the event in the list
+  /// - [totalEvents]: The total number of events for ID calculation
   /// 
   /// Returns a card widget representing a single event.
-  Widget _buildEventItem(BuildContext context, Event event, int index) {
+  Widget _buildEventItem(BuildContext context, Event event, int index, int totalEvents) {
     final status = getStatusFromQuality(context, event.qualityValue);
     final isEventWithoutWater = isWithoutWater(context, event.qualityValue);
     
@@ -219,7 +220,7 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'ID:  ${index + 1}',
+                  'ID: ${totalEvents - index}',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -278,7 +279,7 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'ID: ${index + 1}',
+                'ID: ${totalEvents - index}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
