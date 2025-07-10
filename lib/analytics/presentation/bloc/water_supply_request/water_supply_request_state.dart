@@ -65,3 +65,11 @@ class WaterSupplyRequestErrorState extends WaterSupplyRequestState {
   @override
   List<Object?> get props => [message];
 } 
+
+/// Session expired state when the user's session has expired.
+class WaterSupplyRequestSessionExpiredState extends WaterSupplyRequestState {
+  const WaterSupplyRequestSessionExpiredState();
+
+  @override
+  List<Object?> get props => [];
+} 

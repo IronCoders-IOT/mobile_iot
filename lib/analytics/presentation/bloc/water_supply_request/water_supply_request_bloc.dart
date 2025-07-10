@@ -99,7 +99,7 @@ class WaterSupplyRequestBloc extends Bloc<WaterSupplyRequestEvent, WaterSupplyRe
       emit(WaterSupplyRequestLoadedState(requests));
     } on SessionExpiredException catch (e) {
       await secureStorage.deleteToken();
-      emit(WaterSupplyRequestErrorState(e.message));
+      emit(WaterSupplyRequestSessionExpiredState());
     } catch (e) {
       emit(WaterSupplyRequestErrorState(e.toString()));
     }

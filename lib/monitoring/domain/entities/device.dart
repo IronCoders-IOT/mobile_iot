@@ -1,17 +1,10 @@
-/// Represents a water tank sensor device in the IoT system.
-/// 
-/// This entity encapsulates information about physical sensor devices
-/// that monitor water tanks, including their identification, type,
-/// operational status, and associated resident.
-/// 
-/// The entity provides JSON serialization capabilities for API communication.
 class Device{
   final int id;
   
   final String type;
   
   final String status;
-  
+  final String description;
   final int residentId;
   
   Device({
@@ -19,6 +12,7 @@ class Device{
     required this.type,
     required this.status,
     required this.residentId,
+    required this.description,
   });
   
   /// Creates a Device instance from a JSON map.
@@ -36,6 +30,7 @@ class Device{
       type: json['type'] as String,
       status: json['status'] as String,
       residentId: json['residentId'] as int,
+      description: json['description'] as String,
     );
   }
 }

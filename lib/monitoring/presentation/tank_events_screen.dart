@@ -3,11 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
 import 'package:mobile_iot/monitoring/infrastructure/service/device_api_service.dart';
-import 'package:mobile_iot/monitoring/infrastructure/service/event_api_service.dart';
 import 'package:mobile_iot/monitoring/infrastructure/repositories/device_repository_impl.dart';
-import 'package:mobile_iot/monitoring/infrastructure/repositories/event_repository_impl.dart';
 import 'package:mobile_iot/monitoring/application/device_use_case.dart';
-import 'package:mobile_iot/monitoring/application/event_use_case.dart';
 import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
 import 'package:mobile_iot/monitoring/domain/entities/event.dart';
 import 'package:mobile_iot/monitoring/domain/logic/get_event_status_color.dart';
@@ -24,6 +21,8 @@ import 'package:mobile_iot/monitoring/presentation/bloc/tank_events/bloc.dart';
 import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';
+import '../../shared/widgets/session_expired_screen.dart';
+import 'package:mobile_iot/analytics/domain/logic/get_ph_from_status.dart';
 
 /// A screen that displays a list of tank events for the authenticated user.
 /// 
@@ -49,21 +48,25 @@ class TankEventsScreen extends StatelessWidget {
     return BlocProvider<TankEventsBloc>(
       create: (context) => TankEventsBloc(
         deviceUseCase: DeviceUseCase(DeviceRepositoryImpl(DeviceApiService())),
-        eventUseCase: EventUseCase(EventRepositoryImpl(EventApiService())),
         secureStorage: SecureStorageService(),
         residentApiService: ResidentApiService(),
       )..add(FetchTankEventsEvent()),
       child: BlocConsumer<TankEventsBloc, TankEventsState>(
         // Listen for state changes to handle side effects (like navigation)
         listener: (context, state) {
-          if (state is TankEventsErrorState && 
-              (state.message.contains('Session expired') || 
-               state.message.contains('No authentication token'))) {
-            Navigator.pushReplacementNamed(context, '/login');
+          if (state is TankEventsSessionExpiredState) {
+            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
           }
         },
         // Build the UI based on the current state
         builder: (context, state) {
+          if (state is TankEventsSessionExpiredState) {
+            return SessionExpiredScreen(
+              onLoginAgain: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            );
+          }
           return Scaffold(
             backgroundColor: AppColors.lightGray,
             body: SafeArea(
@@ -168,12 +171,18 @@ class TankEventsScreen extends StatelessWidget {
     );
   }
 
+  // Utility to detect 'without water' events in a scalable way
+  bool isWithoutWater(BuildContext context, String value) {
+    final lower = value.toLowerCase();
+    return lower == 'without water' ||
+           lower == AppLocalizations.of(context)!.withoutWater.toLowerCase();
+  }
+
   /// Builds an individual event item card.
   /// 
   /// Each event item displays:
-  /// - Event ID (index + 1)
   /// - Event type
-  /// - Quality value and level value
+  /// - Quality value and level value (level shown as percentage)
   /// - Status badge with appropriate colors
   /// 
   /// Parameters:
@@ -183,7 +192,68 @@ class TankEventsScreen extends StatelessWidget {
   /// 
   /// Returns a card widget representing a single event.
   Widget _buildEventItem(BuildContext context, Event event, int index) {
-    final status = getStatusFromQuality(event.qualityValue);
+    final status = getStatusFromQuality(context, event.qualityValue);
+    final isEventWithoutWater = isWithoutWater(context, event.qualityValue);
+    
+    if (isEventWithoutWater) {
+      return AppListCard(
+        onTap: () => _showEventDetails(context, event),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Event ID and Type row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'ID:  ${index + 1}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkBlue,
+                  ),
+                ),
+                Text(
+                  getLocalizedEventType(context, event.eventType),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Mensaje especial para sin agua
+            Row(
+              children: [
+                Icon(Icons.do_not_disturb_alt, color: Colors.grey, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context)!.withoutWater + ' - ' +  AppLocalizations.of(context)!.noWaterAnalysisMessage,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: AppStatusBadge(
+                text: AppLocalizations.of(context)!.withoutWater,
+                backgroundColor: Colors.grey.shade200,
+                textColor: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     
     return AppListCard(
       onTap: () => _showEventDetails(context, event),
@@ -218,7 +288,7 @@ class TankEventsScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  event.qualityValue,
+                  getLocalizedWaterStatus(context, event.qualityValue),
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.mediumGray,
@@ -226,7 +296,7 @@ class TankEventsScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                '${AppLocalizations.of(context)!.level}: ${event.levelValue}',
+                '${AppLocalizations.of(context)!.level}: ${event.levelValue}%',
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.mediumGray,
@@ -253,7 +323,7 @@ class TankEventsScreen extends StatelessWidget {
   /// 
   /// The modal displays:
   /// - Event icon and type
-  /// - Water level information
+  /// - Water level information (shown as percentage)
   /// - Detailed information (water quality, status)
   /// - Recommended actions
   /// 
@@ -287,7 +357,8 @@ class TankEventsScreen extends StatelessWidget {
   /// 
   /// Returns a scrollable widget with the event details content.
   Widget _buildEventDetailsContent(BuildContext context, Event event) {
-    final status = getStatusFromQuality(event.qualityValue);
+    final status = getStatusFromQuality(context, event.qualityValue);
+    final isEventWithoutWater = isWithoutWater(context, event.qualityValue);
     
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -302,12 +373,12 @@ class TankEventsScreen extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: getReportStatusColor(status),
+                  color: isEventWithoutWater ? Colors.grey.shade200 : getReportStatusColor(status),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Icon(
-                  Icons.water_drop,
-                  color: getReportStatusTextColor(status),
+                  isEventWithoutWater ? Icons.do_not_disturb_alt : Icons.water_drop,
+                  color: isEventWithoutWater ? Colors.grey : getReportStatusTextColor(status),
                   size: 22,
                 ),
               ),
@@ -327,7 +398,7 @@ class TankEventsScreen extends StatelessWidget {
                     ),
                     // Water level
                     Text(
-                      '${AppLocalizations.of(context)!.waterLevel}: ${event.levelValue}',
+                      '${AppLocalizations.of(context)!.waterLevel}: ${event.levelValue}%',
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.mediumGray,
@@ -351,8 +422,9 @@ class TankEventsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _buildDetailItem(AppLocalizations.of(context)!.waterQuality, event.qualityValue),
-          _buildDetailItem(AppLocalizations.of(context)!.status, getEventStatusColor(context, status)),
+          _buildDetailItem(AppLocalizations.of(context)!.waterQuality, getLocalizedWaterStatus(context, event.qualityValue)),
+          if (!isEventWithoutWater)
+            _buildDetailItem(AppLocalizations.of(context)!.status, getEventStatusColor(context, status)),
           const SizedBox(height: 24),
           
           // Actions section

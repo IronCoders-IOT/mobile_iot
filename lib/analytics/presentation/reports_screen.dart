@@ -15,7 +15,7 @@ import 'package:mobile_iot/analytics/presentation/widgets/app_header.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_search_bar.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_empty_state.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_error_state.dart';
-import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart';
+import 'package:mobile_iot/monitoring/presentation/widgets/app_loading_state.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_list_card.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_status_badge.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_modal_bottom_sheet.dart';
@@ -25,6 +25,7 @@ import '../../shared/widgets/app_colors.dart';
 import 'bloc/reports/reports_bloc.dart';
 import 'bloc/reports/reports_event.dart';
 import 'bloc/reports/reports_state.dart';
+import '../../shared/widgets/session_expired_screen.dart';
 
 /// A screen that displays a list of reports for the authenticated user.
 /// 
@@ -53,50 +54,61 @@ class ReportsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<ReportsBloc>(
       create: (context) => ReportsBloc(
-        reportUseCase: ReportUseCase(ReportRepositoryImpl(ReportApiService())),
+        reportUseCase: ReportUseCase(ReportRepositoryImpl(
+          reportApiService: ReportApiService(),
+          residentApiService: ResidentApiService(),
+        )),
         secureStorage: SecureStorageService(),
         residentApiService: ResidentApiService(),
       )..add(FetchReportsEvent()),
       child: BlocConsumer<ReportsBloc, ReportsState>(
         listener: (context, state) {
-          if (state is ReportsErrorState && 
-              state.message.contains('Session expired')) {
-            Navigator.pushReplacementNamed(context, '/login');
+          if (state is ReportsSessionExpiredState) {
+            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
           }
         },
-        builder: (context, state) => Scaffold(
-      backgroundColor: AppColors.lightGray,
-      body: SafeArea(
-        child: Column(
-          children: [
-            AppHeader(
-              title: AppLocalizations.of(context)!.reports,
-              onBack: () => Navigator.pushReplacementNamed(context, '/dashboard'),
+        builder: (context, state) {
+          if (state is ReportsSessionExpiredState) {
+            return SessionExpiredScreen(
+              onLoginAgain: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            );
+          }
+          return Scaffold(
+            backgroundColor: AppColors.lightGray,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  AppHeader(
+                    title: AppLocalizations.of(context)!.reports,
+                    onBack: () => Navigator.pushReplacementNamed(context, '/dashboard'),
+                  ),
+                  if (state is ReportsLoadedState)
+                    AppSearchBar(
+                      controller: TextEditingController(text: state.searchQuery),
+                      onChanged: (value) => context.read<ReportsBloc>().add(SearchReportsEvent(value)),
+                      hintText: AppLocalizations.of(context)!.searchReports,
+                    ),
+                  Expanded(child: _buildBody(context, state)),
+                ],
+              ),
             ),
-                if (state is ReportsLoadedState)
-            AppSearchBar(
-                    controller: TextEditingController(text: state.searchQuery),
-                    onChanged: (value) => context.read<ReportsBloc>().add(SearchReportsEvent(value)),
-              hintText: AppLocalizations.of(context)!.searchReports,
+            bottomNavigationBar: AppBottomNavigationBar(
+              currentIndex: 0,
+              onTap: (index) {
+                if (index == 1) Navigator.pushReplacementNamed(context, '/dashboard');
+                if (index == 2) Navigator.pushReplacementNamed(context, '/profile');
+              },
             ),
-                Expanded(child: _buildBody(context, state)),
-          ],
-        ),
-      ),
-      bottomNavigationBar: AppBottomNavigationBar(
-        currentIndex: 0,
-            onTap: (index) {
-              if (index == 1) Navigator.pushReplacementNamed(context, '/dashboard');
-              if (index == 2) Navigator.pushReplacementNamed(context, '/profile');
-            },
-      ),
-      floatingActionButton: FloatingActionButton(
-            onPressed: () => _createReport(context),
-        backgroundColor: AppColors.primaryBlue,
-        child: const Icon(Icons.add, color: Colors.white),
-        tooltip: 'Create Report',
-          ),
-        ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () => _createReport(context),
+              backgroundColor: AppColors.primaryBlue,
+              child: const Icon(Icons.add, color: Colors.white),
+              tooltip: 'Create Report',
+            ),
+          );
+        },
       ),
     );
   }

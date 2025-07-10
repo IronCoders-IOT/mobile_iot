@@ -2,7 +2,7 @@
 /// 
 /// Parameters:
 /// - [value]: The name value to validate
-/// - [fieldName]: The name of the field for error messages (e.g., "First Name", "Last Name")
+/// - [fieldName]: The name of the field for error messages
 /// 
 /// Returns:
 /// - null if validation passes
@@ -38,10 +38,6 @@ String? validateUsername(String? value) {
   
   if (value.trim().length < 3) {
     return 'Username must be at least 3 characters long';
-  }
-  
-  if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value.trim())) {
-    return 'Username can only contain letters, numbers, and underscores';
   }
   
   return null;

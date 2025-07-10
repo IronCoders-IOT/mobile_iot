@@ -5,6 +5,7 @@
 /// appropriate screen (dashboard or login).
 import 'package:flutter/material.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
+import 'package:mobile_iot/monitoring/presentation/widgets/app_loading_state.dart';
 
 /// Splash screen that checks authentication status and redirects the user.
 ///
@@ -38,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
+      body: AppLoadingState(),
     );
   }
 } 

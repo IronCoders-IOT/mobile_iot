@@ -6,19 +6,16 @@ import 'package:mobile_iot/core/config/env.dart';
 /// Service responsible for HTTP communication with the authentication API.
 /// 
 /// This service handles all direct HTTP requests to the authentication server,
-/// including user sign-in operations. It encapsulates the low-level HTTP
-/// communication details and provides a clean interface for authentication
-/// operations.
+/// including user sign-in operations.
 /// 
 class AuthApiService {
 
-  static final String baseUrl = '${Env.apiUrl}${Env.authentication}';
+  static final String baseUrl = '${Env.apiUrl}${Env.authenticationEndpoint}';
 
   /// Authenticates a user by sending credentials to the authentication server.
   /// 
   /// This method performs an HTTP POST request to the sign-in endpoint with
-  /// the user's credentials. It handles the complete authentication flow
-  /// including request preparation, HTTP communication, and response processing.
+  /// the user's credentials.
   ///
   /// [credentials] - The user's authentication credentials (username and password)
   /// 

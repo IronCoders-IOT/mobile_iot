@@ -78,7 +78,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
         throw Exception('Resident not found');
       }
       
-      final residentId = residentJson['id'];
+      final residentId = residentJson['id'] as int;
       final reports = await _reportUseCase.getReportByResidentId(token, residentId);
       
       _allReports = reports;
@@ -86,7 +86,7 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       
     } on SessionExpiredException catch (e) {
       await _secureStorage.deleteToken();
-      emit(ReportsErrorState(e.message));
+      emit(ReportsSessionExpiredState());
     } catch (e) {
       emit(ReportsErrorState(e.toString()));
     }

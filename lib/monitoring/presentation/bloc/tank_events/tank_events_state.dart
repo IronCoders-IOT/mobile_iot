@@ -88,3 +88,11 @@ class TankEventsErrorState extends TankEventsState {
   @override
   List<Object?> get props => [message];
 } 
+
+/// Session expired state when the user's session has expired.
+class TankEventsSessionExpiredState extends TankEventsState {
+  const TankEventsSessionExpiredState();
+
+  @override
+  List<Object?> get props => [];
+} 

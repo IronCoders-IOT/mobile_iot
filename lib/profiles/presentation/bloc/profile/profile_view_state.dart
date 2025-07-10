@@ -65,4 +65,14 @@ class ProfileViewErrorState extends ProfileViewState {
 
   @override
   List<Object?> get props => [message];
+}
+
+/// Session expired state when the user's session has expired.
+///
+/// This state is emitted when a SessionExpiredException is caught, so the UI can navigate to the session expired screen.
+class ProfileViewSessionExpiredState extends ProfileViewState {
+  const ProfileViewSessionExpiredState();
+
+  @override
+  List<Object?> get props => [];
 } 

@@ -24,6 +24,7 @@ import '../../shared/widgets/app_colors.dart';
 import 'bloc/water_supply_request/water_supply_request_bloc.dart';
 import 'bloc/water_supply_request/water_supply_request_event.dart';
 import 'bloc/water_supply_request/water_supply_request_state.dart';
+import '../../shared/widgets/session_expired_screen.dart';
 
 /// A screen that displays a list of water supply requests for the authenticated user.
 /// 
@@ -56,41 +57,49 @@ class WaterSupplyRequestScreen extends StatelessWidget {
       )..add(FetchWaterSupplyRequestsEvent()),
       child: BlocConsumer<WaterSupplyRequestBloc, WaterSupplyRequestState>(
         listener: (context, state) {
-          if (state is WaterSupplyRequestErrorState && 
-              state.message.contains('Session expired')) {
-            Navigator.pushReplacementNamed(context, '/login');
+          if (state is WaterSupplyRequestSessionExpiredState) {
+            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
           }
         },
-        builder: (context, state) => Scaffold(
-          backgroundColor: AppColors.lightGray,
-          body: SafeArea(
-            child: Column(
-              children: [
-                AppHeader(
-                  title: AppLocalizations.of(context)!.requestHistory,
-                  onBack: () => Navigator.pop(context),
-                ),
-                Expanded(child: _buildBody(context, state)),
-              ],
+        builder: (context, state) {
+          if (state is WaterSupplyRequestSessionExpiredState) {
+            return SessionExpiredScreen(
+              onLoginAgain: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            );
+          }
+          return Scaffold(
+            backgroundColor: AppColors.lightGray,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  AppHeader(
+                    title: AppLocalizations.of(context)!.requestHistory,
+                    onBack: () => Navigator.pop(context),
+                  ),
+                  Expanded(child: _buildBody(context, state)),
+                ],
+              ),
             ),
-          ),
-          bottomNavigationBar: AppBottomNavigationBar(
-            currentIndex: 0,
-            onTap: (index) {
-              switch (index) {
-                case 0:
-                  Navigator.pushReplacementNamed(context, '/reports');
-                  break;
-                case 1:
-                  Navigator.pushReplacementNamed(context, '/dashboard');
-                  break;
-                case 2:
-                  Navigator.pushReplacementNamed(context, '/profile');
-                  break;
-              }
-            },
-          ),
-        ),
+            bottomNavigationBar: AppBottomNavigationBar(
+              currentIndex: 0,
+              onTap: (index) {
+                switch (index) {
+                  case 0:
+                    Navigator.pushReplacementNamed(context, '/reports');
+                    break;
+                  case 1:
+                    Navigator.pushReplacementNamed(context, '/dashboard');
+                    break;
+                  case 2:
+                    Navigator.pushReplacementNamed(context, '/profile');
+                    break;
+                }
+              },
+            ),
+          );
+        },
       ),
     );
   }
@@ -204,7 +213,7 @@ class WaterSupplyRequestScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${AppLocalizations.of(context)!.requested}: ${request.requestedLiters} liters',
+                  '${AppLocalizations.of(context)!.requested}: ${request.requestedLiters} ${AppLocalizations.of(context)!.liters}',
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.mediumGray,
@@ -318,7 +327,7 @@ class WaterSupplyRequestScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _buildDetailItem(AppLocalizations.of(context)!.status, StatusFormatter.formatWaterRequestStatus(context, request.status)),
-          _buildDetailItem(AppLocalizations.of(context)!.requestedAmount, '${request.requestedLiters} liters'),
+          _buildDetailItem(AppLocalizations.of(context)!.requestedAmount, '${request.requestedLiters} ${AppLocalizations.of(context)!.liters}'),
           _buildDetailItem(AppLocalizations.of(context)!.deliveredAt, DateFormatter.formatDate(context, request.deliveredAt)),
           const SizedBox(height: 24),
           Text(

@@ -1,17 +1,12 @@
-/// Entity representing a user profile.
-///
-/// This class encapsulates all the personal and contact information for a user profile,
-/// including names, email, address, document details, phone, and user ID. It provides
-/// serialization and deserialization methods for working with JSON data.
 class Profile{
-  final String firstName;
-  final String lastName;
-  final String email;
-  final String direction;
-  final String documentNumber;
-  final String documentType;
-  final String phone;
-  final int userId;
+  final String? firstName;
+  final String? lastName;
+  final String? email;
+  final String? direction;
+  final String? documentNumber;
+  final String? documentType;
+  final String? phone;
+  final int? userId;
 
   const Profile({
     required this.firstName,
@@ -32,14 +27,14 @@ class Profile{
   /// Returns a [Profile] instance populated with the data from the JSON map.
   factory Profile.fromJson(Map<String, dynamic> json) {
     return Profile(
-      firstName: json['firstName'] as String,
-      lastName: json['lastName'] as String,
-      email: json['email'] as String,
-      direction: json['direction'] as String,
-      documentNumber: json['documentNumber'] as String,
-      documentType: json['documentType'] as String,
-      phone: json['phone'] as String,
-      userId: json['userId'] as int,
+      firstName: json['firstName'] as String?,
+      lastName: json['lastName'] as String?,
+      email: json['email'] as String?,
+      direction: json['direction'] as String?,
+      documentNumber: json['documentNumber'] as String?,
+      documentType: json['documentType'] as String?,
+      phone: json['phone'] as String?,
+      userId: json['userId'] as int?,
     );
   }
 

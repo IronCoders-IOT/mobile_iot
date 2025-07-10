@@ -6,6 +6,7 @@
   "logoutSuccessful": "Logged out successfully",
   "errorLoggingOut": "Error logging out",
   "retry": "Retry",
+  "waterMonitoring": "Water Monitoring",
   "submit": "Submit",
   "requestWater": "Request Water",
   "viewRequestHistory": "View Request History",
@@ -54,6 +55,10 @@
   "lastName": "Last Name",
   "username": "Username",
   "email": "Email",
+  "withoutWater": "Without Water",
+  "noWaterAnalysisMessage": "No water analysis available",
+  "contaminatedMonitoring": "Contaminated Monitoring",
+  "loadingMessage": "Loading data, please wait...",
   "document": "Document",
   "phoneNumber": "Phone Number",
   "status": "Status",
@@ -86,6 +91,12 @@
   "signIn": "Sign in",
   "water": "Water",
   "logout": "Logout",
+  "excellent": "Excellent",
+  "good": "Good",
+  "acceptable": "Acceptable",
+  "bad": "Bad",
+  "nonPotable": "Non-potable",
+  "contaminatedWater": "Contaminated water",
   "requestedLitersOfWater": "Requested {liters} liters of water",
   "@helloWorld": {
     "description": "The conventional newborn programmer greeting"
@@ -97,5 +108,6 @@
         "type": "int"
       }
     }
-  }
+  },
+  "loadingMessage": "Loading data, please wait..."
 }

@@ -1,5 +1,3 @@
-/// Represents a water supply request made by a resident.
-/// 
 /// This entity encapsulates information about water delivery requests,
 /// including the requested amount, current status, and delivery information.
 /// Used for tracking water supply requests and their fulfillment status.

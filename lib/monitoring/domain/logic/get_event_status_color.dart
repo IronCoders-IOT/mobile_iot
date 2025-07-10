@@ -8,25 +8,28 @@ import '../../../l10n/app_localizations.dart';
 /// Used for consistent status display across the application.
 /// 
 /// Parameters:
-/// - [quality]: The water quality string from sensor data
+/// - [context]: The BuildContext used to access localization
+/// - [quality]: The water quality string from device data (localized or English)
 /// 
 /// Returns a standardized status string
-String getStatusFromQuality(String quality) {
-  switch (quality.toLowerCase()) {
-    case 'Excellent':
-      return 'normal';
-    case 'Good':
-      return 'normal';
-    case 'Acceptable':
-      return 'normal';
-    case 'Bad':
-      return 'alert';
-    case 'Non-potable':
-      return 'alert';
-    case 'Contaminated water':
-      return 'critical';
-    default:
-      return 'normal';
+String getStatusFromQuality(BuildContext context, String quality) {
+  final localizations = AppLocalizations.of(context)!;
+
+  final q = quality.toLowerCase();
+  if (q == localizations.excellent.toLowerCase() || q == 'excellent') {
+    return 'normal';
+  } else if (q == localizations.good.toLowerCase() || q == 'good') {
+    return 'normal';
+  } else if (q == localizations.acceptable.toLowerCase() || q == 'acceptable') {
+    return 'normal';
+  } else if (q == localizations.bad.toLowerCase() || q == 'bad') {
+    return 'alert';
+  } else if (q == localizations.nonPotable.toLowerCase() || q == 'non-potable') {
+    return 'alert';
+  } else if (q == localizations.contaminatedWater.toLowerCase() || q == 'contaminated water' || q == 'contaminated monitoring') {
+    return 'critical';
+  } else {
+    return 'normal';
   }
 }
 

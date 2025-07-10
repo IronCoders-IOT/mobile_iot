@@ -3,10 +3,6 @@ import 'dart:convert';
 import 'package:mobile_iot/core/config/env.dart';
 
 /// Service for handling profile-related API requests.
-///
-/// This class provides methods to interact with the backend API for profile operations,
-/// including creation, update, and retrieval of user profile data. It handles HTTP requests
-/// and response parsing, as well as error handling for profile endpoints.
 class ProfileApiService {
   static final String _baseUrl = '${Env.apiUrl}${Env.profileEndpoint}';
 
@@ -33,7 +29,7 @@ class ProfileApiService {
       String documentType,
       String phone ) async{
     final response =await http.put(
-      Uri.parse('$_baseUrl/me/edit'),
+      Uri.parse(_baseUrl),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -65,28 +61,28 @@ class ProfileApiService {
   Future<Map<String, dynamic>?> getProfile(String token) async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/me'),
+        Uri.parse('$_baseUrl/{id}'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
-      
+
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
         return json;
       } else if (response.statusCode == 401) {
-        throw Exception('Sesión expirada. Por favor, inicie sesión nuevamente.');
+        throw Exception('Session expired');
       } else if (response.statusCode == 404) {
-        throw Exception('Perfil no encontrado');
+        throw Exception('Profile not found');
       } else {
-        throw Exception('Error al cargar el perfil: ${response.statusCode}');
+        throw Exception('Failed to load profile: ${response.statusCode}');
       }
     } catch (e) {
       if (e is Exception) {
         rethrow;
       }
-      throw Exception('Error de conexión: $e');
+      throw Exception('Connection error: $e');
     }
   }
 }

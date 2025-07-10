@@ -7,6 +7,7 @@ import 'package:mobile_iot/analytics/presentation/bloc/water_supply_request_crea
 import '../../l10n/app_localizations.dart';
 
 import '../../shared/widgets/app_colors.dart';
+import '../../shared/widgets/session_expired_screen.dart';
 
 /// A dialog screen for creating water supply requests with BLoC state management.
 /// 
@@ -25,7 +26,7 @@ import '../../shared/widgets/app_colors.dart';
 /// - Success states with automatic navigation
 /// - Authentication token validation
 /// 
-class WaterSupplyRequestCreationScreen extends StatelessWidget {
+class WaterSupplyRequestCreationScreen extends StatefulWidget {
   const WaterSupplyRequestCreationScreen({super.key});
 
   /// Shows the water supply request creation dialog.
@@ -44,6 +45,19 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
   }
 
   @override
+  State<WaterSupplyRequestCreationScreen> createState() => _WaterSupplyRequestCreationScreenState();
+}
+
+class _WaterSupplyRequestCreationScreenState extends State<WaterSupplyRequestCreationScreen> {
+  final TextEditingController _litersController = TextEditingController();
+
+  @override
+  void dispose() {
+    _litersController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider<WaterSupplyRequestCreationBloc>(
       create: (context) => WaterSupplyRequestCreationBloc(
@@ -52,6 +66,9 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
       ),
       child: BlocConsumer<WaterSupplyRequestCreationBloc, WaterSupplyRequestCreationState>(
         listener: (context, state) {
+          if (state is WaterSupplyRequestCreationSessionExpiredState) {
+            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+          }
           if (state is WaterSupplyRequestCreationSuccessState) {
             Navigator.pop(context, state.liters);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -69,45 +86,54 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
             );
           }
         },
-        builder: (context, state) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.requestWater,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.darkBlue,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(32),
-                  ),
-                  child: const Icon(
-                    Icons.water_drop,
-                    color: AppColors.primaryBlue,
-                    size: 32,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildInputField(context),
-                const SizedBox(height: 24),
-                _buildButtons(context, state),
-              ],
+        builder: (context, state) {
+          if (state is WaterSupplyRequestCreationSessionExpiredState) {
+            return SessionExpiredScreen(
+              onLoginAgain: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
+            );
+          }
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-          ),
-        ),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.requestWater,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkBlue,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: const Icon(
+                      Icons.water_drop,
+                      color: AppColors.primaryBlue,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _buildInputField(context),
+                  const SizedBox(height: 24),
+                  _buildButtons(context, state),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -125,10 +151,8 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
   /// 
   /// Returns a TextField widget for liters input.
   Widget _buildInputField(BuildContext context) {
-    final litersController = TextEditingController();
-    
     return TextField(
-      controller: litersController,
+      controller: _litersController,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
         labelText: AppLocalizations.of(context)!.liters,
@@ -166,7 +190,6 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
   /// 
   /// Returns a Row widget containing the action buttons.
   Widget _buildButtons(BuildContext context, WaterSupplyRequestCreationState state) {
-    final litersController = TextEditingController();
     final isLoading = state is WaterSupplyRequestCreationLoadingState;
     
     return Row(
@@ -183,7 +206,7 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         ElevatedButton(
-          onPressed: isLoading ? null : () => _sendRequest(context, litersController),
+          onPressed: isLoading ? null : () => _sendRequest(context),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryBlue,
             foregroundColor: Colors.white,
@@ -219,11 +242,10 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
   /// 
   /// Parameters:
   /// - [context]: The build context for accessing the BLoC
-  /// - [litersController]: Controller containing the liters input
-  void _sendRequest(BuildContext context, TextEditingController litersController) {
+  void _sendRequest(BuildContext context) {
     context.read<WaterSupplyRequestCreationBloc>().add(
       CreateWaterSupplyRequestEvent(
-        liters: litersController.text,
+        liters: _litersController.text,
       ),
     );
   }

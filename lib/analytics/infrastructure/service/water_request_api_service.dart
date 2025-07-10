@@ -14,13 +14,12 @@ import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 /// includes proper error handling for authentication and network issues.
 class WaterRequestApiService {
 
-  static final String _baseUrl = '${Env.apiUrl}${Env.waterRequestsEndpoint}';
+  static final String _baseUrl = '${Env.apiUrl}${Env.waterSupplyRequestsEndpoint}';
 
   /// Creates a new water supply request in the backend system via API.
   /// 
   /// This method makes an HTTP POST request to the backend API to submit
-  /// a new water request with the specified details. The request is created
-  /// with the provided amount, status, and delivery information.
+  /// a new water supply request with the specified details.
   /// 
   /// Parameters:
   /// - [token]: The authentication token for API access
@@ -72,7 +71,7 @@ class WaterRequestApiService {
   /// - [Exception] for other network or data access errors
   Future<List<WaterRequest>> getAllRequestsByResidentId(String token, int id) async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/resident/$id'),
+      Uri.parse(_baseUrl),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
