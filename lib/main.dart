@@ -1,25 +1,110 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mobile_iot/analytics/presentation/tank_history/tank_history_screen.dart';
-import 'package:mobile_iot/analytics/presentation/request_history/request_history_screen.dart';
-import 'package:mobile_iot/iam/presentation/auth/login_screen.dart';
-import 'package:mobile_iot/dashboard/presentation/dashboard/dashboard_screen.dart';
-import 'package:mobile_iot/profiles/presentation/profile/profile_screen.dart';
-import 'package:mobile_iot/analytics/presentation/reports/reports_screen.dart';
-import 'package:mobile_iot/iam/presentation/auth/splash_screen.dart';
-import 'package:mobile_iot/analytics/presentation/create_report/create_report_screen.dart';
+import 'package:mobile_iot/monitoring/presentation/tank_events_screen.dart';
+import 'package:mobile_iot/analytics/presentation/water_supply_request_screen.dart';
+import 'package:mobile_iot/iam/presentation/login_screen.dart';
+import 'package:mobile_iot/analytics/presentation/dashboard_screen.dart';
+import 'package:mobile_iot/profiles/presentation/profile_edition_screen.dart';
+import 'package:mobile_iot/profiles/presentation/profile_screen.dart';
+import 'package:mobile_iot/analytics/presentation/reports_screen.dart';
+import 'package:mobile_iot/shared/helpers/splash_screen.dart';
+import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
+import 'iam/presentation/bloc/login_bloc.dart';
+import 'l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_iot/iam/application/sign_in_use_case.dart';
+import 'package:mobile_iot/iam/infrastructure/repositories/auth_repository_impl.dart';
+import 'package:mobile_iot/iam/infrastructure/service/auth_api_service.dart';
+import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile_iot/profiles/presentation/bloc/profile_edition/profile_edition_bloc.dart';
+import 'package:mobile_iot/profiles/application/profile_use_case.dart';
+import 'package:mobile_iot/profiles/infrastructure/repositories/profile_repository_impl.dart';
+import 'package:mobile_iot/profiles/infrastructure/service/profile_api_service.dart';
+import 'package:mobile_iot/profiles/application/resident_use_case.dart';
+import 'package:mobile_iot/profiles/infrastructure/repositories/resident_repository_impl.dart';
+import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
 
-
+/// This file initializes the Flutter app, sets up localization, theme, and routing.
+/// It defines the [AquaConectaApp] widget, which manages the app's locale, theme,
+/// and navigation structure. The app uses BLoC for authentication and supports
+/// multiple screens, including dashboard, reports, profile, and more.
+///
 void main() {
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.dumpErrorToConsole(details);
+    print(details.exceptionAsString());
+  };
   runApp(const AquaConectaApp());
 }
 
-class AquaConectaApp extends StatelessWidget {
+/// Creates the main application widget for AquaConecta.
+///
+/// This widget manages the app's state, including locale and navigation.
+class AquaConectaApp extends StatefulWidget {
+  /// Provides access to the [AquaConectaAppState] from a [BuildContext].
+  static AquaConectaAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<AquaConectaAppState>();
+
+  /// Creates the main application widget for AquaConecta.
   const AquaConectaApp({Key? key}) : super(key: key);
 
   @override
+  State<AquaConectaApp> createState() => AquaConectaAppState();
+}
+
+/// State class for [AquaConectaApp].
+///
+/// Handles locale management, theme configuration, and routing.
+class AquaConectaAppState extends State<AquaConectaApp> {
+  Locale? _locale;
+
+  static AquaConectaAppState? _instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _instance = this;
+    _loadSavedLocale();
+  }
+
+  /// Loads the saved locale from persistent storage (SharedPreferences).
+  Future<void> _loadSavedLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedLocale = prefs.getString('locale');
+    if (savedLocale != null) {
+      setState(() {
+        _locale = Locale(savedLocale);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_instance == this) {
+      _instance = null;
+    }
+    super.dispose();
+  }
+
+  /// Sets the app's locale and saves it to persistent storage.
+  void setLocale(Locale locale) async {
+    setState(() {
+      _locale = locale;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('locale', locale.languageCode);
+  }
+
+  /// Changes the app's locale from anywhere in the widget tree.
+  static void changeLocale(Locale locale) {
+    _instance?.setLocale(locale);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Configurar la barra de estado
+    // Configure the system status bar appearance
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -32,7 +117,7 @@ class AquaConectaApp extends StatelessWidget {
       title: 'AquaConecta',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // Tema principal
+        // Main theme configuration
         primarySwatch: MaterialColor(
           0xFF3498DB,
           <int, Color>{
@@ -41,7 +126,7 @@ class AquaConectaApp extends StatelessWidget {
             200: const Color(0xFF90CAF9),
             300: const Color(0xFF64B5F6),
             400: const Color(0xFF42A5F5),
-            500: const Color(0xFF3498DB), // Color principal
+            500: const Color(0xFF3498DB), // Primary color
             600: const Color(0xFF1E88E5),
             700: const Color(0xFF1976D2),
             800: const Color(0xFF1565C0),
@@ -49,7 +134,7 @@ class AquaConectaApp extends StatelessWidget {
           },
         ),
         
-        // Configuración de colores
+        // Color configuration
         colorScheme: const ColorScheme.light(
           primary: Color(0xFF3498DB),
           secondary: Color(0xFF2C3E50),
@@ -61,7 +146,7 @@ class AquaConectaApp extends StatelessWidget {
           onSurface: Color(0xFF2C3E50),
         ),
 
-        // Configuración de fuentes
+        // Font configuration
         fontFamily: 'System',
         textTheme: const TextTheme(
           displayLarge: TextStyle(
@@ -84,7 +169,7 @@ class AquaConectaApp extends StatelessWidget {
           ),
         ),
 
-        // Configuración de AppBar
+        // AppBar configuration
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF3498DB),
           foregroundColor: Color(0xFFFFFFFF),
@@ -97,7 +182,7 @@ class AquaConectaApp extends StatelessWidget {
           ),
         ),
 
-        // Configuración de botones elevados
+        // ElevatedButton configuration
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF3498DB),
@@ -113,7 +198,7 @@ class AquaConectaApp extends StatelessWidget {
           ),
         ),
 
-        // Configuración de campos de texto
+        // TextField configuration
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: const Color(0xFFFFFFFF),
@@ -148,10 +233,10 @@ class AquaConectaApp extends StatelessWidget {
           ),
         ),
 
-        // Configuración del Scaffold
+        // Scaffold configuration
         scaffoldBackgroundColor: const Color(0xFFF8F9FA),
 
-        // Configuración de SnackBar
+        // SnackBar configuration
         snackBarTheme: const SnackBarThemeData(
           backgroundColor: Color(0xFF3498DB),
           contentTextStyle: TextStyle(
@@ -166,58 +251,49 @@ class AquaConectaApp extends StatelessWidget {
           ),
         ),
       ),
-      
-      // Pantalla inicial
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: _locale,
+      // Initial screen
       home: const SplashScreen(),
       
-      // Rutas nombradas (para navegación futura)
+      // Named routes
       routes: {
-        '/login': (context) => const LoginScreen(),
+        '/login': (context) => BlocProvider<LoginBloc>(
+          create: (_) => LoginBloc(
+            signInUseCase: SignInUseCase(AuthRepositoryImpl(AuthApiService())),
+            secureStorage: SecureStorageService(),
+          ),
+          child: const LoginScreen(),
+        ),
         '/dashboard': (context) => const DashboardScreen(),
         '/profile': (context) => const ProfileScreen(),
-        '/edit-profile': (context) => const EditProfileScreen(),
+        '/edit-profile': (context) => BlocProvider(
+          create: (_) => ProfileEditionBloc(
+            profileUseCase: ProfileUseCase(ProfileRepositoryImpl(ProfileApiService())),
+            residentUseCase: ResidentUseCase(ResidentRepositoryImpl(ResidentApiService())),
+            secureStorage: SecureStorageService(),
+          ),
+          child: const ProfileEditionScreen(),
+        ),
         '/reports': (context) => const ReportsScreen(),
-        '/history': (context) => const HistoryScreen(),
-        '/request-history': (context) => const RequestHistoryScreen(),
-        '/create-report': (context) => const CreateReportScreen(),
+        '/history': (context) => const TankEventsScreen(),
+        '/request-history': (context) => const WaterSupplyRequestScreen(),
+        '/create-report': (context) => const ReportCreationScreen(),
       },
       
-      // Ruta por defecto cuando no se encuentra una ruta
+      // Default route when a route is not found
       onUnknownRoute: (settings) {
         return MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
+          builder: (context) => BlocProvider<LoginBloc>(
+            create: (_) => LoginBloc(
+              signInUseCase: SignInUseCase(AuthRepositoryImpl(AuthApiService())),
+              secureStorage: SecureStorageService(),
+            ),
+            child: const LoginScreen(),
+          ),
         );
       },
     );
-  }
-}
-
-// Clase para mantener las rutas organizadas
-class AppRoutes {
-  static const String login = '/login';
-  static const String dashboard = '/dashboard';
-  static const String profile = '/profile';
-  static const String editProfile = '/edit-profile';
-  static const String reports = '/reports';
-  
-  // Método helper para navegación
-  static void navigateToLogin(BuildContext context) {
-    Navigator.pushReplacementNamed(context, login);
-  }
-  
-  static void navigateToDashboard(BuildContext context) {
-    Navigator.pushReplacementNamed(context, dashboard);
-  }
-  
-  static void navigateToProfile(BuildContext context) {
-    Navigator.pushNamed(context, profile);
-  }
-  
-  static void navigateToReports(BuildContext context) {
-    Navigator.pushNamed(context, reports);
-  }
-  
-  static void navigateToEditProfile(BuildContext context) {
-    Navigator.pushNamed(context, editProfile);
   }
 }

@@ -30,7 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -39,7 +41,9 @@ dependencies:
   shared_preferences: ^2.2.2     # Storage local
   flutter_secure_storage: ^9.2.4 # Para tokens seguros
   provider: ^6.1.1               # State management
-  intl: ^0.18.1
+  envied: ^1.1.1
+  flutter_bloc: ^8.1.4           # BLoC pattern
+  equatable: ^2.0.5              # Value equality
 
 dev_dependencies:
   flutter_test:
@@ -51,6 +55,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+  envied_generator: ^1.1.1
+  build_runner: ^2.5.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -93,3 +99,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  generate: true
