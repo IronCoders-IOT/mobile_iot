@@ -63,16 +63,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get waterRequestSent => 'Water request sent!';
 
   @override
-  String get newReport => 'New Report';
+  String get newReport => 'New Issue Report';
 
   @override
-  String get createReport => 'Create Report';
+  String get createReport => 'Create Issue Report';
 
   @override
   String get title => 'Title';
 
   @override
-  String get enterReportTitle => 'Enter report title';
+  String get enterReportTitle => 'Enter issue report title';
 
   @override
   String get pleaseEnterTitle => 'Please enter a title';
@@ -87,10 +87,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseEnterDescription => 'Please enter a description';
 
   @override
-  String get reportDetails => 'Report Details';
+  String get reportDetails => 'Issue Report Details';
 
   @override
-  String get reviewReportDetails => '1. Review report details';
+  String get reviewReportDetails => '1. Review issue report details';
 
   @override
   String get updateStatusIfNeeded => '2. Update status if needed';
@@ -111,13 +111,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recommendedActions => 'Recommended Actions';
 
   @override
-  String get monitorAnalyticsQualityLevels => '1. Monitor analytics quality levels';
+  String get monitorAnalyticsQualityLevels =>
+      '1. Monitor analytics quality levels';
 
   @override
   String get checkTankAnalyticsLevel => '2. Check tank analytics level';
 
   @override
-  String get contactSupportIfIssuesPersist => '3. Contact support if issues persist';
+  String get contactSupportIfIssuesPersist =>
+      '3. Contact support if issues persist';
 
   @override
   String get liters => 'Liters';
@@ -261,10 +263,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get waterMeasurement => 'Water Measurement';
 
   @override
-  String get searchReports => 'Search reports...';
+  String get searchReports => 'Search issue reports...';
 
   @override
-  String get reports => 'REPORTS';
+  String get reports => 'ISSUE REPORTS';
 
   @override
   String get password => 'Password';
