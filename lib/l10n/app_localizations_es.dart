@@ -63,19 +63,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get waterRequestSent => '¡Solicitud de agua enviada!';
 
   @override
-  String get newReport => 'Nuevo Reporte';
+  String get newReport => 'Nuevo Reporte de Incidencia';
 
   @override
-  String get createReport => 'Crear Reporte';
+  String get createReport => 'Crear Reporte de Incidencia';
 
   @override
   String get title => 'Título';
 
   @override
-  String get enterReportTitle => 'Ingresa el título del reporte';
+  String get enterReportTitle => 'Ingresa el título del reporte de incidencia';
 
   @override
-  String get pleaseEnterTitle => 'Por favor ingresa un título';
+  String get pleaseEnterTitle => 'Por favor, ingresa un título';
 
   @override
   String get description => 'Descripción';
@@ -87,16 +87,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pleaseEnterDescription => 'Por favor ingresa una descripción';
 
   @override
-  String get reportDetails => 'Detalles del Reporte';
+  String get reportDetails => 'Detalles del Reporte de Incidencia';
 
   @override
-  String get reviewReportDetails => '1. Revisar detalles del reporte';
+  String get reviewReportDetails =>
+      '1. Revisa los detalles del reporte de incidencia';
 
   @override
   String get updateStatusIfNeeded => '2. Actualizar estado si es necesario';
 
   @override
-  String get contactSupportForAssistance => '3. Contactar soporte para asistencia';
+  String get contactSupportForAssistance =>
+      '3. Contactar soporte para asistencia';
 
   @override
   String get eventDetails => 'Detalles del Evento';
@@ -111,13 +113,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get recommendedActions => 'Acciones Recomendadas';
 
   @override
-  String get monitorAnalyticsQualityLevels => '1. Monitorear niveles de calidad analítica';
+  String get monitorAnalyticsQualityLevels =>
+      '1. Monitorear niveles de calidad analítica';
 
   @override
-  String get checkTankAnalyticsLevel => '2. Verificar nivel analítico del tanque';
+  String get checkTankAnalyticsLevel =>
+      '2. Verificar nivel analítico del tanque';
 
   @override
-  String get contactSupportIfIssuesPersist => '3. Contactar soporte si los problemas persisten';
+  String get contactSupportIfIssuesPersist =>
+      '3. Contactar soporte si los problemas persisten';
 
   @override
   String get liters => 'Litros';
@@ -156,7 +161,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get contactSupportIfNeeded => '2. Contactar soporte si es necesario';
 
   @override
-  String get checkWaterSupplyUpdates => '3. Verificar actualizaciones del suministro de agua';
+  String get checkWaterSupplyUpdates =>
+      '3. Verificar actualizaciones del suministro de agua';
 
   @override
   String get editProfile => 'Editar Perfil';
@@ -213,7 +219,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get refresh => 'Actualizar';
 
   @override
-  String get noWaterSupplyRequestsFound => 'No se encontraron solicitudes de suministro de agua';
+  String get noWaterSupplyRequestsFound =>
+      'No se encontraron solicitudes de suministro de agua';
 
   @override
   String get requestHistory => 'Historial de Solicitudes';
@@ -261,10 +268,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get waterMeasurement => 'Medición de Agua';
 
   @override
-  String get searchReports => 'Buscar reportes...';
+  String get searchReports => 'Buscar reportes de incidencia...';
 
   @override
-  String get reports => 'REPORTES';
+  String get reports => 'REPORTES DE INCIDENCIA';
 
   @override
   String get password => 'Contraseña';
