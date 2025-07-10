@@ -18,6 +18,13 @@ import 'package:mobile_iot/iam/infrastructure/repositories/auth_repository_impl.
 import 'package:mobile_iot/iam/infrastructure/service/auth_api_service.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile_iot/profiles/presentation/bloc/profile_edition/profile_edition_bloc.dart';
+import 'package:mobile_iot/profiles/application/profile_use_case.dart';
+import 'package:mobile_iot/profiles/infrastructure/repositories/profile_repository_impl.dart';
+import 'package:mobile_iot/profiles/infrastructure/service/profile_api_service.dart';
+import 'package:mobile_iot/profiles/application/resident_use_case.dart';
+import 'package:mobile_iot/profiles/infrastructure/repositories/resident_repository_impl.dart';
+import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
 
 /// This file initializes the Flutter app, sets up localization, theme, and routing.
 /// It defines the [AquaConectaApp] widget, which manages the app's locale, theme,
@@ -261,7 +268,14 @@ class AquaConectaAppState extends State<AquaConectaApp> {
         ),
         '/dashboard': (context) => const DashboardScreen(),
         '/profile': (context) => const ProfileScreen(),
-        '/edit-profile': (context) => const ProfileEditionScreen(),
+        '/edit-profile': (context) => BlocProvider(
+          create: (_) => ProfileEditionBloc(
+            profileUseCase: ProfileUseCase(ProfileRepositoryImpl(ProfileApiService())),
+            residentUseCase: ResidentUseCase(ResidentRepositoryImpl(ResidentApiService())),
+            secureStorage: SecureStorageService(),
+          ),
+          child: const ProfileEditionScreen(),
+        ),
         '/reports': (context) => const ReportsScreen(),
         '/history': (context) => const TankEventsScreen(),
         '/request-history': (context) => const WaterSupplyRequestScreen(),

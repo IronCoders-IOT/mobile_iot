@@ -4,15 +4,8 @@ import 'package:mobile_iot/iam/domain/entities/credentials.dart';
 /// Use case for handling user authentication business logic.
 /// 
 /// This use case encapsulates the application-specific logic for user sign-in
-/// operations. It acts as an intermediary between the presentation layer and
-/// the domain layer, ensuring that authentication follows the application's
-/// business rules and requirements.
+/// operations.
 /// 
-/// The SignInUseCase is responsible for:
-/// - Coordinating authentication operations
-/// - Applying business rules to authentication
-/// - Managing the authentication flow
-/// - Providing a clean interface for the presentation layer
 class SignInUseCase {
   final AuthRepository repository;
 
@@ -20,14 +13,7 @@ class SignInUseCase {
 
   /// Executes the sign-in operation with the provided credentials.
   /// 
-  /// This method orchestrates the authentication process by:
-  /// - Delegating the authentication to the repository
-  /// - Handling any business logic specific to the application
-  /// - Returning the authentication result
-  /// 
-  /// The method maintains a clean separation between business logic and
-  /// infrastructure concerns, making it easy to test and maintain.
-  /// 
+  ///
   /// [credentials] - The user's authentication credentials (username and password)
   /// 
   /// Returns a Future that completes with:

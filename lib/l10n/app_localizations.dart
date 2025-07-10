@@ -137,6 +137,12 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get retry;
 
+  /// No description provided for @waterMonitoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Water Monitoring'**
+  String get waterMonitoring;
+
   /// No description provided for @submit.
   ///
   /// In en, this message translates to:
@@ -425,6 +431,30 @@ abstract class AppLocalizations {
   /// **'Email'**
   String get email;
 
+  /// No description provided for @withoutWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Without Water'**
+  String get withoutWater;
+
+  /// No description provided for @noWaterAnalysisMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'No water analysis available'**
+  String get noWaterAnalysisMessage;
+
+  /// No description provided for @contaminatedMonitoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Contaminated Monitoring'**
+  String get contaminatedMonitoring;
+
+  /// No description provided for @loadingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading data, please wait...'**
+  String get loadingMessage;
+
   /// No description provided for @document.
   ///
   /// In en, this message translates to:
@@ -610,6 +640,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Logout'**
   String get logout;
+
+  /// No description provided for @excellent.
+  ///
+  /// In en, this message translates to:
+  /// **'Excellent'**
+  String get excellent;
+
+  /// No description provided for @good.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get good;
+
+  /// No description provided for @acceptable.
+  ///
+  /// In en, this message translates to:
+  /// **'Acceptable'**
+  String get acceptable;
+
+  /// No description provided for @bad.
+  ///
+  /// In en, this message translates to:
+  /// **'Bad'**
+  String get bad;
+
+  /// No description provided for @nonPotable.
+  ///
+  /// In en, this message translates to:
+  /// **'Non-potable'**
+  String get nonPotable;
+
+  /// No description provided for @contaminatedWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Contaminated water'**
+  String get contaminatedWater;
 
   /// Message showing requested water amount
   ///

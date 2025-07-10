@@ -10,9 +10,10 @@ import 'package:mobile_iot/shared/widgets/app_colors.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_header.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_avatar.dart';
 import 'package:mobile_iot/profiles/presentation/widgets/profile_field_display.dart';
-import 'package:mobile_iot/profiles/presentation/bloc/profile_view/bloc.dart';
+import 'package:mobile_iot/profiles/presentation/bloc/profile/bloc.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:mobile_iot/shared/widgets/session_expired_screen.dart';
+import 'package:mobile_iot/monitoring/presentation/widgets/app_loading_state.dart';
 
 /// A screen that displays the user's profile information.
 /// 
@@ -115,7 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onEdit: () async {
                       // Navigate to profile edition screen and handle result
                       final result = await Navigator.pushNamed(context, '/edit-profile');
-                      if (result != null && result is Profile) {
+                      if (result == true) {
                         // Refresh profile data after successful editing
                         context.read<ProfileViewBloc>().add(const RefreshProfileViewEvent());
                       }
@@ -166,7 +167,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   /// Returns a widget that represents the appropriate UI for the current state.
   Widget _buildBody(BuildContext context, ProfileViewState state) {
     if (state is ProfileViewLoadingState) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState();
     } else if (state is ProfileViewErrorState) {
       return Center(
         child: Column(
@@ -206,7 +207,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
     
     // Fallback to loading state for unknown states
-    return const Center(child: CircularProgressIndicator());
+    return const AppLoadingState();
   }
 
 
@@ -226,7 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ProfileAvatar(),
         const SizedBox(height: 16),
         Text(
-          profile.firstName,
+          profile.firstName ?? '',
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -251,27 +252,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         ProfileFieldDisplay(
           label: AppLocalizations.of(context)!.firstName,
-          value: profile.firstName,
+          value: profile.firstName ?? '',
         ),
         const SizedBox(height: 24),
         ProfileFieldDisplay(
           label: AppLocalizations.of(context)!.lastName,
-          value: profile.lastName,
+          value: profile.lastName ?? '',
         ),
         const SizedBox(height: 24),
         ProfileFieldDisplay(
           label: AppLocalizations.of(context)!.email,
-          value: profile.email,
+          value: profile.email ?? '',
         ),
         const SizedBox(height: 24),
         ProfileFieldDisplay(
           label: AppLocalizations.of(context)!.document,
-          value: profile.documentNumber,
+          value: profile.documentNumber ?? '',
         ),
         const SizedBox(height: 24),
         ProfileFieldDisplay(
           label: AppLocalizations.of(context)!.phoneNumber,
-          value: profile.phone,
+          value: profile.phone ?? '',
         ),
       ],
     );

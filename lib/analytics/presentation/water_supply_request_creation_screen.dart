@@ -26,7 +26,7 @@ import '../../shared/widgets/session_expired_screen.dart';
 /// - Success states with automatic navigation
 /// - Authentication token validation
 /// 
-class WaterSupplyRequestCreationScreen extends StatelessWidget {
+class WaterSupplyRequestCreationScreen extends StatefulWidget {
   const WaterSupplyRequestCreationScreen({super.key});
 
   /// Shows the water supply request creation dialog.
@@ -42,6 +42,19 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
       context: context,
       builder: (context) => const WaterSupplyRequestCreationScreen(),
     );
+  }
+
+  @override
+  State<WaterSupplyRequestCreationScreen> createState() => _WaterSupplyRequestCreationScreenState();
+}
+
+class _WaterSupplyRequestCreationScreenState extends State<WaterSupplyRequestCreationScreen> {
+  final TextEditingController _litersController = TextEditingController();
+
+  @override
+  void dispose() {
+    _litersController.dispose();
+    super.dispose();
   }
 
   @override
@@ -138,10 +151,8 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
   /// 
   /// Returns a TextField widget for liters input.
   Widget _buildInputField(BuildContext context) {
-    final litersController = TextEditingController();
-    
     return TextField(
-      controller: litersController,
+      controller: _litersController,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
         labelText: AppLocalizations.of(context)!.liters,
@@ -179,7 +190,6 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
   /// 
   /// Returns a Row widget containing the action buttons.
   Widget _buildButtons(BuildContext context, WaterSupplyRequestCreationState state) {
-    final litersController = TextEditingController();
     final isLoading = state is WaterSupplyRequestCreationLoadingState;
     
     return Row(
@@ -196,7 +206,7 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         ElevatedButton(
-          onPressed: isLoading ? null : () => _sendRequest(context, litersController),
+          onPressed: isLoading ? null : () => _sendRequest(context),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryBlue,
             foregroundColor: Colors.white,
@@ -232,11 +242,10 @@ class WaterSupplyRequestCreationScreen extends StatelessWidget {
   /// 
   /// Parameters:
   /// - [context]: The build context for accessing the BLoC
-  /// - [litersController]: Controller containing the liters input
-  void _sendRequest(BuildContext context, TextEditingController litersController) {
+  void _sendRequest(BuildContext context) {
     context.read<WaterSupplyRequestCreationBloc>().add(
       CreateWaterSupplyRequestEvent(
-        liters: litersController.text,
+        liters: _litersController.text,
       ),
     );
   }

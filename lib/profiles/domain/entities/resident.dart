@@ -1,11 +1,8 @@
-/// Entity representing a resident.
-///
-/// This class encapsulates the minimal information for a resident, currently only the unique ID.
-/// It provides deserialization from JSON data.
 class Resident{
   final int id;
+  final String? username;
 
-  Resident({required this.id});
+  Resident({required this.id, this.username});
 
   /// Creates a [Resident] entity from a JSON map.
   ///
@@ -16,6 +13,7 @@ class Resident{
   factory Resident.fromJson(Map<String, dynamic> json) {
     return Resident(
       id: json['id'] as int,
+      username: json['username'] as String?,
     );
   }
 }

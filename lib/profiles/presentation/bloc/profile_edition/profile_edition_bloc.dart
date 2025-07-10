@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_iot/profiles/application/profile_use_case.dart';
+import 'package:mobile_iot/profiles/application/resident_use_case.dart';
 import 'package:mobile_iot/profiles/presentation/bloc/profile_edition/profile_edition_event.dart';
 import 'package:mobile_iot/profiles/presentation/bloc/profile_edition/profile_edition_state.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
@@ -19,17 +20,21 @@ import 'package:mobile_iot/shared/exceptions/session_expired_exception.dart';
 /// - Authentication and session management
 class ProfileEditionBloc extends Bloc<ProfileEditionEvent, ProfileEditionState> {
   final ProfileUseCase _profileUseCase;
+  final ResidentUseCase _residentUseCase;
   final SecureStorageService _secureStorage;
 
   /// Creates a profile edition BLoC with the required dependencies.
   ///
   /// Parameters:
   /// - [profileUseCase]: Use case for profile operations
+  /// - [residentUseCase]: Use case for resident operations
   /// - [secureStorage]: Service for secure storage
   ProfileEditionBloc({
     required ProfileUseCase profileUseCase,
+    required ResidentUseCase residentUseCase,
     required SecureStorageService secureStorage,
   })  : _profileUseCase = profileUseCase,
+        _residentUseCase = residentUseCase,
         _secureStorage = secureStorage,
         super(ProfileEditionInitialState()) {
     // Register event handlers
@@ -43,7 +48,8 @@ class ProfileEditionBloc extends Bloc<ProfileEditionEvent, ProfileEditionState> 
   /// This method performs the complete data fetching process:
   /// 1. Retrieves authentication token
   /// 2. Fetches profile for the authenticated user
-  /// 3. Emits loaded or error state
+  /// 3. Fetches resident data for the authenticated user
+  /// 4. Emits loaded or error state
   ///
   /// Parameters:
   /// - [event]: The load profile event
@@ -58,9 +64,12 @@ class ProfileEditionBloc extends Bloc<ProfileEditionEvent, ProfileEditionState> 
     try {
       final token = await _secureStorage.getToken();
       if (token == null) throw Exception('No authentication token found');
+      
       final profile = await _profileUseCase.getProfile(token);
+      final resident = await _residentUseCase.getProfile(token);
+      
       if (profile != null) {
-        emit(ProfileEditionLoadedState(profile: profile));
+        emit(ProfileEditionLoadedState(profile: profile, resident: resident));
       } else {
         emit(ProfileEditionErrorState('Failed to load profile data'));
       }
@@ -76,7 +85,8 @@ class ProfileEditionBloc extends Bloc<ProfileEditionEvent, ProfileEditionState> 
   /// This method performs the complete profile update process:
   /// 1. Retrieves authentication token
   /// 2. Updates profile for the authenticated user
-  /// 3. Emits updated or error state
+  /// 3. Fetches updated profile and resident data
+  /// 4. Emits updated or error state
   ///
   /// Parameters:
   /// - [event]: The update profile event
@@ -92,7 +102,13 @@ class ProfileEditionBloc extends Bloc<ProfileEditionEvent, ProfileEditionState> 
       final token = await _secureStorage.getToken();
       if (token == null) throw Exception('No authentication token found');
       await _profileUseCase.updateProfile(token, event.profile);
-      emit(ProfileEditionUpdatedState(profile: event.profile));
+      final updatedProfile = await _profileUseCase.getProfile(token);
+      final resident = await _residentUseCase.getProfile(token);
+      if (updatedProfile != null) {
+        emit(ProfileEditionUpdatedState(profile: updatedProfile, resident: resident));
+      } else {
+        emit(ProfileEditionErrorState('No se pudo obtener el perfil actualizado'));
+      }
     } on SessionExpiredException {
       emit(ProfileEditionSessionExpiredState());
     } catch (e) {

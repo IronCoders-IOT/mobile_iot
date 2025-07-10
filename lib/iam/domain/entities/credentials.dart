@@ -1,14 +1,9 @@
 /// Represents user authentication credentials for login operations.
 /// 
 /// This entity encapsulates the sensitive authentication data required to
-/// authenticate a user with the system. It contains the username and password
-/// that will be sent to the authentication service.
+/// authenticate a user with the system.
 /// 
-/// The Credentials entity is used for:
-/// - Login form data collection
-/// - API authentication requests
-/// - Secure credential handling during authentication flow
-/// 
+///
 class Credentials {
   final String username;
   final String password;

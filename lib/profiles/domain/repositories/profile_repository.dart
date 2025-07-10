@@ -1,8 +1,7 @@
 /// Abstract repository interface for profile operations.
 ///
 /// This interface defines the contract for profile-related data operations, including
-/// creation, update, and retrieval. Implementations should handle the actual data
-/// persistence and retrieval logic, whether from a remote API, local database, or other sources.
+/// creation, update, and retrieval.
 abstract class ProfileRepository {
   /// Updates the profile information for the user.
   ///

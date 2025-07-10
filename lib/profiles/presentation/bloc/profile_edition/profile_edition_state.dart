@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:mobile_iot/profiles/domain/entities/profile.dart';
+import 'package:mobile_iot/profiles/domain/entities/resident.dart';
 
 /// Abstract base class for profile edition BLoC states.
 ///
@@ -42,13 +43,15 @@ class ProfileEditionLoadingState extends ProfileEditionState {
 ///
 /// Parameters:
 /// - [profile]: The loaded profile entity
+/// - [resident]: The loaded resident entity (optional)
 class ProfileEditionLoadedState extends ProfileEditionState {
   final Profile profile;
+  final Resident? resident;
 
-  const ProfileEditionLoadedState({required this.profile});
+  const ProfileEditionLoadedState({required this.profile, this.resident});
 
   @override
-  List<Object?> get props => [profile];
+  List<Object?> get props => [profile, resident];
 }
 
 /// Updating state when profile data is being updated.
@@ -68,13 +71,15 @@ class ProfileEditionUpdatingState extends ProfileEditionState {
 ///
 /// Parameters:
 /// - [profile]: The updated profile entity
+/// - [resident]: The loaded resident entity (optional)
 class ProfileEditionUpdatedState extends ProfileEditionState {
   final Profile profile;
+  final Resident? resident;
 
-  const ProfileEditionUpdatedState({required this.profile});
+  const ProfileEditionUpdatedState({required this.profile, this.resident});
 
   @override
-  List<Object?> get props => [profile];
+  List<Object?> get props => [profile, resident];
 }
 
 /// Error state when profile data loading or updating has failed.

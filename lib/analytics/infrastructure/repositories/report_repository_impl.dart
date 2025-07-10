@@ -1,24 +1,23 @@
 import 'package:mobile_iot/analytics/infrastructure/service/report_api_service.dart';
+import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
 import 'package:mobile_iot/analytics/domain/entities/report.dart';
 import 'package:mobile_iot/analytics/domain/repositories/report_repository.dart';
 
-/// Concrete implementation of the ReportRepository interface.
-/// 
-/// This class provides the actual implementation for report data operations,
-/// delegating the work to the ReportApiService for API communication.
-/// It follows the repository pattern to abstract data access details
-/// from the business logic layer.
+/// This class provides the actual implementation for report data operations
 class ReportRepositoryImpl implements ReportRepository {
 
   final ReportApiService reportApiService;
+  final ResidentApiService residentApiService;
   
-  ReportRepositoryImpl(this.reportApiService);
+  ReportRepositoryImpl({
+    required this.reportApiService,
+    required this.residentApiService,
+  });
   
   @override
   /// Creates a new report in the system.
   /// 
-  /// This implementation delegates the report creation to the API service,
-  /// which handles the actual HTTP communication with the backend.
+  /// This implementation delegates the report creation to the API service
   /// 
   /// Parameters:
   /// - [token]: The authentication token for API access
@@ -34,8 +33,7 @@ class ReportRepositoryImpl implements ReportRepository {
   @override
   /// Retrieves all reports associated with a specific resident.
   /// 
-  /// This implementation delegates the report retrieval to the API service,
-  /// which handles the actual HTTP communication with the backend.
+  /// This implementation delegates the report retrieval to the resident API service
   /// 
   /// Parameters:
   /// - [token]: The authentication token for API access
@@ -43,6 +41,6 @@ class ReportRepositoryImpl implements ReportRepository {
   /// 
   /// Returns a Future that completes with a list of Report entities.
   Future<List<Report>> getReportByResidentId(String token, int residentId) {
-    return reportApiService.getReportByResidentId(token, residentId);
+    return residentApiService.getReportByResidentId(token, residentId);
   }
 }

@@ -15,7 +15,7 @@ import 'package:mobile_iot/analytics/presentation/widgets/app_header.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_search_bar.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_empty_state.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_error_state.dart';
-import 'package:mobile_iot/analytics/presentation/widgets/app_loading_state.dart';
+import 'package:mobile_iot/monitoring/presentation/widgets/app_loading_state.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_list_card.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_status_badge.dart';
 import 'package:mobile_iot/analytics/presentation/widgets/app_modal_bottom_sheet.dart';
@@ -54,7 +54,10 @@ class ReportsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<ReportsBloc>(
       create: (context) => ReportsBloc(
-        reportUseCase: ReportUseCase(ReportRepositoryImpl(ReportApiService())),
+        reportUseCase: ReportUseCase(ReportRepositoryImpl(
+          reportApiService: ReportApiService(),
+          residentApiService: ResidentApiService(),
+        )),
         secureStorage: SecureStorageService(),
         residentApiService: ResidentApiService(),
       )..add(FetchReportsEvent()),

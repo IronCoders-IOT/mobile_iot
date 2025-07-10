@@ -1,11 +1,4 @@
-/// Represents an event from a water tank sensor device.
-/// 
-/// This entity encapsulates data about water quality and level readings
-/// from IoT sensors, including the event type, quality metrics, water level,
-/// and associated device identification.
-/// 
-/// The entity provides methods for JSON serialization and deserialization
-/// to facilitate data exchange with the backend API.
+
 class Event{
   final String eventType;
   
@@ -31,15 +24,13 @@ class Event{
       'eventType': eventType,
       'qualityValue': qualityValue,
       'levelValue': levelValue,
-      'sensorId': deviceId,
+      'deviceId': deviceId,
     };
   }
   
   /// Creates an Event instance from a JSON map.
   /// 
-  /// This factory constructor safely parses JSON data from the API,
-  /// providing default values for missing or null fields to ensure
-  /// data integrity and prevent runtime errors.
+  /// This factory constructor safely parses JSON data from the API
   /// 
   /// Parameters:
   /// - [json]: The JSON map containing event data
@@ -50,7 +41,7 @@ class Event{
       eventType: json['eventType']?.toString() ?? '',
       qualityValue: json['qualityValue']?.toString() ?? '',
       levelValue: json['levelValue']?.toString() ?? '',
-      deviceId: json['sensorId'] as int? ?? 0,
+      deviceId: json['deviceId'] as int? ?? 0,
     );
   }
 }

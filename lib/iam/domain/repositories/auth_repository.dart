@@ -1,11 +1,9 @@
 import '../entities/credentials.dart';
 
-/// Abstract interface for authentication operations in the domain layer.
+/// Abstract interface for authentication operations
 /// 
 /// This repository defines the contract for all authentication-related operations
-/// that the application needs to perform. It follows the dependency inversion
-/// principle by allowing the domain layer to define what authentication
-/// operations are needed without depending on specific implementations.
+/// that the application needs to perform.
 ///
 abstract class AuthRepository {
   /// Authenticates a user with the provided credentials.

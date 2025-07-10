@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_iot/profiles/application/profile_use_case.dart';
-import 'package:mobile_iot/profiles/presentation/bloc/profile_view/profile_view_event.dart';
-import 'package:mobile_iot/profiles/presentation/bloc/profile_view/profile_view_state.dart';
+import 'package:mobile_iot/profiles/presentation/bloc/profile/profile_view_event.dart';
+import 'package:mobile_iot/profiles/presentation/bloc/profile/profile_view_state.dart';
 import 'package:mobile_iot/shared/helpers/secure_storage_service.dart';
 
 import '../../../../shared/exceptions/session_expired_exception.dart';

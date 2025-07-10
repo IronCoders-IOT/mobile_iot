@@ -1,8 +1,6 @@
 /// Abstract repository interface for resident operations.
 ///
-/// This interface defines the contract for resident-related data operations, specifically
-/// the retrieval of resident profile information. Implementations should handle the actual
-/// data retrieval logic, whether from a remote API, local database, or other sources.
+/// This interface defines the contract for resident-related data operations
 abstract class ResidentRepository {
   /// Retrieves the resident profile information for the user.
   ///

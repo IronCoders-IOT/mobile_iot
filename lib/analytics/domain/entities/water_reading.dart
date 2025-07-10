@@ -1,5 +1,3 @@
-/// Represents a water reading history entry for display in the dashboard.
-/// 
 /// This entity encapsulates historical water data including the time
 /// of the reading, the quantity measured, and the type of reading.
 /// Used primarily for displaying recent activity in the dashboard

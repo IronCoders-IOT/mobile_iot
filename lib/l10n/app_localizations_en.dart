@@ -30,6 +30,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
+  String get waterMonitoring => 'Water Monitoring';
+
+  @override
   String get submit => 'Submit';
 
   @override
@@ -174,6 +177,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get email => 'Email';
 
   @override
+  String get withoutWater => 'Without Water';
+
+  @override
+  String get noWaterAnalysisMessage => 'No water analysis available';
+
+  @override
+  String get contaminatedMonitoring => 'Contaminated Monitoring';
+
+  @override
+  String get loadingMessage => 'Loading data, please wait...';
+
+  @override
   String get document => 'Document';
 
   @override
@@ -265,6 +280,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logout => 'Logout';
+
+  @override
+  String get excellent => 'Excellent';
+
+  @override
+  String get good => 'Good';
+
+  @override
+  String get acceptable => 'Acceptable';
+
+  @override
+  String get bad => 'Bad';
+
+  @override
+  String get nonPotable => 'Non-potable';
+
+  @override
+  String get contaminatedWater => 'Contaminated water';
 
   @override
   String requestedLitersOfWater(int liters) {

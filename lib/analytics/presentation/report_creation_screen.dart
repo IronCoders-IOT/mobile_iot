@@ -44,7 +44,10 @@ class ReportCreationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<ReportCreationBloc>(
       create: (context) => ReportCreationBloc(
-        reportUseCase: ReportUseCase(ReportRepositoryImpl(ReportApiService())),
+        reportUseCase: ReportUseCase(ReportRepositoryImpl(
+          reportApiService: ReportApiService(),
+          residentApiService: ResidentApiService(),
+        )),
         secureStorage: SecureStorageService(),
         residentApiService: ResidentApiService(),
       ),

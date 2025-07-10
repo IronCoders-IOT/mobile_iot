@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_iot/monitoring/application/device_use_case.dart';
-import 'package:mobile_iot/monitoring/application/event_use_case.dart';
 import 'package:mobile_iot/monitoring/domain/entities/event.dart';
 import 'package:mobile_iot/monitoring/presentation/bloc/tank_events/tank_events_event.dart';
 import 'package:mobile_iot/monitoring/presentation/bloc/tank_events/tank_events_state.dart';
@@ -24,8 +23,6 @@ import '../../../../shared/exceptions/session_expired_exception.dart';
 class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
   final DeviceUseCase _deviceUseCase;
   
-  final EventUseCase _eventUseCase;
-  
   final SecureStorageService _secureStorage;
   
   final ResidentApiService _residentApiService;
@@ -34,11 +31,9 @@ class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
 
   TankEventsBloc({
     required DeviceUseCase deviceUseCase,
-    required EventUseCase eventUseCase,
     required SecureStorageService secureStorage,
     required ResidentApiService residentApiService,
   }) : _deviceUseCase = deviceUseCase,
-       _eventUseCase = eventUseCase,
        _secureStorage = secureStorage,
        _residentApiService = residentApiService,
        super(InitialTankEventsState()) {
@@ -54,9 +49,8 @@ class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
   /// This method performs the complete data fetching process:
   /// 1. Retrieves authentication token
   /// 2. Validates resident information
-  /// 3. Fetches associated sensors
-  /// 4. Retrieves events for the first sensor
-  /// 5. Updates the internal cache and emits loaded state
+  /// 3. Retrieves events directly from the device using device ID
+  /// 4. Updates the internal cache and emits loaded state
   /// 
   /// Parameters:
   /// - [event]: The fetch tank events event
@@ -65,7 +59,7 @@ class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
   /// Throws:
   /// - Exception when authentication token is missing
   /// - Exception when resident is not found
-  /// - Exception when no sensors are available
+  /// - Exception when no events are available
   Future<void> _onFetchTankEvents(FetchTankEventsEvent event, Emitter<TankEventsState> emit) async {
     emit(TankEventsLoadingState());
     
@@ -78,12 +72,10 @@ class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
         throw Exception('Resident not found');
       }
       
-      final residentId = residentJson['id'] as int;
-      final sensors = await _deviceUseCase.getDevice(token, residentId);
-      if (sensors.isEmpty) throw Exception('No sensors found for resident');
+      const deviceId = 1;
+      final events = await _deviceUseCase.getEventsByDeviceId(token, deviceId);
       
-      final sensorId = sensors.first.id;
-      final events = await _eventUseCase.getAllEventsBySensorId(token, sensorId);
+      if (events.isEmpty) throw Exception('No events found for device');
       
       _allEvents = events;
       emit(TankEventsLoadedState(events: events));

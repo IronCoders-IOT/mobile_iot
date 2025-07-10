@@ -1,13 +1,6 @@
 import 'package:mobile_iot/analytics/domain/entities/water_request.dart';
 
 /// Abstract interface for water request data operations.
-/// 
-/// This repository interface defines the contract for creating and retrieving
-/// water request data from various data sources. It follows the repository pattern
-/// to abstract data access logic from the business logic layer.
-/// 
-/// Implementations of this interface handle the actual data operations
-/// from APIs, local storage, or other data sources.
 abstract class WaterRequestRepository {
   /// Creates a new water supply request in the system.
   /// 

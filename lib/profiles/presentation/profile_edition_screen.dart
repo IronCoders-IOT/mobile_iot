@@ -14,6 +14,9 @@ import 'package:mobile_iot/shared/widgets/app_button.dart';
 import 'package:mobile_iot/profiles/presentation/bloc/profile_edition/bloc.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/session_expired_screen.dart';
+import '../domain/entities/resident.dart';
+import '../infrastructure/service/resident_api_service.dart';
+import 'package:mobile_iot/monitoring/presentation/widgets/app_loading_state.dart';
 /// A screen that allows users to edit their profile information.
 /// 
 /// This screen provides a form interface for users to update their profile
@@ -60,6 +63,10 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
   void initState() {
     super.initState();
     _initializeControllers();
+    // Load profile data using BLoC
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileEditionBloc>().add(const LoadProfileEvent());
+    });
   }
 
   /// Initializes all text editing controllers for form fields.
@@ -77,14 +84,19 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
   /// Populates form fields with profile data from BLoC state.
   /// 
   /// This method updates the text controllers with the profile data
-  /// received from the BLoC state.
-  void _populateFormFields(Profile profile) {
-    _firstNameController.text = profile.firstName;
-    _lastNameController.text = profile.lastName;
-    _emailController.text = profile.email;
-    _documentNumberController.text = profile.documentNumber;
-    _documentTypeController.text = profile.documentType;
-    _phoneController.text = profile.phone;
+  /// received from the BLoC state. Handles null values by providing
+  /// empty strings as defaults.
+  void _populateFormFields(Profile profile, {Resident? resident}) {
+    _firstNameController.text = profile.firstName ?? '';
+    _lastNameController.text = profile.lastName ?? '';
+    _emailController.text = profile.email ?? '';
+    _directionController.text = profile.direction ?? '';
+    _documentNumberController.text = profile.documentNumber ?? '';
+    _documentTypeController.text = profile.documentType ?? '';
+    _phoneController.text = profile.phone ?? '';
+    if (resident != null) {
+      _usernameController.text = resident.username ?? '';
+    }
   }
 
   @override
@@ -118,77 +130,73 @@ class _ProfileEditionScreenState extends State<ProfileEditionScreen> {
         userId: 0, // Assuming userId is not editable and remains unchanged
       );
 
+      print('Dispatching UpdateProfileEvent');
       context.read<ProfileEditionBloc>().add(UpdateProfileEvent(profile: updatedProfile));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ProfileEditionBloc>(
-      create: (context) => ProfileEditionBloc(
-        profileUseCase: ProfileUseCase(ProfileRepositoryImpl(ProfileApiService())),
-        secureStorage: SecureStorageService(),
-      )..add(const LoadProfileEvent()),
-      child: BlocConsumer<ProfileEditionBloc, ProfileEditionState>(
-        listener: (context, state) {
-          if (state is ProfileEditionSessionExpiredState) {
-            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-          }
-          if (state is ProfileEditionLoadedState) {
-            _populateFormFields(state.profile);
-          } else if (state is ProfileEditionUpdatedState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(AppLocalizations.of(context)!.profileUpdated),
-                backgroundColor: AppColors.green,
-              ),
-            );
-            Navigator.pop(context, state.profile);
-          } else if (state is ProfileEditionErrorState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is ProfileEditionSessionExpiredState) {
-            return SessionExpiredScreen(
-              onLoginAgain: () {
-                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-              },
-            );
-          }
-          return Scaffold(
-            backgroundColor: AppColors.lightGray,
-            body: SafeArea(
-              child: Column(
-                children: [
-                  BackHeader(title: AppLocalizations.of(context)!.editProfile),
-                  Expanded(
-                    child: _buildBody(state),
-                  ),
-                ],
-              ),
+    return BlocConsumer<ProfileEditionBloc, ProfileEditionState>(
+      listener: (context, state) {
+        if (state is ProfileEditionSessionExpiredState) {
+          Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        }
+        if (state is ProfileEditionLoadedState) {
+          _populateFormFields(state.profile, resident: state.resident);
+        } else if (state is ProfileEditionUpdatedState) {
+          print('ProfileEditionUpdatedState reached');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.profileUpdated),
+              backgroundColor: AppColors.green,
             ),
           );
-        },
-      ),
+          Navigator.pop(context, true);
+        } else if (state is ProfileEditionErrorState) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      builder: (context, state) {
+        if (state is ProfileEditionSessionExpiredState) {
+          return SessionExpiredScreen(
+            onLoginAgain: () {
+              Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+            },
+          );
+        }
+        return Scaffold(
+          backgroundColor: AppColors.lightGray,
+          body: SafeArea(
+            child: Column(
+              children: [
+                BackHeader(title: AppLocalizations.of(context)!.editProfile),
+                Expanded(
+                  child: _buildBody(state),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   /// Builds the main body content based on the current BLoC state.
   Widget _buildBody(ProfileEditionState state) {
     if (state is ProfileEditionLoadingState) {
-      return const Center(child: CircularProgressIndicator());
+      return const AppLoadingState();
     } else if (state is ProfileEditionErrorState) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Error: ${state.message}'),
+            Text('Error: wawa'),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => context.read<ProfileEditionBloc>().add(const LoadProfileEvent()),

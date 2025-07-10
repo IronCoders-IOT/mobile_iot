@@ -14,16 +14,15 @@ import 'package:mobile_iot/analytics/domain/logic/get_ph_from_status.dart';
 import 'package:mobile_iot/shared/widgets/circular_progress_painter.dart';
 import 'package:mobile_iot/analytics/domain/entities/water_reading.dart';
 import '../../monitoring/application/device_use_case.dart';
-import '../../monitoring/application/event_use_case.dart';
 import '../../monitoring/infrastructure/repositories/device_repository_impl.dart';
-import '../../monitoring/infrastructure/repositories/event_repository_impl.dart';
 import '../../monitoring/infrastructure/service/device_api_service.dart';
-import '../../monitoring/infrastructure/service/event_api_service.dart';
 import '../../l10n/app_localizations.dart';
+import '../../shared/widgets/session_expired_screen.dart';
 import '../../../main.dart';
+import 'package:mobile_iot/monitoring/presentation/widgets/app_loading_state.dart';
 
 /// A screen that displays water tank analytics and monitoring dashboard for the authenticated user.
-/// 
+///
 /// This screen uses the BLoC pattern for state management and provides the following features:
 /// - Real-time water level monitoring with circular progress indicator
 /// - Current water status, quantity, and pH level display
@@ -31,7 +30,7 @@ import '../../../main.dart';
 /// - Recent activity tracking
 /// - Navigation to other app sections via bottom navigation
 /// - Quick access to report creation via floating action button
-/// 
+///
 /// The screen automatically handles:
 /// - Loading states while fetching tank events data
 /// - Error states with retry functionality
@@ -42,7 +41,7 @@ import '../../../main.dart';
 ///
 class DashboardScreen extends StatefulWidget {
   /// Creates a dashboard screen.
-  /// 
+  ///
   /// The [key] parameter is optional and is passed to the superclass.
   const DashboardScreen({Key? key}) : super(key: key);
 
@@ -51,17 +50,17 @@ class DashboardScreen extends StatefulWidget {
 }
 
 /// The state class for the DashboardScreen widget.
-/// 
+///
 /// This class manages the animation controller for the water level indicator
 /// and maintains the water history data for display.
 class _DashboardScreenState extends State<DashboardScreen>
     with TickerProviderStateMixin {
   /// Controller for the water level animation.
   late AnimationController _animationController;
-  
+
   /// Animation for the circular progress indicator.
   late Animation<double> _animation;
-  
+
   /// List of water readings for the history section.
   List<WaterReading> tanks = [];
 
@@ -73,7 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    
+
     // Initialize animation with default values (will be updated dynamically)
     _animation = Tween<double>(
       begin: 0.0,
@@ -82,7 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
-    
+
     // Start the initial animation
     _animationController.forward();
   }
@@ -101,119 +100,116 @@ class _DashboardScreenState extends State<DashboardScreen>
     return BlocProvider<TankEventsBloc>(
       create: (context) => TankEventsBloc(
         deviceUseCase: DeviceUseCase(DeviceRepositoryImpl(DeviceApiService())),
-        eventUseCase: EventUseCase(EventRepositoryImpl(EventApiService())),
         secureStorage: SecureStorageService(),
         residentApiService: ResidentApiService(),
       )..add(FetchTankEventsEvent()),
-      child: BlocBuilder<TankEventsBloc, TankEventsState>(
+      child: BlocConsumer<TankEventsBloc, TankEventsState>(
+        listener: (context, state) {
+          if (state is TankEventsSessionExpiredState) {
+            Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+          }
+        },
         builder: (context, state) {
-          // Handle loading state - show loading indicator
-          if (state is TankEventsLoadingState) {
-            return const Center(child: CircularProgressIndicator());
-          } 
-          // Handle error state - show error message
-          else if (state is TankEventsErrorState) {
-            return Center(child: Text('${AppLocalizations.of(context)!.error}: ${state.message}'));
-          } 
-          // Handle loaded state with events - show dashboard content
-          else if (state is TankEventsLoadedState && state.events.isNotEmpty) {
-            // Extract data from the latest event for display
-            final latestEvent = state.events.last;
-            final status = latestEvent.qualityValue;
-            const waterQuantity = 1;
-            final phLevel = getPhFromStatus(status);
-            final currentPercentage = double.parse(latestEvent.levelValue);
-            
-            // Update water history with the latest event for display
-            tanks = [
-              WaterReading(time: '', quantity: '600ml', type: AppLocalizations.of(context)!.tank),
-            ];
-            
-            // Update animation to reflect the new water percentage
-            _animation = Tween<double>(
-              begin: 0.0,
-              end: currentPercentage / 100, // Assuming 1000L is 100%
-            ).animate(CurvedAnimation(
-              parent: _animationController,
-              curve: Curves.easeInOut,
-            ));
-            _animationController.forward(from: 0.0);
-            return Scaffold(
-              backgroundColor: AppColors.lightGray,
-              body: SafeArea(
-                child: Column(
-                  children: [
-                    // Header with app logo
-                    _buildHeader(),
-                    
-                    // Main content area with scrollable content
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Circular water level indicator
-                            _buildCircularIndicator(currentPercentage),
-                            
-                            const SizedBox(height: 24),
-                            
-                            // Current date section
-                            _buildDateSection(),
-                            
-                            const SizedBox(height: 24),
-                            
-                            // Metrics card with status, quantity, and pH
-                            _buildMetricsCard(
-                              status: status,
-                              waterQuantity: waterQuantity.toString(),
-                              phLevel: phLevel,
-                            ),
-                            
-                            const SizedBox(height: 32),
-                            // Recent activity history section
-                            _buildRecentActivitySection(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Bottom navigation bar for app-wide navigation
-              bottomNavigationBar: AppBottomNavigationBar(
-                currentIndex: 1, // Dashboard tab is active
-                onTap: (index) {
-                  switch (index) {
-                    case 0:
-                      Navigator.pushReplacementNamed(context, '/reports');
-                      break;
-                    case 1:
-                      // Already on dashboard
-                      break;
-                    case 2:
-                      Navigator.pushReplacementNamed(context, '/profile');
-                      break;
-                  }
-                },
-              ),
-              // Floating action button for quick report creation
-              floatingActionButton: FloatingActionButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ReportCreationScreen()),
-                  );
-                },
-                backgroundColor: AppColors.primaryBlue,
-                child: const Icon(Icons.add, color: Colors.white),
-                tooltip: AppLocalizations.of(context)!.createReport,
-              ),
+          if (state is TankEventsSessionExpiredState) {
+            return SessionExpiredScreen(
+              onLoginAgain: () {
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+              },
             );
-          } 
-          // Handle empty state - show no events message
-          else {
-            return Center(child: Text(AppLocalizations.of(context)!.noEventsFound));
+          }
+          switch (state.runtimeType) {
+            case TankEventsLoadingState:
+              return const AppLoadingState();
+            case TankEventsErrorState:
+              return Center(child: Text('${AppLocalizations.of(context)!.error}: ${(state as TankEventsErrorState).message}'));
+            case TankEventsLoadedState:
+              if ((state as TankEventsLoadedState).events.isNotEmpty) {
+                final latestEvent = state.events.last;
+                final status = latestEvent.qualityValue;
+                const waterQuantity = 1;
+                final phLevel = getPhFromStatus(context, status);
+                final currentPercentage = double.parse(latestEvent.levelValue);
+
+                tanks = [
+                  WaterReading(time: '', quantity: '600ml', type: AppLocalizations.of(context)!.tank),
+                ];
+
+                _animation = Tween<double>(
+                  begin: 0.0,
+                  end: currentPercentage / 100,
+                ).animate(CurvedAnimation(
+                  parent: _animationController,
+                  curve: Curves.easeInOut,
+                ));
+                _animationController.forward(from: 0.0);
+                return Scaffold(
+                  backgroundColor: AppColors.lightGray,
+                  body: SafeArea(
+                    child: Column(
+                      children: [
+                        _buildHeader(),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildCircularIndicator(currentPercentage),
+
+                                const SizedBox(height: 24),
+
+                                _buildDateSection(),
+
+                                const SizedBox(height: 24),
+
+                                _buildMetricsCard(
+                                  status: status,
+                                  waterQuantity: waterQuantity.toString(),
+                                  phLevel: phLevel,
+                                ),
+
+                                const SizedBox(height: 32),
+                                _buildRecentActivitySection(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  bottomNavigationBar: AppBottomNavigationBar(
+                    currentIndex: 1, // Dashboard tab is active
+                    onTap: (index) {
+                      switch (index) {
+                        case 0:
+                          Navigator.pushReplacementNamed(context, '/reports');
+                          break;
+                        case 1:
+                        // Already on dashboard
+                          break;
+                        case 2:
+                          Navigator.pushReplacementNamed(context, '/profile');
+                          break;
+                      }
+                    },
+                  ),
+                  floatingActionButton: FloatingActionButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ReportCreationScreen()),
+                      );
+                    },
+                    backgroundColor: AppColors.primaryBlue,
+                    child: const Icon(Icons.add, color: Colors.white),
+                    tooltip: AppLocalizations.of(context)!.createReport,
+                  ),
+                );
+              } else {
+                return Center(child: Text(AppLocalizations.of(context)!.noEventsFound));
+              }
+            default:
+              return const Center(child: CircularProgressIndicator()); // Fallback to loading state
           }
         },
       ),
@@ -221,10 +217,10 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   /// Builds the dashboard header with the app logo.
-  /// 
+  ///
   /// This method creates a centered header section that displays
   /// the application logo with consistent styling and padding.
-  /// 
+  ///
   /// Returns a container widget with the app logo centered horizontally.
   Widget _buildHeader() {
     return Container(
@@ -372,9 +368,12 @@ class _DashboardScreenState extends State<DashboardScreen>
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildMetricItem(
-                title: status,
+                title: getLocalizedWaterStatus(context, status),
                 subtitle: AppLocalizations.of(context)!.status,
-                color: AppColors.green,
+                color: (status.trim().toLowerCase().contains('without water') ||
+                        status.trim().toLowerCase().contains(AppLocalizations.of(context)!.withoutWater.toLowerCase()))
+                    ? AppColors.mediumGray
+                    : AppColors.green,
                 icon: Icons.check_circle,
               ),
               _buildVerticalDivider(),
@@ -575,8 +574,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     reading.type,
@@ -589,7 +588,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   Text(
                     reading.quantity,
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       color: AppColors.darkBlue,
                     ),
                   ),

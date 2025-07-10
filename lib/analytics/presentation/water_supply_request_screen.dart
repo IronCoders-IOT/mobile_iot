@@ -213,7 +213,7 @@ class WaterSupplyRequestScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${AppLocalizations.of(context)!.requested}: ${request.requestedLiters} liters',
+                  '${AppLocalizations.of(context)!.requested}: ${request.requestedLiters} ${AppLocalizations.of(context)!.liters}',
                   style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.mediumGray,
@@ -327,7 +327,7 @@ class WaterSupplyRequestScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _buildDetailItem(AppLocalizations.of(context)!.status, StatusFormatter.formatWaterRequestStatus(context, request.status)),
-          _buildDetailItem(AppLocalizations.of(context)!.requestedAmount, '${request.requestedLiters} liters'),
+          _buildDetailItem(AppLocalizations.of(context)!.requestedAmount, '${request.requestedLiters} ${AppLocalizations.of(context)!.liters}'),
           _buildDetailItem(AppLocalizations.of(context)!.deliveredAt, DateFormatter.formatDate(context, request.deliveredAt)),
           const SizedBox(height: 24),
           Text(
