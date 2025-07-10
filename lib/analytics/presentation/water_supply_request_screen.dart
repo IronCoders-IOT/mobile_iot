@@ -28,12 +28,6 @@ import '../../shared/widgets/session_expired_screen.dart';
 
 /// A screen that displays a list of water supply requests for the authenticated user.
 /// 
-/// This screen uses the BLoC pattern for state management and provides the following features:
-/// - View all water supply requests associated with the user
-/// - Pull-to-refresh functionality
-/// - View detailed request information in a modal
-/// - Navigate to other app sections via bottom navigation
-/// 
 /// The screen automatically handles:
 /// - Loading states while fetching data
 /// - Error states with retry functionality

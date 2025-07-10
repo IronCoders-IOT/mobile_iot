@@ -24,7 +24,7 @@ double getPhFromStatus(BuildContext context, String status) {
     return 5.5;
   } else if (status == localizations.nonPotable || status == 'Non-potable') {
     return 4.8;
-  } else if (status == localizations.contaminatedWater || status == 'Contaminated water') {
+  } else if (status == localizations.contaminated || status == 'Contaminated' || status == 'Contaminated water') {
     return 3.0;
   } else if(status== localizations.withoutWater || status == 'Without water') {
     return 0.0;
@@ -54,9 +54,9 @@ String getLocalizedWaterStatus(BuildContext context, String status) {
     case 'non-potable':
       return loc.nonPotable;
     case 'contaminated water':
-      return loc.contaminatedWater;
     case 'contaminated monitoring':
-      return loc.contaminatedMonitoring;
+    case 'contaminated':
+      return loc.contaminated;
     case 'without water':
       return loc.withoutWater;
     default:

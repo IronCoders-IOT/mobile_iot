@@ -11,14 +11,6 @@ import '../../shared/widgets/session_expired_screen.dart';
 
 /// A dialog screen for creating water supply requests with BLoC state management.
 /// 
-/// This screen uses the BLoC pattern for state management and provides the following features:
-/// - Create water supply requests with liters input
-/// - Input validation for water amount
-/// - Real-time error handling and display
-/// - Loading states during request creation
-/// - Automatic dialog closure on successful creation
-/// - Success feedback via snackbar
-/// 
 /// The screen automatically handles:
 /// - Input validation and error display
 /// - Loading states while creating requests

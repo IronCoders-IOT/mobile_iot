@@ -443,16 +443,10 @@ abstract class AppLocalizations {
   /// **'No water analysis available'**
   String get noWaterAnalysisMessage;
 
-  /// No description provided for @contaminatedMonitoring.
-  ///
-  /// In en, this message translates to:
-  /// **'Contaminated Monitoring'**
-  String get contaminatedMonitoring;
-
   /// No description provided for @loadingMessage.
   ///
   /// In en, this message translates to:
-  /// **'Loading data, please wait...'**
+  /// **''**
   String get loadingMessage;
 
   /// No description provided for @document.
@@ -671,11 +665,11 @@ abstract class AppLocalizations {
   /// **'Non-potable'**
   String get nonPotable;
 
-  /// No description provided for @contaminatedWater.
+  /// No description provided for @contaminated.
   ///
   /// In en, this message translates to:
-  /// **'Contaminated water'**
-  String get contaminatedWater;
+  /// **'Contaminated'**
+  String get contaminated;
 
   /// Message showing requested water amount
   ///

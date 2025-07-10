@@ -23,15 +23,9 @@ import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/app_colors.dart';
 import '../../shared/widgets/session_expired_screen.dart';
 import 'package:mobile_iot/analytics/domain/logic/get_ph_from_status.dart';
+import 'package:mobile_iot/monitoring/domain/logic/percentage_formatter.dart';
 
 /// A screen that displays a list of tank events for the authenticated user.
-/// 
-/// This screen uses the BLoC pattern for state management and provides the following features:
-/// - View all tank events associated with the user's devices
-/// - Search events by event type, quality value, or level value
-/// - Pull-to-refresh functionality
-/// - View detailed event information in a modal
-/// - Navigate to other app sections via bottom navigation
 /// 
 /// The screen automatically handles:
 /// - Loading states while fetching data
@@ -40,8 +34,27 @@ import 'package:mobile_iot/analytics/domain/logic/get_ph_from_status.dart';
 /// - Empty states when no events are found
 /// - Device detection and event retrieval
 /// 
-class TankEventsScreen extends StatelessWidget {
+class TankEventsScreen extends StatefulWidget {
   const TankEventsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<TankEventsScreen> createState() => _TankEventsScreenState();
+}
+
+class _TankEventsScreenState extends State<TankEventsScreen> {
+  late TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +93,7 @@ class TankEventsScreen extends StatelessWidget {
                   // Search bar - only show when events are loaded
                   if (state is TankEventsLoadedState) ...[
                     AppSearchBar(
-                      controller: TextEditingController(text: state.searchQuery),
+                      controller: _searchController,
                       onChanged: (value) => context.read<TankEventsBloc>().add(SearchTankEventsEvent(value)),
                       hintText: AppLocalizations.of(context)!.searchEvents,
                     ),
@@ -296,7 +309,7 @@ class TankEventsScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                '${AppLocalizations.of(context)!.level}: ${event.levelValue}%',
+                '${AppLocalizations.of(context)!.level}: ${formatTankEventsPercentage(event.levelValue)}',
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.mediumGray,
@@ -398,7 +411,7 @@ class TankEventsScreen extends StatelessWidget {
                     ),
                     // Water level
                     Text(
-                      '${AppLocalizations.of(context)!.waterLevel}: ${event.levelValue}%',
+                      '${AppLocalizations.of(context)!.waterLevel}: ${formatTankEventsPercentage(event.levelValue)}',
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.mediumGray,
