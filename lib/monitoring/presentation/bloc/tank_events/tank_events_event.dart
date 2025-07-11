@@ -18,10 +18,11 @@ abstract class TankEventsEvent extends Equatable {
 /// tank events data, typically when the screen is first loaded
 /// or when data needs to be refreshed.
 class FetchTankEventsEvent extends TankEventsEvent {
-  const FetchTankEventsEvent();
+  final int? deviceId;
+  const FetchTankEventsEvent({this.deviceId});
   
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [deviceId];
 }
 
 /// Event to search through tank events with a specific query.

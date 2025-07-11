@@ -108,8 +108,6 @@ coverage/
 *.json
 *.yaml
 *.yml
-*.env
-*.env.*
 !pubspec.yaml
 !pubspec.lock
 !analysis_options.yaml
@@ -127,8 +125,6 @@ coverage/
 !*.json
 !*.yaml
 !*.yml
-!*.env
-!*.env.*
 
 # Generated files
 **/generated_plugin_registrant.dart

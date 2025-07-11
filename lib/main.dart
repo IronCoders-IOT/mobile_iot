@@ -25,6 +25,10 @@ import 'package:mobile_iot/profiles/infrastructure/service/profile_api_service.d
 import 'package:mobile_iot/profiles/application/resident_use_case.dart';
 import 'package:mobile_iot/profiles/infrastructure/repositories/resident_repository_impl.dart';
 import 'package:mobile_iot/profiles/infrastructure/service/resident_api_service.dart';
+import 'package:mobile_iot/monitoring/presentation/bloc/tank_events/tank_events_bloc.dart';
+import 'package:mobile_iot/monitoring/application/device_use_case.dart';
+import 'package:mobile_iot/monitoring/infrastructure/repositories/device_repository_impl.dart';
+import 'package:mobile_iot/monitoring/infrastructure/service/device_api_service.dart';
 
 /// This file initializes the Flutter app, sets up localization, theme, and routing.
 /// It defines the [AquaConectaApp] widget, which manages the app's locale, theme,
@@ -277,7 +281,14 @@ class AquaConectaAppState extends State<AquaConectaApp> {
           child: const ProfileEditionScreen(),
         ),
         '/reports': (context) => const ReportsScreen(),
-        '/history': (context) => const TankEventsScreen(),
+        '/history': (context) => BlocProvider<TankEventsBloc>(
+          create: (_) => TankEventsBloc(
+            deviceUseCase: DeviceUseCase(DeviceRepositoryImpl(DeviceApiService())),
+            secureStorage: SecureStorageService(),
+            residentApiService: ResidentApiService(),
+          ),
+          child: const TankEventsScreen(),
+        ),
         '/request-history': (context) => const WaterSupplyRequestScreen(),
         '/create-report': (context) => const ReportCreationScreen(),
       },
