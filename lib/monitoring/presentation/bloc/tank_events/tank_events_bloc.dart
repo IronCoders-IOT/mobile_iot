@@ -28,6 +28,7 @@ class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
   final ResidentApiService _residentApiService;
   
   List<Event> _allEvents = [];
+  int _currentDeviceId = 1; // Store the current deviceId
 
   TankEventsBloc({
     required DeviceUseCase deviceUseCase,
@@ -72,7 +73,8 @@ class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
         throw Exception('Resident not found');
       }
       
-      const deviceId = 1;
+      final deviceId = event.deviceId ?? 1;
+      _currentDeviceId = deviceId; // Store the current deviceId
       final events = await _deviceUseCase.getEventsByDeviceId(token, deviceId);
       
       if (events.isEmpty) throw Exception('No events found for device');
@@ -112,6 +114,6 @@ class TankEventsBloc extends Bloc<TankEventsEvent, TankEventsState> {
   /// - [event]: The refresh tank events event
   /// - [emit]: The state emitter
   Future<void> _onRefreshTankEvents(RefreshTankEventsEvent event, Emitter<TankEventsState> emit) async {
-    await _onFetchTankEvents(FetchTankEventsEvent(), emit);
+    await _onFetchTankEvents(FetchTankEventsEvent(deviceId: _currentDeviceId), emit);
   }
 } 

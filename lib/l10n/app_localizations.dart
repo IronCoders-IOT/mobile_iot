@@ -533,7 +533,7 @@ abstract class AppLocalizations {
   /// No description provided for @tank.
   ///
   /// In en, this message translates to:
-  /// **'Tank 1'**
+  /// **'Tank'**
   String get tank;
 
   /// No description provided for @quantity.
