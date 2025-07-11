@@ -78,5 +78,40 @@ class ResidentApiService {
     }
   }
 
+  /// Retrieves all subscriptions associated with a specific resident from the API.
+  /// 
+  /// This method makes an HTTP GET request to the backend API to fetch
+  /// all subscriptions that belong to the specified resident using the
+  /// endpoint structure: /api/v1/residents/{residentId}/subscriptions
+  /// 
+  /// Parameters:
+  /// - [token]: The authentication token for API access
+  /// - [residentId]: The unique identifier of the resident
+  /// 
+  /// Returns a Future that completes with a list of subscription data containing waterTankSize.
+  ///
+  /// Throws:
+  /// - [SessionExpiredException] when the authentication token is invalid (401/403)
+  /// - [Exception] for other network or data access errors
+  Future<List<Map<String, dynamic>>> getSubscriptionsByResidentId(String token, int residentId) async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/$residentId/subscriptions'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+    
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = jsonDecode(response.body);
+      return jsonList.map((json) => json as Map<String, dynamic>).toList();
+    } else {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        throw SessionExpiredException();
+      }
+      throw Exception('Failed to load subscriptions: ${response.statusCode} - ${response.reasonPhrase}');
+    }
+  }
+
 
 }

@@ -56,14 +56,22 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
     super.dispose();
   }
 
+
+
   @override
   Widget build(BuildContext context) {
+    // Get deviceId from route arguments
+    final args = ModalRoute.of(context)?.settings.arguments as Map?;
+    final deviceId = args != null && args['deviceId'] != null
+        ? (args['deviceId'] is int ? args['deviceId'] : int.tryParse(args['deviceId'].toString()) ?? 1)
+        : 1;
+    
     return BlocProvider<TankEventsBloc>(
       create: (context) => TankEventsBloc(
         deviceUseCase: DeviceUseCase(DeviceRepositoryImpl(DeviceApiService())),
         secureStorage: SecureStorageService(),
         residentApiService: ResidentApiService(),
-      )..add(FetchTankEventsEvent()),
+      )..add(FetchTankEventsEvent(deviceId: deviceId)),
       child: BlocConsumer<TankEventsBloc, TankEventsState>(
         // Listen for state changes to handle side effects (like navigation)
         listener: (context, state) {
@@ -134,11 +142,14 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
   /// Returns a widget that represents the appropriate UI for the current state.
   Widget _buildBody(BuildContext context, TankEventsState state) {
     if (state is TankEventsLoadingState) {
-      return const AppLoadingState();
+      return const Scaffold(
+        backgroundColor: AppColors.lightGray,
+        body: AppLoadingState(),
+      );
     } else if (state is TankEventsErrorState) {
       return AppErrorState(
         message: state.message,
-        onRetry: () => context.read<TankEventsBloc>().add(FetchTankEventsEvent()),
+        onRetry: () => context.read<TankEventsBloc>().add(RefreshTankEventsEvent()),
       );
     } else if (state is TankEventsLoadedState) {
       return RefreshIndicator(
@@ -148,7 +159,10 @@ class _TankEventsScreenState extends State<TankEventsScreen> {
     }
     
     // Fallback to loading state
-    return const AppLoadingState();
+    return const Scaffold(
+      backgroundColor: AppColors.lightGray,
+      body: AppLoadingState(),
+    );
   }
 
   /// Builds the list of events when data is successfully loaded.

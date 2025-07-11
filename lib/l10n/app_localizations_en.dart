@@ -227,7 +227,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get today => 'Today';
 
   @override
-  String get tank => 'Tank 1';
+  String get tank => 'Tank';
 
   @override
   String get quantity => 'Quantity';

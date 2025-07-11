@@ -3,6 +3,7 @@ import 'package:mobile_iot/analytics/presentation/water_supply_request_creation_
 import 'package:mobile_iot/shared/widgets/app_bottom_navigation_bar.dart';
 import 'package:mobile_iot/analytics/presentation/report_creation_screen.dart';
 import 'package:mobile_iot/shared/widgets/app_logo.dart';
+import '../../monitoring/domain/entities/event.dart';
 import '../../profiles/infrastructure/service/resident_api_service.dart';
 import '../../shared/helpers/secure_storage_service.dart';
 import '../../shared/widgets/app_colors.dart';
@@ -14,6 +15,8 @@ import 'package:mobile_iot/analytics/domain/logic/get_ph_from_status.dart';
 import 'package:mobile_iot/shared/widgets/circular_progress_painter.dart';
 import 'package:mobile_iot/analytics/domain/entities/water_reading.dart';
 import '../../monitoring/application/device_use_case.dart';
+import '../../profiles/application/resident_use_case.dart';
+import '../../profiles/infrastructure/repositories/resident_repository_impl.dart';
 import '../../monitoring/infrastructure/repositories/device_repository_impl.dart';
 import '../../monitoring/infrastructure/service/device_api_service.dart';
 import '../../l10n/app_localizations.dart';
@@ -22,6 +25,8 @@ import '../../../main.dart';
 import 'package:mobile_iot/monitoring/presentation/widgets/app_loading_state.dart';
 import 'package:mobile_iot/monitoring/domain/logic/get_event_status_color.dart';
 import 'package:mobile_iot/analytics/domain/logic/percentage_formatter.dart';
+import 'package:mobile_iot/analytics/domain/logic/water_status_utils.dart';
+import 'package:mobile_iot/monitoring/domain/logic/event_utils.dart';
 
 /// A screen that displays water tank analytics and monitoring dashboard for the authenticated user.
 ///
@@ -55,8 +60,14 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// Animation for the circular progress indicator.
   late Animation<double> _animation;
 
-  /// List of water readings for the history section.
-  List<WaterReading> tanks = [];
+  // List of tanks
+  List<Map<String, dynamic>> tanks = [];
+  
+  /// List of subscription data for the resident.
+  List<Map<String, dynamic>> subscriptions = [];
+
+  /// List of all events from all tanks for the dashboard
+  List<Event> _allDashboardEvents = [];
 
   @override
   void initState() {
@@ -78,6 +89,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     // Start the initial animation
     _animationController.forward();
+    
+    // Load subscriptions when the widget initializes
+    _loadSubscriptions();
   }
 
   @override
@@ -111,101 +125,139 @@ class _DashboardScreenState extends State<DashboardScreen>
           }
           switch (state.runtimeType) {
             case TankEventsLoadingState:
-              return const AppLoadingState();
+              return const Scaffold(
+                backgroundColor: AppColors.lightGray,
+                body: AppLoadingState(),
+              );
             case TankEventsErrorState:
               return Center(child: Text('${AppLocalizations.of(context)!.error}: ${(state as TankEventsErrorState).message}'));
             case TankEventsLoadedState:
-              if ((state as TankEventsLoadedState).events.isNotEmpty) {
-                final latestEvent = state.events.last;
-                final status = latestEvent.qualityValue;
-                const waterQuantity = 1;
-                final phLevel = getPhFromStatus(context, status);
-                final currentPercentage = double.parse(latestEvent.levelValue);
-
-                tanks = [
-                  WaterReading(time: '', quantity: '600ml', type: AppLocalizations.of(context)!.tank),
-                ];
-
-                _animation = Tween<double>(
-                  begin: 0.0,
-                  end: currentPercentage / 100,
-                ).animate(CurvedAnimation(
-                  parent: _animationController,
-                  curve: Curves.easeInOut,
-                ));
-                _animationController.forward(from: 0.0);
-                return Scaffold(
+              // Wait until subscriptions are loaded
+              if (subscriptions.isEmpty) {
+                return const Scaffold(
                   backgroundColor: AppColors.lightGray,
-                  body: SafeArea(
-                    child: Column(
-                      children: [
-                        _buildHeader(),
-                        Expanded(
-                          child: RefreshIndicator(
-                            onRefresh: () async => context.read<TankEventsBloc>().add(const RefreshTankEventsEvent()),
-                            child: SingleChildScrollView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildCircularIndicator(currentPercentage),
+                  body: AppLoadingState(),
+                );
+              }
+              final events = _allDashboardEvents.isNotEmpty ? _allDashboardEvents : (state as TankEventsLoadedState).events;
+              final loc = AppLocalizations.of(context)!;
+              // Mapping: deviceId -> most recent event
+              final latestEventsByTank = getLatestEventsByTank(events);
+              latestEventsByTank.forEach((k, v) => print('  Tank $k: status=${v.qualityValue}, level=${v.levelValue}'));
+              // For each tank (subscription), find its most recent event or set Without Water
+              List<double> percentages = [];
+              List<String> statuses = [];
+              tanks = subscriptions.asMap().entries.map((entry) {
+                final index = entry.key;
+                final subscription = entry.value;
+                final tankNumber = index + 1;
+                final waterTankSize = (subscription['waterTankSize'] as num).toInt();
+                final deviceId = subscription['deviceId'].toString();
+                final event = latestEventsByTank[deviceId];
+                String status;
+                if (event != null) {
+                  status = event.qualityValue;
+                  final percent = double.tryParse(event.levelValue) ?? 0.0;
+                  percentages.add(percent);
+                } else {
+                  status = loc.withoutWater;
+                }
+                statuses.add(status);
+                return {
+                  'reading': WaterReading(
+                    time: '',
+                    quantity: '${waterTankSize}L',
+                    type: '${AppLocalizations.of(context)!.tank} $tankNumber',
+                  ),
+                  'deviceId': deviceId,
+                };
+              }).toList();
+              final avgPercentage = average(percentages);
+              final tanksWithoutWater = statuses.where((s) => s == loc.withoutWater).length;
+              final realStatuses = statuses.where((s) => s != loc.withoutWater).toList();
+              final worstStatus = realStatuses.isNotEmpty
+                  ? getWorstStatus(realStatuses, loc)
+                  : loc.withoutWater;
+              final phLevel = getPhFromStatus(context, worstStatus);
+              final waterQuantity = subscriptions.length;
 
-                                  const SizedBox(height: 24),
-
-                                  _buildDateSection(),
-
-                                  const SizedBox(height: 24),
-
-                                  _buildMetricsCard(
-                                    status: status,
-                                    waterQuantity: waterQuantity.toString(),
-                                    phLevel: phLevel,
-                                  ),
-
-                                  const SizedBox(height: 32),
-                                  _buildRecentActivitySection(),
-                                ],
-                              ),
+              // Animación
+              _animation = Tween<double>(
+                begin: 0.0,
+                end: avgPercentage / 100,
+              ).animate(CurvedAnimation(
+                parent: _animationController,
+                curve: Curves.easeInOut,
+              ));
+              _animationController.forward(from: 0.0);
+              return Scaffold(
+                backgroundColor: AppColors.lightGray,
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      _buildHeader(),
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: () async => context.read<TankEventsBloc>().add(const RefreshTankEventsEvent()),
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildCircularIndicator(avgPercentage),
+                                const SizedBox(height: 24),
+                                _buildDateSection(),
+                                const SizedBox(height: 24),
+                                _buildMetricsCard(
+                                  status: worstStatus,
+                                  waterQuantity: waterQuantity.toString(),
+                                  phLevel: phLevel,
+                                  tanksWithoutWater: tanksWithoutWater,
+                                ),
+                                const SizedBox(height: 32),
+                                _buildRecentActivitySection(),
+                              ],
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  bottomNavigationBar: AppBottomNavigationBar(
-                    currentIndex: 1, // Dashboard tab is active
-                    onTap: (index) {
-                      switch (index) {
-                        case 0:
-                          Navigator.pushReplacementNamed(context, '/reports');
-                          break;
-                        case 1:
-                        // Already on dashboard
-                          break;
-                        case 2:
-                          Navigator.pushReplacementNamed(context, '/profile');
-                          break;
-                      }
-                    },
-                  ),
-                  floatingActionButton: FloatingActionButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ReportCreationScreen()),
-                      );
-                    },
-                    backgroundColor: AppColors.primaryBlue,
-                    child: const Icon(Icons.add, color: Colors.white),
-                    tooltip: AppLocalizations.of(context)!.createReport,
-                  ),
-                );
-              } else {
-                return Center(child: Text(AppLocalizations.of(context)!.noEventsFound));
-              }
+                ),
+                bottomNavigationBar: AppBottomNavigationBar(
+                  currentIndex: 1, // Dashboard tab is active
+                  onTap: (index) {
+                    switch (index) {
+                      case 0:
+                        Navigator.pushReplacementNamed(context, '/reports');
+                        break;
+                      case 1:
+                      // Already on dashboard
+                        break;
+                      case 2:
+                        Navigator.pushReplacementNamed(context, '/profile');
+                        break;
+                    }
+                  },
+                ),
+                floatingActionButton: FloatingActionButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ReportCreationScreen()),
+                    );
+                  },
+                  backgroundColor: AppColors.primaryBlue,
+                  child: const Icon(Icons.add, color: Colors.white),
+                  tooltip: AppLocalizations.of(context)!.createReport,
+                ),
+              );
             default:
-              return const Center(child: CircularProgressIndicator()); // Fallback to loading state
+              return const Scaffold(
+                backgroundColor: AppColors.lightGray,
+                body: AppLoadingState(),
+              ); // Fallback to loading state
           }
         },
       ),
@@ -254,7 +306,9 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     );
   }
-
+///
+/// Widget to change the app language.
+///
   Widget _buildLanguageDropdown() {
     Locale currentLocale = Localizations.localeOf(context);
     return DropdownButton<Locale>(
@@ -371,6 +425,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     required String status,
     required String waterQuantity,
     required double phLevel,
+    required int tanksWithoutWater,
   }) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -415,6 +470,26 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
             ],
           ),
+          if (tanksWithoutWater > 0) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(Icons.warning, color: Colors.orange, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    tanksWithoutWater == 1
+                      ? AppLocalizations.of(context)!.withoutWater
+                      : '${AppLocalizations.of(context)!.withoutWater}: $tanksWithoutWater',
+                    style: const TextStyle(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
@@ -546,23 +621,24 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
         const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            children: tanks.map((reading) => _buildHistoryItem(reading)).toList(),
-          ),
-        ),
+        ...tanks.map((tankData) =>
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: _buildHistoryItem(tankData['reading'], tankData['deviceId']),
+          )
+        ).toList(),
       ],
     );
   }
@@ -577,11 +653,15 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// - [reading]: The water reading entity to display
   /// 
   /// Returns a gesture detector widget with the history item display.
-  Widget _buildHistoryItem(WaterReading reading) {
+  Widget _buildHistoryItem(WaterReading reading, String deviceId) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        Navigator.pushReplacementNamed(context, '/history');
+        Navigator.pushReplacementNamed(
+          context,
+          '/history',
+          arguments: {'deviceId': deviceId},
+        );
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -623,5 +703,49 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     );
   }
-}
 
+  /// Loads subscriptions for the current resident.
+  /// 
+  /// This method fetches subscription data from the API and updates
+  /// the subscriptions list with the water tank information.
+  /// 
+  /// Returns a Future that completes when the subscriptions are loaded.
+  Future<void> _loadSubscriptions() async {
+    try {
+      final secureStorage = SecureStorageService();
+      final token = await secureStorage.getToken();
+      if (token == null) return;
+
+      final residentUseCase = ResidentUseCase(ResidentRepositoryImpl(ResidentApiService()));
+      final resident = await residentUseCase.getProfile(token);
+      if (resident == null) return;
+
+      final residentApiService = ResidentApiService();
+      final subscriptionsData = await residentApiService.getSubscriptionsByResidentId(token, resident.id);
+
+      // Get events for all deviceIds
+      final deviceApiService = DeviceApiService();
+      List<Event> allEvents = [];
+      for (final sub in subscriptionsData) {
+        final deviceId = sub['deviceId'];
+        if (deviceId != null) {
+          try {
+            final events = await deviceApiService.getEventsByDeviceId(token, deviceId);
+            allEvents.addAll(events);
+          } catch (e) {
+            print('Error fetching events for deviceId $deviceId: $e');
+          }
+        }
+      }
+
+      setState(() {
+        subscriptions = subscriptionsData;
+        // Save the events in the state to use them in the builder
+        _allDashboardEvents = allEvents;
+      });
+    } catch (e) {
+      // Handle error silently or log it
+      print('Error loading subscriptions: $e');
+    }
+  }
+}

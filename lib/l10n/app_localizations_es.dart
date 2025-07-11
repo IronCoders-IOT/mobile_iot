@@ -232,7 +232,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get today => 'Hoy';
 
   @override
-  String get tank => 'Tanque 1';
+  String get tank => 'Tanque';
 
   @override
   String get quantity => 'Cantidad';
